@@ -1,18 +1,18 @@
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
-  Wallet,
   ReceiptText,
   TrendingUp,
-  Settings,
+  Sparkles,
+  ListOrdered,
 } from "lucide-react";
 
 const navItems = [
   { label: "Home", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Accounts", href: "/accounts", icon: Wallet },
   { label: "Expenses", href: "/expenses", icon: ReceiptText },
   { label: "Income", href: "/income", icon: TrendingUp },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Insights", href: "/insights", icon: Sparkles },
+  { label: "Timeline", href: "/timeline", icon: ListOrdered },
 ];
 
 export function MobileNav() {

@@ -1,33 +1,24 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Wallet, ReceiptText, TrendingUp } from "lucide-react";
-import { Settings } from "lucide-react";
+import {
+  LayoutDashboard,
+  Wallet,
+  ReceiptText,
+  TrendingUp,
+  Settings,
+  Sparkles,
+  SlidersHorizontal,
+  ListOrdered,
+} from "lucide-react";
 
 const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Accounts",
-    href: "/accounts",
-    icon: Wallet,
-  },
-  {
-    label: "Expenses",
-    href: "/expenses",
-    icon: ReceiptText,
-  },
-  {
-    label: "Income",
-    href: "/income",
-    icon: TrendingUp,
-  },
-  {
-    label: "Settings",
-    href: "/settings",
-    icon: Settings,
-  },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Accounts", href: "/accounts", icon: Wallet },
+  { label: "Expenses", href: "/expenses", icon: ReceiptText },
+  { label: "Income", href: "/income", icon: TrendingUp },
+  { label: "Insights", href: "/insights", icon: Sparkles },
+  { label: "Simulator", href: "/simulator", icon: SlidersHorizontal },
+  { label: "Timeline", href: "/timeline", icon: ListOrdered },
+  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
