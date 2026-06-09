@@ -68,16 +68,16 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-zinc-400">
+          <p className="text-[var(--app-muted)]">
             Monitor income and expenses month by month.
           </p>
         </div>
 
         <select
-          className="rounded-xl bg-zinc-900 px-4 py-2 outline-none"
+          className="rounded-xl border border-[var(--app-border)] bg-[var(--app-input)] px-4 py-2 text-[var(--app-text)] outline-none"
           value={activeMonth}
           onChange={(event) => setSelectedMonth(event.target.value)}
         >
@@ -94,22 +94,22 @@ export function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-sm text-zinc-400">Monthly income</p>
+        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
+          <p className="text-sm text-[var(--app-muted)]">Monthly income</p>
           <h2 className="mt-2 text-3xl font-bold text-emerald-400">
             €{monthlyIncome.toFixed(2)}
           </h2>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-sm text-zinc-400">Monthly expenses</p>
+        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
+          <p className="text-sm text-[var(--app-muted)]">Monthly expenses</p>
           <h2 className="mt-2 text-3xl font-bold text-red-400">
             €{monthlyExpenses.toFixed(2)}
           </h2>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-sm text-zinc-400">Monthly difference</p>
+        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
+          <p className="text-sm text-[var(--app-muted)]">Monthly difference</p>
           <h2
             className={
               monthlyDifference >= 0
@@ -122,14 +122,16 @@ export function DashboardPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
         <div className="mb-4">
           <h2 className="text-xl font-semibold">Expenses by type</h2>
-          <p className="text-sm text-zinc-400">Filtered by selected month.</p>
+          <p className="text-sm text-[var(--app-muted)]">
+            Filtered by selected month.
+          </p>
         </div>
 
         {expenseChartData.length === 0 ? (
-          <p className="text-zinc-400">No expenses for this month.</p>
+          <p className="text-[var(--app-muted)]">No expenses for this month.</p>
         ) : (
           <div className="grid gap-6 md:grid-cols-[1fr_240px]">
             <div className="h-80">
@@ -159,7 +161,7 @@ export function DashboardPage() {
               {expenseChartData.map((item, index) => (
                 <div
                   key={item.name}
-                  className="flex items-center justify-between rounded-xl bg-zinc-900 px-4 py-3"
+                  className="flex items-center justify-between rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-soft)] px-4 py-3 text-[var(--app-text)]"
                 >
                   <div className="flex items-center gap-3">
                     <span

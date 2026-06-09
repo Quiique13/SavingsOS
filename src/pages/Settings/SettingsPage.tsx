@@ -53,7 +53,7 @@ export function SettingsPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold">Expense types</h2>
@@ -72,7 +72,7 @@ export function SettingsPage() {
 
         <form onSubmit={addCategory} className="mb-5 flex gap-3">
           <input
-            className="flex-1 rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="flex-1 rounded-xl border border-[var(--app-border)] bg-[var(--app-input)] px-4 py-3 text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
             placeholder="New expense type, e.g. Car, Coffee, Rent"
             value={categoryName}
             onChange={(event) => setCategoryName(event.target.value)}
@@ -93,7 +93,7 @@ export function SettingsPage() {
           {categories?.map((category) => (
             <div
               key={category.id}
-              className="flex items-center justify-between rounded-xl bg-zinc-900 px-4 py-3"
+              className="flex items-center justify-between rounded-xl text-white px-4 py-3"
             >
               <span>{category.name}</span>
 

@@ -51,7 +51,7 @@ export function AccountsPage() {
         {accounts?.map((account) => (
           <div
             key={account.id}
-            className="rounded-2xl border border-white/10 bg-white/5 p-5"
+            className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5"
           >
             <p className="text-sm uppercase text-zinc-500">{account.type}</p>
             <h2 className="mt-1 text-xl font-semibold">{account.name}</h2>
@@ -68,7 +68,7 @@ export function AccountsPage() {
       >
         <form onSubmit={handleCreateAccount} className="space-y-4">
           <input
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             placeholder="Account name"
             value={name}
             onChange={(event) => setName(event.target.value)}
@@ -76,7 +76,7 @@ export function AccountsPage() {
           />
 
           <input
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             placeholder="Platform"
             value={platform}
             onChange={(event) => setPlatform(event.target.value)}
@@ -84,7 +84,7 @@ export function AccountsPage() {
           />
 
           <select
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             value={type}
             onChange={(event) => setType(event.target.value as AccountType)}
           >

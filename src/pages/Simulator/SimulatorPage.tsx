@@ -66,15 +66,18 @@ export function SimulatorPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Salary Simulator</h1>
-        <p className="text-zinc-400">
+        <p className="text-[var(--app-muted)]">
           Test how you want to split your monthly income.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-        <label className="text-sm text-zinc-400">Monthly income</label>
+      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
+        <label className="text-sm text-[var(--app-muted)]">
+          Monthly income
+        </label>
+
         <input
-          className="mt-2 w-full rounded-xl bg-zinc-900 px-4 py-3 text-2xl font-bold outline-none"
+          className="mt-2 w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-input)] px-4 py-3 text-2xl font-bold text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
           type="number"
           value={salary}
           onChange={(event) => setSalary(Number(event.target.value))}
@@ -84,11 +87,12 @@ export function SimulatorPage() {
       <div
         className={
           remaining === 0
-            ? "rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5"
-            : "rounded-2xl border border-orange-500/20 bg-orange-500/10 p-5"
+            ? "rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5"
+            : "rounded-2xl border border-orange-500/30 bg-orange-500/10 p-5"
         }
       >
-        <p className="text-sm text-zinc-300">Allocation status</p>
+        <p className="text-sm text-[var(--app-muted)]">Allocation status</p>
+
         <h2 className="mt-1 text-2xl font-bold">
           {remaining === 0
             ? "Perfect — 100% allocated"
@@ -102,18 +106,18 @@ export function SimulatorPage() {
         {simulated.map((allocation, index) => (
           <div
             key={index}
-            className="rounded-2xl border border-white/10 bg-white/5 p-5"
+            className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5"
           >
             <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <input
-                className="rounded-xl bg-zinc-900 px-4 py-2 outline-none"
+                className="rounded-xl border border-[var(--app-border)] bg-[var(--app-input)] px-4 py-2 text-[var(--app-text)] outline-none placeholder:text-[var(--app-muted)]"
                 value={allocation.label}
                 onChange={(event) => updateLabel(index, event.target.value)}
               />
 
               <button
                 onClick={() => removeAllocation(index)}
-                className="rounded-xl bg-red-500/20 px-4 py-2 text-sm text-red-300 hover:bg-red-500/30"
+                className="rounded-xl bg-red-500/20 px-4 py-2 text-sm text-red-500 hover:bg-red-500/30"
               >
                 Remove
               </button>
@@ -121,7 +125,7 @@ export function SimulatorPage() {
 
             <div className="flex items-center gap-4">
               <input
-                className="flex-1"
+                className="flex-1 accent-blue-600"
                 type="range"
                 min="0"
                 max="100"
@@ -133,7 +137,8 @@ export function SimulatorPage() {
 
               <div className="w-28 text-right">
                 <p className="font-bold">{allocation.percentage}%</p>
-                <p className="text-sm text-zinc-400">
+
+                <p className="text-sm text-[var(--app-muted)]">
                   €{allocation.amount.toFixed(2)}
                 </p>
               </div>
@@ -144,7 +149,7 @@ export function SimulatorPage() {
 
       <button
         onClick={addAllocation}
-        className="rounded-xl bg-white px-4 py-3 font-medium text-zinc-950 hover:bg-zinc-200"
+        className="rounded-xl bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700"
       >
         Add allocation
       </button>

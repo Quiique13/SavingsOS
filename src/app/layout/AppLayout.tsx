@@ -5,7 +5,7 @@ import { MobileNav } from "./MobileNav";
 
 export function AppLayout() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--app-text)]">
       <div className="flex">
         <Sidebar />
 

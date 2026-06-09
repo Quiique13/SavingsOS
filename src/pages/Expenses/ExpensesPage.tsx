@@ -90,14 +90,14 @@ export function ExpensesPage() {
         </button>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
         <p className="text-sm text-zinc-400">Total expenses</p>
         <h2 className="mt-2 text-3xl font-bold text-red-400">
           €{totalExpenses.toFixed(2)}
         </h2>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5">
+      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)]">
         {expenseTransactions.map((expense) => {
           const account = accounts?.find(
             (account) => account.id === expense.accountId,
@@ -106,7 +106,7 @@ export function ExpensesPage() {
           return (
             <div
               key={expense.id}
-              className="flex items-center justify-between border-b border-white/10 p-4 last:border-b-0"
+              className="flex items-center justify-between border-b border-[var(--app-border)] p-4 last:border-b-0"
             >
               <div>
                 <p className="font-medium">
@@ -149,7 +149,7 @@ export function ExpensesPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <select
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             value={accountId}
             onChange={(event) => setAccountId(event.target.value)}
             required
@@ -163,7 +163,7 @@ export function ExpensesPage() {
           </select>
 
           <input
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             placeholder="Amount"
             type="number"
             value={amount}
@@ -172,7 +172,7 @@ export function ExpensesPage() {
           />
 
           <select
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             value={category}
             onChange={(event) => setCategory(event.target.value)}
             required
@@ -186,7 +186,7 @@ export function ExpensesPage() {
           </select>
 
           <input
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             placeholder="Description"
             value={description}
             onChange={(event) => setDescription(event.target.value)}

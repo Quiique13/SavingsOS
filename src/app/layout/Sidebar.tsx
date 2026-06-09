@@ -23,10 +23,13 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="hidden min-h-screen w-64 border-r border-white/10 bg-zinc-900/60 p-4 md:block">
+    <aside className="hidden min-h-screen w-64 border-r border-[var(--app-border)] bg-[var(--app-surface)] p-4 md:block">
       <div className="mb-8">
         <h1 className="text-xl font-bold">SavingsOS</h1>
-        <p className="text-sm text-zinc-400">Personal finance system</p>
+
+        <p className="text-sm text-[var(--app-muted)]">
+          Personal finance system
+        </p>
       </div>
 
       <nav className="space-y-2">
@@ -39,15 +42,15 @@ export function Sidebar() {
               to={item.href}
               className={({ isActive }) =>
                 [
-                  "flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition",
+                  "flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors",
                   isActive
-                    ? "bg-white text-zinc-950"
-                    : "text-zinc-400 hover:bg-white/10 hover:text-white",
+                    ? "bg-blue-600 text-white"
+                    : "text-[var(--app-muted)] hover:bg-[var(--app-surface-soft)] hover:text-[var(--app-text)]",
                 ].join(" ")
               }
             >
               <Icon size={18} />
-              {item.label}
+              <span>{item.label}</span>
             </NavLink>
           );
         })}

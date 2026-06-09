@@ -51,7 +51,7 @@ export function TimelinePage() {
         </div>
 
         <select
-          className="rounded-xl bg-zinc-900 px-4 py-2 outline-none"
+          className="rounded-xl text-white px-4 py-2 outline-none"
           value={activeMonth}
           onChange={(event) => setSelectedMonth(event.target.value)}
         >
@@ -69,7 +69,7 @@ export function TimelinePage() {
 
       <div className="space-y-3">
         {filteredTransactions.length === 0 && (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-zinc-400">
+          <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5 text-zinc-400">
             No transactions for this month.
           </div>
         )}
@@ -84,7 +84,7 @@ export function TimelinePage() {
           return (
             <div
               key={transaction.id}
-              className="rounded-2xl border border-white/10 bg-white/5 p-5"
+              className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>

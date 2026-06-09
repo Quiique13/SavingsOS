@@ -83,14 +83,14 @@ export function IncomePage() {
         </button>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
         <p className="text-sm text-zinc-400">Total income</p>
         <h2 className="mt-2 text-3xl font-bold text-emerald-400">
           €{totalIncome.toFixed(2)}
         </h2>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5">
+      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)]">
         {incomeTransactions?.map((income) => {
           const account = accounts?.find(
             (account) => account.id === income.accountId,
@@ -99,7 +99,7 @@ export function IncomePage() {
           return (
             <div
               key={income.id}
-              className="flex items-center justify-between border-b border-white/10 p-4 last:border-b-0"
+              className="flex items-center justify-between border-b border-[var(--app-border)] p-4 last:border-b-0"
             >
               <div>
                 <p className="font-medium">{income.description}</p>
@@ -140,7 +140,7 @@ export function IncomePage() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             placeholder="Amount"
             type="number"
             value={amount}
@@ -149,7 +149,7 @@ export function IncomePage() {
           />
 
           <select
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             value={accountId}
             onChange={(event) => setAccountId(event.target.value)}
             required
@@ -163,7 +163,7 @@ export function IncomePage() {
           </select>
 
           <input
-            className="w-full rounded-xl bg-zinc-900 px-4 py-3 outline-none"
+            className="w-full rounded-xl text-white px-4 py-3 outline-none"
             placeholder="Where did it come from?"
             value={source}
             onChange={(event) => setSource(event.target.value)}

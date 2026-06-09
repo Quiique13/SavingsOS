@@ -17,7 +17,7 @@ const navItems = [
 
 export function MobileNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-zinc-950/95 backdrop-blur md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--app-border)] bg-[var(--app-surface)] backdrop-blur md:hidden">
       <div className="grid grid-cols-5">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -29,7 +29,7 @@ export function MobileNav() {
               className={({ isActive }) =>
                 [
                   "flex flex-col items-center gap-1 px-2 py-3 text-[11px]",
-                  isActive ? "text-white" : "text-zinc-500",
+                  isActive ? "text-blue-500" : "text-[var(--app-muted)]",
                 ].join(" ")
               }
             >

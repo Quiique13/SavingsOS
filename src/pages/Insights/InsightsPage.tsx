@@ -84,7 +84,7 @@ export function InsightsPage() {
         </div>
 
         <select
-          className="rounded-xl bg-zinc-900 px-4 py-2 outline-none"
+          className="rounded-xl text-white px-4 py-2 outline-none"
           value={activeMonth}
           onChange={(event) => setSelectedMonth(event.target.value)}
         >
@@ -101,7 +101,7 @@ export function InsightsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
           <p className="text-sm text-zinc-400">Income change</p>
           <h2
             className={
@@ -116,7 +116,7 @@ export function InsightsPage() {
           </h2>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
           <p className="text-sm text-zinc-400">Expenses change</p>
           <h2
             className={
@@ -131,7 +131,7 @@ export function InsightsPage() {
           </h2>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
           <p className="text-sm text-zinc-400">Monthly result</p>
           <h2
             className={
@@ -145,25 +145,25 @@ export function InsightsPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5">
         <h2 className="text-xl font-semibold">Monthly review</h2>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl bg-zinc-900 p-4">
+          <div className="rounded-xl text-white p-4">
             <p className="text-sm text-zinc-400">Total income</p>
             <p className="mt-1 text-2xl font-bold text-emerald-400">
               €{current.income.toFixed(2)}
             </p>
           </div>
 
-          <div className="rounded-xl bg-zinc-900 p-4">
+          <div className="rounded-xl text-white p-4">
             <p className="text-sm text-zinc-400">Total expenses</p>
             <p className="mt-1 text-2xl font-bold text-red-400">
               €{current.expenses.toFixed(2)}
             </p>
           </div>
 
-          <div className="rounded-xl bg-zinc-900 p-4">
+          <div className="rounded-xl text-white p-4">
             <p className="text-sm text-zinc-400">Biggest expense</p>
             <p className="mt-1 text-xl font-semibold">
               {current.biggestExpense
@@ -172,7 +172,7 @@ export function InsightsPage() {
             </p>
           </div>
 
-          <div className="rounded-xl bg-zinc-900 p-4">
+          <div className="rounded-xl text-white p-4">
             <p className="text-sm text-zinc-400">Top spending type</p>
             <p className="mt-1 text-xl font-semibold">
               {current.topCategory
