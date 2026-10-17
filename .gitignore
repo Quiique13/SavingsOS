@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Private app database, migration copies, and exported backups
+/.savingsos-data/
+/backups/
+**/savingsos-*-backup-*.json

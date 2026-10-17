@@ -4,6 +4,7 @@ import type { Data } from "./model";
 export type FinanceState = {
   data: Data;
   update: (fn: (data: Data) => Data) => void;
+  save: (fn: (data: Data) => Data) => Promise<void>;
   ready: boolean;
   error: string;
   clearDemo: () => void;

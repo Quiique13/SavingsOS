@@ -6,7 +6,7 @@ import ts from "typescript";
 // Load the pure TypeScript model using the project's existing compiler dependency.
 const source = readFileSync(new URL("../src/planner/model.ts", import.meta.url), "utf8");
 const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2023 } }).outputText;
-const { getRows, shiftMonth, mergeLegacy, withoutSamples, isValidBackup } = await import("data:text/javascript;base64," + Buffer.from(output).toString("base64"));
+const { getRows, shiftMonth, mergeLegacy, withoutSamples, isValidBackup, saveTransfer, deleteTransfer, getAccountActivity } = await import("data:text/javascript;base64," + Buffer.from(output).toString("base64"));
 const account = { id: "bleap", name: "Bleap", provider: "Everyday spending", kind: "Spending", balance: 0, color: "#a4d17a" };
 const bill = (overrides = {}) => ({ id: "rent", name: "Rent", amount: 650, category: "Housing", accountId: "bleap", due: "2026-01-31", frequency: "monthly", notes: "", ...overrides });
 const data = (expenses = [bill()], payments = {}) => ({ accounts: [account], expenses, payments, income: [], initialized: true });
@@ -111,4 +111,66 @@ test("retrying a legacy import preserves personal entries and payment history", 
   const retry = mergeLegacy(merged, oldAccounts, oldTransactions);
   assert.equal(retry.expenses.length, merged.expenses.length);
   assert.equal(retry.income.length, 1);
+});
+
+
+const transferData = () => ({ ...data([]), accounts: [{ ...account, balance: 100 }, { ...account, id: "moey", name: "moey!", balance: 1000 }, { ...account, id: "trading", name: "Trading 212", balance: 500 }], income: [{ id: "salary", name: "Salary", date: "2026-09-30", amount: 1367.29, accountId: "moey" }] });
+const transfer = (overrides = {}) => ({ id: "transfer-1", fromAccountId: "moey", toAccountId: "bleap", amount: 300, date: "2026-09-30", notes: "Spending money", ...overrides });
+
+test("a 300 euro transfer moves both balances without creating income or expenses", () => {
+  const original = transferData();
+  const result = saveTransfer(original, transfer());
+  assert.equal(result.accounts.find(account => account.id === "moey").balance, 700);
+  assert.equal(result.accounts.find(account => account.id === "bleap").balance, 400);
+  assert.equal(result.accounts.reduce((sum, account) => sum + account.balance, 0), 1600);
+  assert.deepEqual(result.income, original.income);
+  assert.deepEqual(result.expenses, original.expenses);
+  assert.deepEqual(result.payments, original.payments);
+  assert.equal(result.transfers.length, 1);
+  assert.equal(original.accounts[0].balance, 100);
+  assert.ok(isValidBackup(result));
+});
+
+test("editing, reversing direction and deleting transfers adjust balances exactly once", () => {
+  const original = transferData();
+  const first = saveTransfer(original, transfer());
+  const second = saveTransfer(first, transfer({ amount: 250, toAccountId: "trading" }));
+  assert.deepEqual(second.accounts.map(account => account.balance), [100, 750, 750]);
+  assert.equal(second.transfers.length, 1);
+  const retry = saveTransfer(second, transfer({ amount: 250, toAccountId: "trading" }));
+  assert.deepEqual(retry.accounts, second.accounts);
+  const reversed = saveTransfer(second, transfer({ fromAccountId: "bleap", toAccountId: "moey", amount: 10.01 }));
+  assert.deepEqual(reversed.accounts.map(account => account.balance), [89.99, 1010.01, 500]);
+  const removed = deleteTransfer(reversed, "transfer-1");
+  assert.deepEqual(removed.accounts, original.accounts);
+  assert.deepEqual(removed.transfers, []);
+  assert.throws(() => deleteTransfer(removed, "transfer-1"), /no longer exists/);
+});
+
+test("account activity separates internal transfers from income and uses actual expense payment dates", () => {
+  const original = transferData();
+  original.expenses = [bill({ id: "subscription", accountId: "moey", amount: 12, due: "2026-08-31" })];
+  original.payments = { "subscription:2026-08-31": "2026-09-02" };
+  const saved = saveTransfer(original, transfer());
+  const rows = getAccountActivity(saved, "2026-09");
+  assert.deepEqual(rows.find(row => row.accountId === "moey"), { accountId: "moey", income: 1367.29, expenses: 12, transfersIn: 0, transfersOut: 300, net: 1055.29 });
+  assert.deepEqual(rows.find(row => row.accountId === "bleap"), { accountId: "bleap", income: 0, expenses: 0, transfersIn: 300, transfersOut: 0, net: 300 });
+  assert.equal(rows.reduce((total, row) => total + row.transfersIn - row.transfersOut, 0), 0);
+  assert.equal(getAccountActivity(saved, "2026-10").reduce((sum, row) => sum + row.transfersIn + row.transfersOut, 0), 0);
+  assert.equal(getAccountActivity(saved, "2026-08").find(row => row.accountId === "moey").expenses, 0);
+});
+
+test("invalid transfers and broken transfer backups are rejected while old backups remain valid", () => {
+  const original = transferData();
+  assert.ok(isValidBackup(original));
+  for (const invalid of [{ amount: 0 }, { amount: -5 }, { amount: 1.001 }, { amount: Infinity }, { fromAccountId: "bleap", toAccountId: "bleap" }, { toAccountId: "unknown" }, { date: "2026-02-30" }, { notes: "x".repeat(501) }]) {
+    assert.throws(() => saveTransfer(original, transfer(invalid)));
+    assert.equal(isValidBackup({ ...original, transfers: [transfer(invalid)] }), false);
+  }
+  assert.equal(isValidBackup({ ...original, transfers: [transfer(), transfer()] }), false);
+  assert.equal(isValidBackup({ ...original, transfers: {} }), false);
+  const saved = saveTransfer(original, transfer({ amount: 0.01 }));
+  assert.equal(saved.accounts[0].balance, 100.01);
+  assert.equal(saved.accounts[1].balance, 999.99);
+  assert.deepEqual(deleteTransfer(saved, "transfer-1").accounts, original.accounts);
 });

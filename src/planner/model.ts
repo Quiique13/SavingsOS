@@ -25,7 +25,35 @@ export type Income = {
     date: string;
     accountId: string;
 };
+export type Transfer = {
+    id: string;
+    fromAccountId: string;
+    toAccountId: string;
+    amount: number;
+    date: string;
+    notes: string;
+};
+export type AccountActivity = { accountId: string; income: number; expenses: number; transfersIn: number; transfersOut: number; net: number };
+export type AdminSettings = {
+    workspaceName: string;
+    supportEmail: string;
+    monthlyBudget: number;
+    reminderDays: number;
+    experimentalFeatures: boolean;
+    announcement: string;
+};
+export function isValidAdminSettings(value: unknown): value is AdminSettings {
+    if (!value || typeof value !== "object") return false;
+    const v = value as AdminSettings;
+    return typeof v.workspaceName === "string" && v.workspaceName.trim().length > 0 && v.workspaceName.length <= 80 &&
+        typeof v.supportEmail === "string" && v.supportEmail.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.supportEmail) &&
+        Number.isFinite(v.monthlyBudget) && v.monthlyBudget >= 0 && v.monthlyBudget <= 1000000000 &&
+        Number.isInteger(v.reminderDays) && v.reminderDays >= 0 && v.reminderDays <= 30 &&
+        typeof v.experimentalFeatures === "boolean" && typeof v.announcement === "string" && v.announcement.length <= 500;
+}
 export type Data = {
+    transfers?: Transfer[];
+    adminSettings?: AdminSettings;
     accounts: Account[];
     expenses: Expense[];
     payments: Record<string, string>;
@@ -55,6 +83,60 @@ export function getRows(data: Data, month: string): Row[] {
         const paidDate = data.payments[key];
         return [{ ...e, date, key, paidDate, status: paidDate ? "Paid" as const : date < today() ? "Overdue" as const : "Upcoming" as const }];
     }).sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+}
+const isDate = (value: unknown): value is string => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(new Date(value + "T12:00:00Z").getTime()) && new Date(value + "T12:00:00Z").toISOString().slice(0, 10) === value;
+const cents = (amount: number) => Math.round(amount * 100);
+function validTransfer(transfer: Transfer, accountIds: Set<string>): boolean {
+    return !!transfer && typeof transfer.id === "string" && transfer.id.trim().length > 0 && transfer.id.length <= 128 &&
+        accountIds.has(transfer.fromAccountId) && accountIds.has(transfer.toAccountId) && transfer.fromAccountId !== transfer.toAccountId &&
+        typeof transfer.amount === "number" && Number.isFinite(transfer.amount) && transfer.amount > 0 && Number.isSafeInteger(cents(transfer.amount)) && Math.abs(transfer.amount * 100 - cents(transfer.amount)) < 0.000001 &&
+        isDate(transfer.date) && typeof transfer.notes === "string" && transfer.notes.length <= 500;
+}
+export function saveTransfer(data: Data, transfer: Transfer): Data {
+    if (!validTransfer(transfer, new Set(data.accounts.map(account => account.id)))) throw new Error("Choose two different accounts, a valid date, and an amount greater than zero with no more than two decimals.");
+    if (transfer.date > today()) throw new Error("Choose today or an earlier date for a completed transfer.");
+    const previous = (data.transfers ?? []).find(entry => entry.id === transfer.id);
+    const changes = new Map<string, number>();
+    const adjust = (id: string, value: number) => changes.set(id, (changes.get(id) ?? 0) + value);
+    if (previous) { adjust(previous.fromAccountId, cents(previous.amount)); adjust(previous.toAccountId, -cents(previous.amount)); }
+    adjust(transfer.fromAccountId, -cents(transfer.amount)); adjust(transfer.toAccountId, cents(transfer.amount));
+    const accounts = data.accounts.map(account => {
+        if (!changes.has(account.id)) return account;
+        const balance = cents(account.balance) + changes.get(account.id)!;
+        if (!Number.isSafeInteger(balance)) throw new Error("The resulting balance is outside the supported range.");
+        return { ...account, balance: balance / 100 };
+    });
+    return { ...data, accounts, transfers: previous ? (data.transfers ?? []).map(entry => entry.id === transfer.id ? { ...transfer } : entry) : [...(data.transfers ?? []), { ...transfer }] };
+}
+export function deleteTransfer(data: Data, id: string): Data {
+    const transfer = (data.transfers ?? []).find(entry => entry.id === id);
+    if (!transfer) throw new Error("This transfer no longer exists. Refresh the page.");
+    const accounts = data.accounts.map(account => {
+        const adjustment = account.id === transfer.fromAccountId ? cents(transfer.amount) : account.id === transfer.toAccountId ? -cents(transfer.amount) : 0;
+        if (!adjustment) return account;
+        const balance = cents(account.balance) + adjustment;
+        if (!Number.isSafeInteger(balance)) throw new Error("The resulting balance is outside the supported range.");
+        return { ...account, balance: balance / 100 };
+    });
+    return { ...data, accounts, transfers: (data.transfers ?? []).filter(entry => entry.id !== id) };
+}
+export function getAccountActivity(data: Data, month: string): AccountActivity[] {
+    const activity = new Map(data.accounts.map(account => [account.id, { accountId: account.id, income: 0, expenses: 0, transfersIn: 0, transfersOut: 0, net: 0 }]));
+    for (const entry of data.income) if (entry.date.startsWith(month)) {
+        const account = activity.get(entry.accountId); if (account) account.income += cents(entry.amount);
+    }
+    const expenses = new Map(data.expenses.map(expense => [expense.id, expense]));
+    for (const [key, paidDate] of Object.entries(data.payments)) if (paidDate.startsWith(month)) {
+        const expense = expenses.get(key.slice(0, key.lastIndexOf(":")));
+        const account = expense ? activity.get(expense.accountId) : undefined;
+        if (account && expense) account.expenses += cents(expense.amount);
+    }
+    for (const transfer of data.transfers ?? []) if (transfer.date.startsWith(month)) {
+        const from = activity.get(transfer.fromAccountId), to = activity.get(transfer.toAccountId);
+        if (from) from.transfersOut += cents(transfer.amount);
+        if (to) to.transfersIn += cents(transfer.amount);
+    }
+    return [...activity.values()].map(account => ({ ...account, income: account.income / 100, expenses: account.expenses / 100, transfersIn: account.transfersIn / 100, transfersOut: account.transfersOut / 100, net: (account.income - account.expenses + account.transfersIn - account.transfersOut) / 100 }));
 }
 export function withoutSamples(data: Data): Data {
     const sampleIds = new Set(data.expenses.filter(e => e.demo).map(e => e.id));
@@ -108,6 +190,7 @@ export function mergeLegacy(previous: Data, legacyAccounts: LegacyAccount[], tra
             ...previous.income.filter(i => !importedIncomeIds.has(i.id)).map(i => ({ ...i, accountId: mappedId(i.accountId) })),
             ...importedIncome,
         ],
+        ...(previous.transfers ? { transfers: previous.transfers.map(transfer => ({ ...transfer, fromAccountId: mappedId(transfer.fromAccountId), toAccountId: mappedId(transfer.toAccountId) })) } : {}),
         initialized: true,
     };
 
@@ -135,6 +218,7 @@ export function isValidBackup(d: unknown): d is Data {
         return false;
     if (new Set(v.income.map(i => i.id)).size !== v.income.length)
         return false;
+    if (v.transfers !== undefined && (!Array.isArray(v.transfers) || !v.transfers.every(transfer => validTransfer(transfer, accountIds)) || new Set(v.transfers.map(transfer => transfer.id)).size !== v.transfers.length)) return false;
     return Object.entries(v.payments).every(([key, value]) => {
         const separator = key.lastIndexOf(":");
         return separator > 0 && expenseIds.has(key.slice(0, separator)) && date(key.slice(separator + 1)) && date(value);

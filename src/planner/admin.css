@@ -1,0 +1,70 @@
+/* Admin page: placeholder settings, role badge, and local user overview. */
+@layer components {
+  .admin-badge { display:flex; align-items:center; gap:8px; width:fit-content; padding:9px 12px; border-radius:999px; background:var(--color-selected); color:var(--color-text); font-size:13px; }
+  .admin-placeholder-notice { padding:18px 20px; margin-bottom:20px; border:1px solid var(--color-border); border-radius:12px; background:var(--color-tinted); color:var(--color-text-secondary); font-size:14px; line-height:1.6; }
+  .admin-placeholder-notice strong { color:var(--color-text); }
+  .admin-placeholder-notice p { margin:4px 0 0; }
+  .admin-settings-form { display:flex; flex-direction:column; gap:18px; }
+  .admin-settings-form fieldset { min-width:0; margin:0; padding:22px; border:1px solid var(--color-border); }
+  .admin-settings-form legend { padding:0 7px; font-weight:600; color:var(--color-text); font-size:16px; }
+  .admin-settings-form textarea { resize:vertical; min-height:96px; }
+  .admin-full-width { grid-column:1/-1; }
+  .admin-users { padding:22px; }
+  .admin-users > div { display:flex; align-items:center; gap:10px; }
+  .admin-users h2 { margin:0; font-size:17px; }
+  .admin-users p { color:var(--color-text-secondary); font-size:14px; margin:10px 0; }
+  .admin-users ul { padding:0; margin:0; list-style:none; }
+  .admin-users li { display:flex; justify-content:space-between; gap:12px; padding:14px 0; border-top:1px solid var(--color-border-soft); overflow-wrap:anywhere; font-size:14px; }
+  .admin-users li span { color:var(--color-text-secondary); text-align:right; }
+  .admin-access { display:flex; flex-direction:column; align-items:flex-start; gap:16px; padding:24px; }
+}
+/* Admin page: smartphone form spacing and touch targets. */
+@layer components {
+  @media (max-width:767px) {
+    .admin-settings-form fieldset, .admin-users { padding:18px 16px; }
+    .admin-settings-form input:not([type="checkbox"]), .admin-settings-form textarea { min-height:44px; font-size:16px; }
+    .admin-form-actions .button { min-height:44px; width:100%; }
+    .admin-users li { flex-direction:column; gap:4px; }
+    .admin-users li span { text-align:left; }
+  }
+}
+
+/* Admin portal: dedicated URL, sign-in, header, and account settings. */
+@layer components {
+  .admin-portal { min-height:100dvh; background:var(--color-canvas); }
+  .admin-portal-header { position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:80px; padding:12px 32px; border-bottom:1px solid var(--color-border); background:var(--color-surface); }
+  .admin-portal-header .brand { padding:0; width:fit-content; }
+  .admin-portal-header > div { display:flex; align-items:center; gap:12px; }
+  .admin-save-status { font-size:12px; color:var(--color-text-secondary); }
+  .admin-portal-content { max-width:1100px; margin:0 auto; padding:36px 24px max(36px,env(safe-area-inset-bottom)); }
+  .admin-account-section { margin-top:24px; }
+  .admin-back-link { margin-top:20px; justify-content:center; }
+  .admin-signin-screen .user-welcome > .button { width:100%; margin-top:20px; }
+  @media (max-width:767px) {
+    .admin-portal-header { min-height:72px; gap:8px; padding:12px 16px; padding-top:max(12px,env(safe-area-inset-top)); }
+    .admin-portal-header > div { gap:8px; }
+    .admin-portal-header .brand-wordmark { font-size:21px; }
+    .admin-portal-header .brand-icon { width:32px; height:32px; }
+    .admin-save-status { display:none; }
+    .admin-portal-header .button, .admin-portal-header .icon-button { min-height:44px; }
+    .admin-portal-content { padding:24px 16px max(24px,env(safe-area-inset-bottom)); }
+  }
+}
+
+/* Admin profile management: isolated actions and destructive confirmation. */
+@layer components {
+  .admin-profile-manager { margin-top:24px; }
+  .admin-profiles-heading { justify-content:space-between; flex-wrap:wrap; gap:16px; }
+  .admin-profiles-heading > div { display:flex; align-items:center; gap:10px; }
+  .admin-profile-manager li { align-items:center; }
+  .admin-profile-details { display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .admin-profile-details span { text-align:left !important; }
+  .admin-profile-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .admin-delete-button { color:var(--color-danger); }
+  .admin-delete-confirm, .admin-delete-confirm:hover { background:var(--color-danger); border-color:var(--color-danger); color:var(--color-canvas); }
+  @media (max-width:767px) {
+    .admin-profile-manager li { align-items:stretch; gap:12px; }
+    .admin-profile-actions { width:100%; }
+    .admin-profile-actions .button { flex:1; min-height:44px; }
+  }
+}
