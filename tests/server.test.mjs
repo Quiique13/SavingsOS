@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { fixtureAccounts } from "./account-fixtures.mjs";
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createServer, preview } from "vite";
@@ -28,7 +29,7 @@ test("private app file storage and API", async t => {
       assert.match(result.response.headers.get("set-cookie"), /SameSite=Strict/);
       assert.equal(result.value.session.key, undefined);
       const user = result.value.session.user;
-      const data = { ...result.value.session.data, expenses: [{ id: "private", name: "Private finance detail", amount: 25, category: "Other", accountId: "bleap", due: "2026-10-16", frequency: "once", notes: "private notes" }] };
+      const data = { ...result.value.session.data, accounts: fixtureAccounts(), expenses: [{ id: "private", name: "Private finance detail", amount: 25, category: "Other", accountId: "bleap", due: "2026-10-16", frequency: "once", notes: "private notes" }] };
       assert.equal((await client.request("save", { data })).status, 200);
       const file = readFileSync(join(context.directory, "profiles.json"), "utf8");
       assert.ok(!file.includes("Private finance detail")); assert.ok(!file.includes(password));
@@ -47,7 +48,7 @@ test("private app file storage and API", async t => {
       const otherId = otherResult.value.session.user.id;
       const registered = await owner.request("register", { name: "Transfer owner", password });
       const ownerId = registered.value.session.user.id;
-      const baseline = { ...registered.value.session.data, accounts: registered.value.session.data.accounts.map(account => ({ ...account, balance: account.id === "moey" ? 1000 : account.id === "bleap" ? 100 : 0 })) };
+      const baseline = { ...registered.value.session.data, accounts: fixtureAccounts().map(account => ({ ...account, balance: account.id === "moey" ? 1000 : account.id === "bleap" ? 100 : 0 })) };
       assert.equal((await owner.request("save", { data: baseline })).status, 200);
       const moved = saveTransfer(owner.state.session.data, { id: "private-transfer", fromAccountId: "moey", toAccountId: "bleap", amount: 300, date: "2026-09-30", notes: "Private transfer note" });
       assert.equal((await owner.request("save", { data: moved })).status, 200);

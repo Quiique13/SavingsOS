@@ -54,16 +54,11 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
       }
     >
       <PageHeading
-        kicker={
-          savings
-            ? "A LITTLE TODAY. MORE POSSIBILITIES TOMORROW."
-            : "DIFFERENT ACCOUNTS. ONE CLEAR PICTURE."
-        }
-        title={savings ? "Savings & investments" : "Your accounts"}
+        title={savings ? "Savings & investments" : "Accounts"}
         description={
           savings
-            ? "Keep an eye on the money you're setting aside."
-            : "Bleap for the everyday. moey! for the regulars. Trading 212 for the future."
+            ? "Track the balances you’re setting aside for the future."
+            : "Manage your accounts and recorded balances."
         }
       >
         <div className="page-actions flex flex-col gap-2 sm:flex-row"><button className="button secondary" onClick={() => { setTransferMessage(""); setMoving(true); }}><ArrowLeftRight size={16} />Move money</button><button
@@ -134,8 +129,11 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
       {!list.length && (
         <div className="panel empty-state">
           <Landmark size={30} />
-          <h3>Make a little room for the future</h3>
-          <p>Add a savings account to track your progress.</p>
+          <h3>{savings ? "No savings accounts yet" : "No accounts yet"}</h3>
+          <p>{savings ? "Add a savings account to track your progress." : "Create your first account to start tracking your money."}</p>
+          <button className="button primary" onClick={() => { setEditing("new"); setRemove(false); }}>
+            <Plus size={16} />Add {savings ? "savings account" : "account"}
+          </button>
         </div>
       )}
       <section className="panel account-explainer">
@@ -146,7 +144,7 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
           <h3>Everything has its place</h3>
           <p>
             {savings
-              ? "Update your reported balance whenever you check Trading 212. This keeps your savings overview current without assuming investment returns."
+              ? "Update your reported balance whenever you check your savings or investment provider. This keeps your savings overview current without assuming investment returns."
               : "Assign an account to each expense to see which balance needs to cover it. Payment tracking and reported balances are separate, so enter your latest bank balance whenever you need a fresh snapshot."}
           </p>
         </div>

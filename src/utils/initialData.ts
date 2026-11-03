@@ -1,13 +1,13 @@
 import { type Account, type Data, type Expense } from "../types/finance";
 import { today } from "./finance";
-const accounts: Account[] = [
+const sampleAccounts: Account[] = [
   { id: "bleap", name: "Bleap", provider: "Everyday spending", kind: "Spending", balance: 0, color: "#a4d17a" },
   { id: "moey", name: "moey!", provider: "Crédito Agrícola", kind: "Subscriptions", balance: 0, color: "#ae9cda" },
   { id: "trading", name: "Trading 212", provider: "Savings & investments", kind: "Savings", balance: 0, color: "#b2cbd5" },
 ];
 export function createInitialData(withSamples = false): Data {
   if (!withSamples)
-    return { accounts: accounts.map(a => ({ ...a })), expenses: [], payments: {}, income: [], transfers: [], initialized: true };
+    return { accounts: [], expenses: [], payments: {}, income: [], transfers: [], initialized: true };
   const month = today().slice(0, 7);
   const samples = [
     ["Apartment rent", 650, "Housing", 1, "bleap", "monthly", true],
@@ -28,5 +28,5 @@ export function createInitialData(withSamples = false): Data {
       payments[id + ":" + due] = due;
     return { id, name, amount, category, accountId, due, frequency, notes: "", demo: true };
   });
-  return { accounts, expenses, payments, income: [], transfers: [] };
+  return { accounts: sampleAccounts.map(account => ({ ...account })), expenses, payments, income: [], transfers: [] };
 }

@@ -97,6 +97,15 @@ test("backups reject missing accounts, invalid dates, duplicate IDs and broken p
   assert.ok(isValidBackup(data(undefined, { "rent:2026-01-31": "2026-02-02" })));
 });
 
+test("empty planners are valid but records still require an existing account", () => {
+  const empty = { ...data([]), accounts: [], transfers: [] };
+  assert.ok(isValidBackup(empty));
+  assert.equal(isValidBackup({ ...empty, accounts: undefined }), false);
+  assert.equal(isValidBackup({ ...empty, expenses: [bill()] }), false);
+  assert.equal(isValidBackup({ ...empty, income: [{ id: "salary", name: "Salary", amount: 1000, date: "2026-10-01", accountId: "missing" }] }), false);
+  assert.equal(isValidBackup({ ...empty, transfers: [{ id: "move", fromAccountId: "a", toAccountId: "b", amount: 10, date: "2026-10-01", notes: "" }] }), false);
+});
+
 test("retrying a legacy import preserves personal entries and payment history", () => {
   const previous = data([bill({ id: "personal" }), bill({ id: "sample-2" }), bill({ id: "sample-3", demo: true })], { "personal:2026-01-31": "2026-01-30", "sample-2:2026-01-31": "2026-01-31", "sample-3:2026-01-31": "2026-01-31" });
   previous.income.push({ id: "new-income", name: "Side project", amount: 50, date: "2026-01-01", accountId: "bleap" });

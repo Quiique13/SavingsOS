@@ -1,15 +1,16 @@
 import {
+  ArrowRight,
   ArrowDownLeft,
   ArrowLeftRight,
-  ArrowRight,
   ArrowUpRight,
   ChartNoAxesCombined,
-  ChevronDown,
   CircleHelp,
   LayoutDashboard,
   Leaf,
   LogOut,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   ReceiptText,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -35,6 +36,7 @@ const nav = [
   { to: "/savings", label: "Savings & investments", icon: Sprout },
   { to: "/insights", label: "Insights", icon: ChartNoAxesCombined },
 ];
+const SIDEBAR_PREFERENCE = "savingsos-sidebar-collapsed";
 
 export function AppLayout() {
   const { data, ready, error, clearDemo } = useFinance();
@@ -51,6 +53,22 @@ export function AppLayout() {
     );
   };
   const [mobile, setMobile] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return window.localStorage.getItem(SIDEBAR_PREFERENCE) !== "false";
+    } catch {
+      return true;
+    }
+  });
+  function toggleSidebar() {
+    const next = !collapsed;
+    setCollapsed(next);
+    try {
+      window.localStorage.setItem(SIDEBAR_PREFERENCE, String(next));
+    } catch {
+      // Navigation still works when browser preference storage is unavailable.
+    }
+  }
   const sidebarRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!mobile) return;
@@ -71,7 +89,7 @@ export function AppLayout() {
       if (event.key !== "Tab") return;
       const controls = Array.from(
         sidebarRef.current?.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex="0"]',
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), summary, [tabindex="0"]',
         ) || [],
       ).filter((el) => el.getClientRects().length);
       const first = controls[0],
@@ -103,7 +121,8 @@ export function AppLayout() {
   const page = nav.find((n) => n.to === location.pathname)?.label || "Settings";
   const demo = data.expenses.some((e) => e.demo);
   return (
-    <div className="finance-app">
+    <div className={"finance-app" + (collapsed ? " sidebar-collapsed" : "")}>
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <aside
         ref={sidebarRef}
         id="sidebar-navigation"
@@ -120,36 +139,20 @@ export function AppLayout() {
         >
           <X size={20} />
         </button>
-        <button
-          type="button"
-          className="workspace-switch"
-          aria-label="Switch user"
-          onClick={switchUser}
-          disabled={userBusy}
-        >
-          <span className="workspace-avatar">
-            {initials(currentUser!.name)}
-          </span>
-          <span>
-            <strong>{currentUser!.name}</strong>
-            <small>
-              {currentUser!.hasPassword ? "Password protected" : "Switch user"}
-            </small>
-          </span>
-          <ChevronDown size={13} />
-        </button>
-        <span className="nav-section-label">YOUR FINANCES</span>
+        <span className="nav-section-label">Personal finance</span>
         <nav aria-label="Main navigation">
           {nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
+              aria-label={n.label}
+              title={n.label}
               onClick={() => setMobile(false)}
               className={({ isActive }) =>
                 isActive ? "nav-link active" : "nav-link"
               }
             >
-              <n.icon size={18} />
+              <n.icon size={18} aria-hidden="true" />
               <span>{n.label}</span>
               {n.to === "/expenses" && (
                 <span className="nav-count">{data.expenses.length}</span>
@@ -157,7 +160,8 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="sidebar-accounts">
+        <details className="sidebar-accounts">
+          <summary>Account shortcuts</summary>
           <span className="nav-section-label">
             YOUR ACCOUNTS{" "}
             <Link to="/accounts" aria-label="Manage accounts">
@@ -181,28 +185,19 @@ export function AppLayout() {
               </span>
             </Link>
           ))}
-        </div>
+        </details>
         <div className="sidebar-bottom">
-          <div className="sidebar-message">
-            <span className="sprout-art">
-              <Sprout size={32} />
-            </span>
-            <strong>A little more intentional.</strong>
-            <p>
-              A little less money stress.
-              <br />
-              You've got this.
-            </p>
-          </div>
           <NavLink
             to="/settings"
+            aria-label="Settings"
+            title="Settings"
             className={({ isActive }) =>
               "nav-link " + (isActive ? "active" : "")
             }
             onClick={() => setMobile(false)}
           >
             <SettingsIcon size={18} />
-            Settings
+            <span>Settings</span>
           </NavLink>
           <div className="profile">
             <span className="profile-avatar">
@@ -244,6 +239,17 @@ export function AppLayout() {
         <header className="topbar">
           <div className="breadcrumbs">
             <button
+              type="button"
+              className="sidebar-toggle icon-button"
+              onClick={toggleSidebar}
+              aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+              title={collapsed ? "Expand navigation" : "Collapse navigation"}
+              aria-controls="sidebar-navigation"
+              aria-expanded={!collapsed}
+            >
+              {collapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
+            </button>
+            <button
               className="mobile-menu icon-button"
               onClick={() => setMobile(true)}
               aria-label="Open navigation"
@@ -254,7 +260,7 @@ export function AppLayout() {
               <Menu size={20} />
             </button>
             <Brand className="mobile-brand" />
-            <span>{currentUser!.name} · Workspace</span>
+            <span>{currentUser!.name}’s workspace</span>
             <span className="breadcrumb-slash">/</span>
             <strong>{page}</strong>
           </div>
@@ -286,7 +292,7 @@ export function AppLayout() {
             </Link>
           </div>
         </header>
-        <main className="page-content min-w-0">
+        <main id="main-content" tabIndex={-1} className="page-content min-w-0">
           {error && (
             <div className="error-banner" role="alert">
               {error}
@@ -295,22 +301,15 @@ export function AppLayout() {
           {!ready ? (
             <div className="loading-state">
               <Leaf size={30} />
-              <p>Making room for your finances…</p>
+              <p>Loading your workspace…</p>
             </div>
           ) : (
             <>
-              <div className="workspace-caption">
-                <span>
-                  <span className="tiny-dot" />A calmer kind of money management
-                </span>
-                <span>PERSONAL FINANCE, AT YOUR PACE</span>
-              </div>
               {demo && (
                 <div className="demo-banner">
                   <span>
-                    <span className="demo-badge">A LITTLE PREVIEW</span>You're
-                    exploring sample expenses. Make this space yours when you're
-                    ready.
+                    <span className="demo-badge">Sample data</span>Explore the
+                    planner with example expenses.
                   </span>
                   <button onClick={() => setClear(true)}>
                     Start fresh
@@ -322,18 +321,14 @@ export function AppLayout() {
                 fallback={
                   <div className="loading-state">
                     <Leaf size={28} />
-                    <p>Putting your finances in perspective…</p>
+                    <p>Loading page…</p>
                   </div>
                 }
               >
-                <Outlet />
+                <div className="route-view" key={location.pathname}>
+                  <Outlet />
+                </div>
               </Suspense>
-              <footer className="page-footer">
-                <span>
-                  <Leaf size={13} />A little more clarity. A little more you.
-                </span>
-                <span>Made for your everyday.</span>
-              </footer>
             </>
           )}
         </main>
@@ -364,7 +359,7 @@ export function AppLayout() {
       )}
       {help && (
         <Dialog
-          title="A calmer place for your money"
+          title="Using your planner"
           onClose={() => setHelp(false)}
         >
           <div className="planner-form">
@@ -389,7 +384,7 @@ export function AppLayout() {
       )}
       {clear && (
         <Dialog
-          title="A fresh start, just for you"
+          title="Remove sample expenses?"
           onClose={() => setClear(false)}
         >
           <div className="planner-form">

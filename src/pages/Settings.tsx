@@ -66,9 +66,8 @@ export function Settings() {
   return (
     <section className="settings-page min-w-0">
       <PageHeading
-        kicker="MAKE YOURSELF AT HOME"
         title="Settings"
-        description="Your preferences, your records, your peace of mind."
+        description="Manage your appearance, profile, and backups."
       />
       <div className="settings-stack flex w-full min-w-0 flex-col gap-4">
         <AppearanceSettings />
@@ -78,11 +77,11 @@ export function Settings() {
             <Wallet size={22} />
           </span>
           <div>
-            <h2>A little about your setup</h2>
+            <h2>Planner setup</h2>
             <p>Currency: Euro (EUR) · Payment timezone: Europe/Lisbon</p>
             <p>
-              Bleap for everyday spending, moey! for subscriptions, and Trading
-              212 for savings. You can edit these on the Accounts page.
+              Create and manage your spending, subscription, and savings accounts
+              on the Accounts page.
             </p>
           </div>
           <Link to="/accounts" className="button secondary small">
@@ -109,7 +108,7 @@ export function Settings() {
             <ArrowDownToLine size={22} />
           </span>
           <div>
-            <h2>A copy for safekeeping</h2>
+            <h2>Backup & restore</h2>
             <p>
               Download accounts, expenses, payment dates, income, and transfers for the
               current user. This exported JSON file is not password protected;

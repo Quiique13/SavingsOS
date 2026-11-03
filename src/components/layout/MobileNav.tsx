@@ -25,7 +25,7 @@ export function MobileNav({
           className={({ isActive }) =>
             "flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-2 text-[11px] font-medium transition-colors " +
             (isActive
-              ? "bg-finance-selected text-finance-ink"
+              ? "bg-finance-selected text-finance-accent"
               : "text-finance-muted")
           }
         >

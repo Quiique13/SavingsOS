@@ -15,7 +15,7 @@ export function ExpenseCards({
 }) {
   return (
     <div
-      className="expense-mobile-list grid min-w-0 gap-3 p-4 md:hidden"
+      className="expense-mobile-list min-w-0 md:hidden"
       aria-label="Expense cards"
     >
       {rows.map((row) => {
@@ -23,7 +23,7 @@ export function ExpenseCards({
         return (
           <article
             key={row.key}
-            className="mobile-expense-card min-w-0 rounded-xl border border-finance-border bg-finance-surface p-4"
+            className="mobile-expense-card min-w-0"
           >
             <div className="flex min-w-0 items-start gap-3">
               <CategoryIcon category={row.category} name={row.name} />

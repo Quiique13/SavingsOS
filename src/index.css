@@ -6,6 +6,8 @@
 @import "./styles/mobile.css";
 @import "./styles/admin.css";
 @import "./styles/transfers.css";
+@import "./styles/studio.css";
+@import "./styles/motion.css";
 
 /* Tailwind scans the active app; use complete utility names in JSX. */
 @source "./";

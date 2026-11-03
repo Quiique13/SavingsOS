@@ -103,7 +103,7 @@ export function Calendar({
               </button>
             ))
           ) : (
-            <p>No expenses due. A little breathing room.</p>
+            <p>No expenses due on this day.</p>
           )}
         </div>
       )}

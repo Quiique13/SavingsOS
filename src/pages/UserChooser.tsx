@@ -65,7 +65,7 @@ export function UserChooser() {
         <h1>
           {selected
             ? "Welcome, " + selected.name + "."
-            : "Your money. Your space."}
+            : "Your personal space"}
         </h1>
         <p>
           {selected

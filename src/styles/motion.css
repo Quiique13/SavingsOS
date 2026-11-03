@@ -1,0 +1,125 @@
+/* Short, finite motion. Navigation and finance actions remain immediate. */
+@layer base {
+  :root {
+    --motion-quick: 140ms;
+    --motion-enter: 220ms;
+    --motion-layout: 240ms;
+    --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@layer components {
+  .sidebar-toggle { display: inline-flex; flex-shrink: 0; }
+  .sidebar {
+    transition:
+      width var(--motion-layout) var(--motion-ease),
+      padding var(--motion-layout) var(--motion-ease),
+      transform var(--motion-layout) var(--motion-ease),
+      visibility var(--motion-layout);
+  }
+  .main-shell {
+    transition: margin-left var(--motion-layout) var(--motion-ease);
+  }
+  .sidebar .nav-link { overflow: hidden; }
+  .sidebar .nav-link > span, .sidebar .brand-wordmark { white-space: nowrap; }
+
+  /* Keep the mobile drawer independent of the saved desktop rail preference. */
+  @media (min-width: 768px) {
+    .sidebar-collapsed .sidebar { width: 80px; padding-right: 12px; padding-left: 12px; }
+    .sidebar-collapsed .main-shell { margin-left: 80px; }
+    .sidebar-collapsed .sidebar > .brand { justify-content: center; padding: 0; }
+    .sidebar-collapsed .sidebar .brand-wordmark,
+    .sidebar-collapsed .sidebar > .nav-section-label,
+    .sidebar-collapsed .sidebar .nav-link > span,
+    .sidebar-collapsed .sidebar-accounts,
+    .sidebar-collapsed .profile > div { display: none; }
+    .sidebar-collapsed .sidebar > nav { padding-top: 24px; }
+    .sidebar-collapsed .nav-link { justify-content: center; gap: 0; padding: 12px; }
+    .sidebar-collapsed .nav-link svg { width: 20px; height: 20px; }
+    .sidebar-collapsed .profile { flex-direction: column; align-items: center; gap: 12px; }
+    .sidebar-collapsed .profile-signout { margin-left: 0; }
+  }
+  @media (max-width: 767px) {
+    .sidebar-toggle { display: none; }
+  }
+
+  /* Route entry runs only when the pathname changes, preserving in-page state. */
+  .route-view { animation: page-arrive var(--motion-enter) var(--motion-ease) backwards; }
+  .route-view .stats-grid > .stat-card,
+  .route-view .transfer-summary > .stat-card {
+    animation: surface-arrive 260ms var(--motion-ease) backwards;
+  }
+  .route-view .stats-grid > .stat-card:nth-child(2),
+  .route-view .transfer-summary > .stat-card:nth-child(2) { animation-delay: 30ms; }
+  .route-view .stats-grid > .stat-card:nth-child(3) { animation-delay: 60ms; }
+  .filter-row, .calendar-selection { animation: surface-arrive 160ms var(--motion-ease); }
+  .planner-dialog[open] { animation: dialog-arrive 200ms var(--motion-ease) both; }
+  .planner-dialog[open]::backdrop { animation: fade-arrive 160ms ease-out; }
+  .transfer-message, .income-save-message, .error-banner, .user-error {
+    animation: fade-arrive 160ms ease-out;
+  }
+  .progress-track i { transition: width 320ms var(--motion-ease); }
+
+  /* Small hover and press feedback for buttons, including those inside dialogs. */
+  .finance-app .button, .planner-dialog .button,
+  .finance-app .icon-button, .planner-dialog .icon-button,
+  .user-screen .button, .user-screen .icon-button {
+    transition:
+      transform var(--motion-quick) var(--motion-ease),
+      background-color var(--motion-quick) ease,
+      border-color var(--motion-quick) ease,
+      box-shadow var(--motion-quick) ease;
+  }
+  .nav-link, .mobile-nav a, .view-toggle button, .theme-option, .user-choice {
+    transition:
+      background-color var(--motion-quick) ease,
+      color var(--motion-quick) ease,
+      box-shadow var(--motion-quick) ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .finance-app .button:enabled:hover,
+    .finance-app a.button:hover,
+    .planner-dialog .button:enabled:hover,
+    .user-screen .button:enabled:hover { transform: translateY(-1px); }
+    .finance-app .icon-button:enabled:hover,
+    .planner-dialog .icon-button:enabled:hover,
+    .user-screen .icon-button:enabled:hover { transform: scale(1.05); }
+  }
+  .finance-app .button:enabled:active, .finance-app a.button:active,
+  .planner-dialog .button:enabled:active, .user-screen .button:enabled:active {
+    transform: translateY(0) scale(0.98);
+  }
+  .finance-app .icon-button:enabled:active,
+  .planner-dialog .icon-button:enabled:active,
+  .user-screen .icon-button:enabled:active { transform: scale(0.95); }
+
+  @keyframes page-arrive {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes surface-arrive {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes dialog-arrive {
+    from { opacity: 0; transform: translateY(6px) scale(0.985); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade-arrive {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .finance-app *, .finance-app *::before, .finance-app *::after,
+    .planner-dialog, .planner-dialog *, .planner-dialog::backdrop,
+    .user-screen, .user-screen * {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+    .finance-app .button, .finance-app .icon-button,
+    .planner-dialog .button, .planner-dialog .icon-button,
+    .user-screen .button, .user-screen .icon-button { transform: none !important; }
+  }
+}

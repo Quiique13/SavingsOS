@@ -54,7 +54,8 @@ test("finance pages render with the shared context and coherent monthly totals",
     const render = (component, props = {}, overrides = {}, theme = "light", path = "/") => renderToStaticMarkup(createElement(ThemeContext.Provider, { value: { theme, setTheme() {} } }, createElement(UsersContext.Provider, { value: { ...userState, ...overrides } }, createElement(FinanceContext.Provider, { value: state }, createElement(MemoryRouter, { initialEntries: [path] }, createElement(component, props))))));
     await t.test("expenses show correct paid, unpaid and total amounts", () => {
       const html = render(Expenses);
-      for (const text of ["Apartment rent", "Spotify Premium", "€657.99", "€650.00", "€7.99", "Payment calendar"]) assert.ok(html.includes(text), text);
+      for (const text of ["Apartment rent", "Spotify Premium", "€657.99", "€650.00", "€7.99"]) assert.ok(html.includes(text), text);
+      assert.ok(html.includes('aria-label="Calendar view"'));
     });
     await t.test("phone expense cards keep account, status, due date and payment actions visible", () => {
       const html = render(ExpenseCards, { rows: getRows(data, month), accounts: data.accounts, onEdit() {}, onTogglePayment() {} });
@@ -79,7 +80,7 @@ test("finance pages render with the shared context and coherent monthly totals",
       assert.ok(savings.includes("Trading 212"));
       assert.ok(savings.includes("€5,000.00"));
       assert.ok(!savings.includes(">moey!</h2>"));
-      assert.ok(render(Insights).includes("A year of little decisions"));
+      assert.ok(render(Insights).includes("The year in review"));
       const settings = render(Settings);
       assert.ok(settings.includes("Export backup"));
       assert.ok(settings.includes("Appearance"));
@@ -193,7 +194,7 @@ test("finance pages render with the shared context and coherent monthly totals",
       assert.equal(fresh.expenses.length, 0);
       assert.equal(fresh.income.length, 0);
       assert.equal(Object.keys(fresh.payments).length, 0);
-      assert.deepEqual(fresh.accounts.map(a => a.name), ["Bleap", "moey!", "Trading 212"]);
+      assert.deepEqual(fresh.accounts, []);
       const raw = JSON.stringify(data);
       const previousStorage = globalThis.localStorage;
       const entries = new Map([["savings-os-planner-v1", raw]]);

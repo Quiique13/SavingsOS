@@ -1,4 +1,5 @@
 import { appClient, startApp, temporaryAppDirectory, removeTemporaryAppDirectory } from "./app-server-helpers.mjs";
+import { fixtureAccounts } from "./account-fixtures.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { JSDOM } from "jsdom";
@@ -66,9 +67,10 @@ test("profile selection and settings navigation", async t => {
       appStore = runningApp.app.store;
       localStorage.clear();
       const vault = new UserVault(localStorage);
-      const admin = await vault.createAdmin("Hidden admin", createInitialData(), password);
-      const regular = await vault.create(admin, "Miguel", createInitialData());
-      const protectedProfile = await vault.create(admin, "Ana", createInitialData(), password);
+      const seededPlanner = () => ({ ...createInitialData(), accounts: fixtureAccounts() });
+      const admin = await vault.createAdmin("Hidden admin", seededPlanner(), password);
+      const regular = await vault.create(admin, "Miguel", seededPlanner());
+      const protectedProfile = await vault.create(admin, "Ana", seededPlanner(), password);
       root = createRoot(container);
       await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: [path] }, e(AppRoutes))))));
       await waitFor(() => container.querySelector(path === "/admin" ? ".admin-signin-screen" : ".user-choice"));
@@ -141,6 +143,106 @@ test("profile selection and settings navigation", async t => {
       await click(container.querySelector(".profile-signout"));
       await waitFor(() => container.querySelector(".user-choice"));
       assert.equal(container.querySelector(".finance-app"), null);
+    });
+    await t.test("compact navigation preserves page state and remembers the expanded preference", async () => {
+      await mount("/expenses");
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".expenses-page"));
+      const toggle = () => container.querySelector(".sidebar-toggle");
+      assert.ok(container.querySelector(".finance-app.sidebar-collapsed"));
+      assert.equal(toggle().getAttribute("aria-expanded"), "false");
+      assert.equal(toggle().getAttribute("aria-label"), "Expand navigation");
+      for (const link of container.querySelectorAll(".sidebar nav a")) {
+        assert.ok(link.getAttribute("aria-label"));
+        assert.equal(link.title, link.getAttribute("aria-label"));
+      }
+      assert.ok(container.querySelector('.sidebar a[aria-label="Settings"]'));
+      assert.ok(container.querySelector(".profile-signout"));
+      await fill('input[aria-label="Search expenses"]', "rent");
+      await click(toggle());
+      assert.equal(toggle().getAttribute("aria-expanded"), "true");
+      assert.equal(toggle().getAttribute("aria-label"), "Collapse navigation");
+      assert.equal(container.querySelector(".sidebar-collapsed"), null);
+      assert.equal(container.querySelector('input[aria-label="Search expenses"]').value, "rent");
+      await click(toggle());
+      assert.equal(container.querySelector('input[aria-label="Search expenses"]').value, "rent");
+      await click(container.querySelector('.sidebar nav a[href="/income"]'));
+      await waitFor(() => container.querySelector(".income-page"));
+      assert.ok(container.querySelector(".sidebar-collapsed"));
+      await click(toggle());
+      await act(async () => root.unmount());
+      root = createRoot(container);
+      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/accounts"] }, e(AppRoutes))))));
+      await waitFor(() => container.querySelector(".accounts-page"));
+      assert.equal(toggle().getAttribute("aria-expanded"), "true");
+      assert.equal(container.querySelector(".sidebar-collapsed"), null);
+
+      const storageSet = dom.window.Storage.prototype.setItem;
+      dom.window.Storage.prototype.setItem = function (key, value) {
+        if (key === "savingsos-sidebar-collapsed") throw new Error("Preference storage unavailable");
+        return storageSet.call(this, key, value);
+      };
+      try {
+        await click(toggle());
+        assert.ok(container.querySelector(".sidebar-collapsed"));
+        assert.equal(toggle().getAttribute("aria-expanded"), "false");
+      } finally { dom.window.Storage.prototype.setItem = storageSet; }
+    });
+    await t.test("the mobile drawer opens and closes independently of the compact desktop rail", async () => {
+      await mount("/expenses");
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".expenses-page"));
+      const previousMatchMedia = window.matchMedia;
+      window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+      try {
+        await click(container.querySelector('button[aria-label="Open navigation"]'));
+        assert.equal(container.querySelector(".sidebar").getAttribute("aria-modal"), "true");
+        assert.ok(container.querySelector(".sidebar.is-open"));
+        assert.equal(document.body.style.overflow, "hidden");
+        assert.equal(document.activeElement, container.querySelector(".mobile-close"));
+        await act(async () => document.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+        assert.equal(container.querySelector(".sidebar.is-open"), null);
+        assert.notEqual(document.body.style.overflow, "hidden");
+        assert.ok(container.querySelector(".finance-app.sidebar-collapsed"));
+      } finally { window.matchMedia = previousMatchMedia; }
+    });
+    await t.test("expense calendar and filters remain accessible in the simplified layout", async () => {
+      const { vault, regular } = await mount("/expenses");
+      const profile = await vault.open(regular.user.id);
+      const { today } = await server.ssrLoadModule("/src/utils/finance.ts");
+      const due = today().slice(0, 7) + "-01";
+      await vault.save(profile, { ...profile.data, expenses: [
+        { id: "rent", name: "Monthly rent", category: "Housing", amount: 650, due, frequency: "monthly", accountId: "bleap", notes: "" },
+        { id: "music", name: "Music subscription", category: "Subscriptions", amount: 10, due, frequency: "monthly", accountId: "moey", notes: "" },
+      ] });
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".expenses-page"));
+      const calendarView = () => container.querySelector('button[aria-label="Calendar view"]');
+      assert.equal(calendarView().getAttribute("aria-pressed"), "false");
+      await click(calendarView());
+      assert.equal(calendarView().getAttribute("aria-pressed"), "true");
+      assert.ok(container.querySelector(".full-calendar .calendar-grid"));
+      await click(container.querySelector(".full-calendar .has-bills"));
+      assert.ok(container.querySelector(".calendar-selection").textContent.includes("Monthly rent"));
+      await click(container.querySelector('button[aria-label="List view"]'));
+      assert.equal(calendarView().getAttribute("aria-pressed"), "false");
+      await click(find(".expense-tabs > button", "Recurring"));
+      assert.equal(find(".expense-tabs > button", "Recurring").getAttribute("aria-pressed"), "true");
+      await click(container.querySelector('button[aria-controls="expense-filters"]'));
+      assert.ok(container.querySelector("#expense-filters select"));
+      await fill("#expense-filters select", "moey");
+      assert.ok(container.querySelector('button[aria-controls="expense-filters"]').textContent.includes("(1)"));
+      assert.equal(container.querySelectorAll(".expense-table tbody tr").length, 1);
+      assert.ok(container.querySelector(".expense-table tbody").textContent.includes("Music subscription"));
+      await click(find("#expense-filters button", "Reset filters"));
+      assert.equal(container.querySelector("#expense-filters select").value, "");
+      assert.equal(container.querySelectorAll(".expense-table tbody tr").length, 2);
+      await click(find(".page-heading button", "Add expense"));
+      assert.ok(container.querySelector('dialog[open][aria-label="Add an expense"]'));
+      await click(container.querySelector('button[aria-label="Close dialog"]'));
+      assert.ok(container.querySelector('.skip-link[href="#main-content"]'));
+      assert.ok(container.querySelector(".sidebar-accounts summary"));
+      assert.ok(container.querySelector('.sidebar-accounts a[href="/accounts"]'));
     });
     await t.test("clearing browser storage does not remove app profiles or finance records", async () => {
       const { vault, regular } = await mount();
@@ -382,7 +484,31 @@ test("profile selection and settings navigation", async t => {
       const created = vault.list().find(user => user.name === "New person");
       assert.equal(created.role, undefined);
       assert.deepEqual((await vault.open(created.id)).data.expenses, []);
-      assert.equal((await vault.open(admin.user.id, password)).user.role, "admin");
+      assert.deepEqual((await vault.open(created.id)).data.accounts, []);
+      await click(container.querySelector('.sidebar nav a[href="/expenses"]'));
+      await waitFor(() => container.querySelector(".expenses-page"));
+      await click(find(".page-heading button", "Add expense"));
+      assert.ok(container.querySelector('dialog[aria-label="Add an account first"]'));
+      await click(find("dialog a", "Add account"));
+      await waitFor(() => container.querySelector(".accounts-page"));
+      assert.equal(container.querySelectorAll(".account-card").length, 0);
+      assert.ok(container.textContent.includes("No accounts yet"));
+      await click(find(".empty-state button", "Add account"));
+      const accountForm = container.querySelector("dialog form");
+      accountForm.querySelector('input[name="name"]').value = "My bank";
+      accountForm.querySelector('input[name="balance"]').value = "125.50";
+      await act(async () => accountForm.dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true })));
+      await waitFor(() => container.querySelector(".account-card"));
+      assert.equal(container.querySelectorAll(".account-card").length, 1);
+      await click(container.querySelector(".profile-signout"));
+      await waitFor(() => container.querySelector(".user-choice"));
+      const saved = (await vault.open(created.id)).data.accounts;
+      assert.equal(saved.length, 1);
+      assert.equal(saved[0].name, "My bank");
+      assert.equal(saved[0].balance, 125.5);
+      const unchangedAdmin = await vault.open(admin.user.id, password);
+      assert.equal(unchangedAdmin.user.role, "admin");
+      assert.deepEqual(unchangedAdmin.data.accounts, fixtureAccounts());
     });
     await t.test("admin can create, rename and delete profiles while keeping the admin session", async () => {
       const { vault, protectedProfile } = await mount("/admin");
@@ -396,6 +522,8 @@ test("profile selection and settings navigation", async t => {
       form.querySelector('input[name="name"]').value = "Managed person";
       await act(async () => form.dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true })));
       await waitFor(() => !container.querySelector("dialog") && find(".admin-profile-details", "Managed person"));
+      const managed = vault.list().find(user => user.name === "Managed person");
+      assert.deepEqual((await vault.open(managed.id)).data.accounts, []);
       assert.ok(container.querySelector(".admin-portal"));
       assert.ok(!container.querySelector(".settings-page"));
       await click(container.querySelector('[aria-label="Rename profile Ana"]'));

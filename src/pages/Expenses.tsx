@@ -1,9 +1,7 @@
 import {
   ArrowDownToLine,
-  ArrowUpRight,
   CalendarDays,
   Check,
-  Circle,
   LayoutList,
   Pencil,
   Plus,
@@ -36,6 +34,7 @@ export function Expenses() {
   const [account, setAccount] = useState("");
   const [filters, setFilters] = useState(false);
   const [view, setView] = useState("list");
+  const activeFilters = Number(Boolean(account)) + Number(status !== "All statuses");
   const rows = getRows(data, month);
   const total = rows.reduce((s, r) => s + r.amount, 0);
   const paid = rows.filter((r) => r.paidDate);
@@ -64,56 +63,32 @@ export function Expenses() {
   return (
     <section className="expenses-page min-w-0">
       {exportError && <p className="user-error" role="alert">{exportError}</p>}
-      <div className="page-heading flex min-w-0 flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="page-heading">
         <div>
-          <div className="page-kicker">A LITTLE CLARITY GOES A LONG WAY</div>
-          <h1>
-            Expenses<span className="heading-dot">.</span>
-          </h1>
-          <p>Every bill, every little thing. All in one place.</p>
+          <h1>Expenses</h1>
+          <p>Track your bills and see what’s left to pay.</p>
         </div>
-        <button className="button primary" onClick={() => setEditing("new")}>
-          <Plus size={17} />
-          Add expense
-        </button>
-      </div>
-      <div className="page-toolbar flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="period-label">
-          <span className="live-dot" />
-          Your month at a glance
+        <div className="expense-heading-actions">
+          <MonthPicker month={month} setMonth={setMonth} />
+          <button className="button primary" onClick={() => setEditing("new")}>
+            <Plus size={17} />
+            Add expense
+          </button>
         </div>
-        <MonthPicker month={month} setMonth={setMonth} />
       </div>
-      <div className="stats-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-        <div className="stat-card min-w-0 first:col-span-2 sm:first:col-span-1">
+      <div className="stats-grid expense-summary">
+        <div className="stat-card min-w-0">
           <div className="stat-label">
-            Total expenses
-            <span className="stat-icon">
-              <LayoutList size={16} />
-            </span>
+            Planned this month
           </div>
           <div className="stat-value">{money(total)}</div>
           <p>
             <span>{rows.length} expenses</span> planned this month
           </p>
-          <div className="mini-bars">
-            {Array.from({ length: 27 }, (_, i) => (
-              <i
-                key={i}
-                style={{
-                  height: 10 + ((i * 17) % 31),
-                  background: i > 19 ? "#dcebe2" : "#accbb9",
-                }}
-              />
-            ))}
-          </div>
         </div>
-        <div className="stat-card min-w-0 first:col-span-2 sm:first:col-span-1">
+        <div className="stat-card min-w-0">
           <div className="stat-label">
-            Already paid
-            <span className="stat-icon green">
-              <Check size={16} />
-            </span>
+            Paid
           </div>
           <div className="stat-value">
             {money(paidTotal)}
@@ -125,7 +100,7 @@ export function Expenses() {
             <span>
               {paid.length} of {rows.length} expenses
             </span>{" "}
-            taken care of
+            paid
           </p>
           <div className="progress-track">
             <i
@@ -133,35 +108,30 @@ export function Expenses() {
             />
           </div>
         </div>
-        <div className="stat-card min-w-0 first:col-span-2 sm:first:col-span-1">
+        <div className="stat-card min-w-0">
           <div className="stat-label">
-            Left to pay
-            <span className="stat-icon amber">
-              <Circle size={15} />
-            </span>
+            Still to pay
           </div>
           <div className="stat-value">{money(total - paidTotal)}</div>
           <p>
-            <span>{rows.length - paid.length} expenses</span> still on the
-            horizon
+            <span>{rows.length - paid.length} expenses</span> unpaid
           </p>
           <div className="stat-bottom">
             <span className="tiny-dot amber-dot" />
             {rows.some((r) => r.status === "Overdue")
               ? rows.filter((r) => r.status === "Overdue").length +
               " overdue · review your payments"
-              : "A little planning, a lot less stress."}
+              : "No overdue payments"}
           </div>
         </div>
       </div>
-      <div className="expense-columns grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="expense-columns grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_16rem]">
         <section className="panel expense-panel">
           <div className="panel-heading">
             <div>
               <h2>
                 Your expenses <span className="count-badge">{rows.length}</span>
               </h2>
-              <p>Small details. A clearer bigger picture.</p>
             </div>
             <button
               className="button small secondary"
@@ -176,6 +146,7 @@ export function Expenses() {
               <button
                 key={t}
                 className={tab === t ? "active" : ""}
+                aria-pressed={tab === t}
                 onClick={() => setTab(t)}
               >
                 {t}
@@ -187,17 +158,19 @@ export function Expenses() {
                 className={view === "list" ? "active" : ""}
                 onClick={() => setView("list")}
                 aria-label="List view"
+                aria-pressed={view === "list"}
               >
                 <LayoutList size={16} />
-                <span className="ml-1.5 text-xs md:hidden">List</span>
+                <span className="ml-1.5 text-xs">List</span>
               </button>
               <button
                 className={view === "calendar" ? "active" : ""}
                 onClick={() => setView("calendar")}
                 aria-label="Calendar view"
+                aria-pressed={view === "calendar"}
               >
                 <CalendarDays size={16} />
-                <span className="ml-1.5 text-xs md:hidden">Calendar</span>
+                <span className="ml-1.5 text-xs">Calendar</span>
               </button>
             </div>
           </div>
@@ -234,8 +207,7 @@ export function Expenses() {
               onClick={() => setFilters(!filters)}
             >
               <SlidersHorizontal size={14} />
-              <span>Filters</span>
-              {account && <span className="tiny-dot" />}
+              <span>Filters{activeFilters ? ` (${activeFilters})` : ""}</span>
             </button>
           </div>
           {filters && (
@@ -379,12 +351,12 @@ export function Expenses() {
                   <h3>
                     {rows.length
                       ? "No matching expenses"
-                      : "A fresh start for your month"}
+                      : "No expenses this month"}
                   </h3>
                   <p>
                     {rows.length
                       ? "Try another search or change your filters."
-                      : "Add your first expense and give every euro a place."}
+                      : "Add an expense to start tracking this month."}
                   </p>
                   <button
                     className="button secondary small"
@@ -423,17 +395,10 @@ export function Expenses() {
             </span>
           </div>
         </section>
-        <aside className="expense-aside grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-1">
-          <Calendar
-            key={month}
-            month={month}
-            rows={rows}
-            compact
-            onSelect={setEditing}
-          />
+        <aside className="expense-aside min-w-0">
           <section className="panel upcoming-panel">
             <div className="aside-title">
-              <h3>Coming up next</h3>
+              <h3>Next to pay</h3>
               <span className="count-badge">{upcoming.length}</span>
             </div>
             {upcoming.length ? (
@@ -462,39 +427,6 @@ export function Expenses() {
                 All taken care of for this month.
               </p>
             )}
-            <div className="aside-note">
-              <span className="tiny-dot" />A clear month starts with a little
-              plan.
-            </div>
-          </section>
-          <section className="tip-card">
-            <span className="tip-icon">
-              <Repeat2 size={18} />
-            </span>
-            <span className="eyebrow">LESS TO REMEMBER</span>
-            <h3>
-              Set it. Track it.
-              <br />
-              Breathe a little easier.
-            </h3>
-            <p>
-              Recurring expenses show up every month, so nothing slips through.
-            </p>
-            <button
-              onClick={() => {
-                setTab("Recurring");
-                setView("list");
-              }}
-            >
-              View recurring expenses
-              <ArrowUpRight size={15} />
-            </button>
-            <div className="tip-art">
-              <div />
-              <div />
-              <div />
-              <span>↗</span>
-            </div>
           </section>
         </aside>
       </div>
