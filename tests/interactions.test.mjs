@@ -27,11 +27,11 @@ test("profile selection and settings navigation", async t => {
   const previousFetch = globalThis.fetch;
   try {
     const { createAppServer } = await server.ssrLoadModule("/server/appServer.ts");
-    const { PlannerRoutes } = await server.ssrLoadModule("/src/planner/Planner.tsx");
-    const { UsersProvider } = await server.ssrLoadModule("/src/planner/data.tsx");
-    const { ThemeProvider } = await server.ssrLoadModule("/src/planner/theme/ThemeProvider.tsx");
-    const { UserVault, USERS_KEY } = await server.ssrLoadModule("/src/planner/users/vault.ts");
-    const { createInitialData } = await server.ssrLoadModule("/src/planner/users/initialData.ts");
+    const { AppRoutes } = await server.ssrLoadModule("/src/App.tsx");
+    const { UsersProvider } = await server.ssrLoadModule("/src/context/UsersProvider.tsx");
+    const { ThemeProvider } = await server.ssrLoadModule("/src/context/ThemeProvider.tsx");
+    const { UserVault, USERS_KEY } = await server.ssrLoadModule("/src/services/profileVault.ts");
+    const { createInitialData } = await server.ssrLoadModule("/src/utils/initialData.ts");
     const container = document.getElementById("root");
     const password = "test profile password";
     const find = (selector, text) => [...container.querySelectorAll(selector)].find(el => el.textContent.includes(text));
@@ -70,7 +70,7 @@ test("profile selection and settings navigation", async t => {
       const regular = await vault.create(admin, "Miguel", createInitialData());
       const protectedProfile = await vault.create(admin, "Ana", createInitialData(), password);
       root = createRoot(container);
-      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: [path] }, e(PlannerRoutes))))));
+      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: [path] }, e(AppRoutes))))));
       await waitFor(() => container.querySelector(path === "/admin" ? ".admin-signin-screen" : ".user-choice"));
       assert.ok(!container.textContent.includes("Hidden admin"));
       assert.equal(localStorage.getItem(USERS_KEY), null);
@@ -94,6 +94,54 @@ test("profile selection and settings navigation", async t => {
       await click(find("dialog button", "Cancel"));
       assert.equal((await vault.open(regular.user.id)).user.hasPassword, false);
     });
+    await t.test("portable close guard confirms saves and surfaces storage failures", async () => {
+      let closeHandler;
+      window.savingsOSDesktop = { onBeforeClose(handler) {
+        closeHandler = handler;
+        return () => { if (closeHandler === handler) closeHandler = undefined; };
+      } };
+      try {
+        const { vault, regular, store } = await mount();
+        assert.ok(find("a", "Admin sign-in"));
+        await click(find(".user-choice", "Miguel"));
+        await waitFor(() => container.querySelector(".settings-page") && closeHandler);
+        assert.ok(container.textContent.includes("savingsOS-data"));
+        const before = (await vault.open(regular.user.id)).revision;
+        await act(async () => { await closeHandler(); });
+        assert.ok((await vault.open(regular.user.id)).revision > before);
+        const original = store.setItem.bind(store);
+        store.setItem = () => { throw new Error("Portable disk write failed"); };
+        try {
+          await act(async () => { await assert.rejects(closeHandler(), /Portable disk write failed/); });
+          assert.ok(container.textContent.includes("Portable disk write failed"));
+        } finally { store.setItem = original; }
+      } finally { delete window.savingsOSDesktop; }
+    });
+    await t.test("every finance page uses the shared layout after route reorganization", async () => {
+      await mount("/dashboard");
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".overview-page"));
+      const pages = [
+        ["Expenses", ".expenses-page"],
+        ["Income", ".income-page"],
+        ["Accounts", ".accounts-page:not(.savings-page)"],
+        ["Transfers", ".transfers-page"],
+        ["Savings & investments", ".savings-page"],
+        ["Insights", ".insights-page"],
+        ["Overview", ".overview-page"],
+      ];
+      for (const [label, selector] of pages) {
+        await click(find("aside nav a", label));
+        await waitFor(() => container.querySelector(selector));
+        assert.equal(container.querySelectorAll(".finance-app").length, 1);
+        assert.equal(container.querySelector("aside nav a.active span").textContent, label);
+      }
+      await click(find("aside a", "Settings"));
+      await waitFor(() => container.querySelector(".settings-page"));
+      await click(container.querySelector(".profile-signout"));
+      await waitFor(() => container.querySelector(".user-choice"));
+      assert.equal(container.querySelector(".finance-app"), null);
+    });
     await t.test("clearing browser storage does not remove app profiles or finance records", async () => {
       const { vault, regular } = await mount();
       await click(find(".user-choice", "Miguel"));
@@ -104,7 +152,7 @@ test("profile selection and settings navigation", async t => {
       localStorage.clear();
       await act(async () => root.unmount());
       root = createRoot(container);
-      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/settings"] }, e(PlannerRoutes))))));
+      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/settings"] }, e(AppRoutes))))));
       await waitFor(() => container.querySelector(".settings-page"));
       assert.ok(container.querySelector(".current-user-card").textContent.includes("Miguel"));
       assert.deepEqual((await vault.open(regular.user.id)).data.income, records.income);
@@ -178,7 +226,7 @@ test("profile selection and settings navigation", async t => {
       assert.equal(income.length, 1);
       assert.deepEqual({ ...income[0], id: "saved-id" }, { id: "saved-id", name: "Sogenave", amount: 1367.29, date: "2026-09-30", accountId: "moey" });
       await act(async () => root.unmount()); root = createRoot(container);
-      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/income"] }, e(PlannerRoutes))))));
+      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/income"] }, e(AppRoutes))))));
       await waitFor(() => find("button", "View September 2026"));
       await click(find("button", "View September 2026"));
       assert.ok(find(".income-row", "Sogenave"));
@@ -255,14 +303,14 @@ test("profile selection and settings navigation", async t => {
       assert.equal(container.querySelectorAll(".transfer-row").length, 1);
       assert.equal(container.querySelector('input[aria-label="Select month"]').value, "2026-09");
       await act(async () => root.unmount()); root = createRoot(container);
-      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/transfers?month=2026-09"] }, e(PlannerRoutes))))));
+      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/transfers?month=2026-09"] }, e(AppRoutes))))));
       await waitFor(() => container.querySelector(".transfer-row"));
       assert.ok(container.querySelector(".transfer-row").textContent.includes("€300.00"));
       assert.ok(container.querySelector(".transfer-row").textContent.includes("Everyday spending"));
     });
     await t.test("transfer editing and confirmed reversal preserve balances and protect linked accounts", async () => {
       const { vault, regular } = await mount("/transfers?month=2026-09");
-      const { saveTransfer } = await server.ssrLoadModule("/src/planner/model.ts");
+      const { saveTransfer } = await server.ssrLoadModule("/src/utils/finance.ts");
       const session = await vault.open(regular.user.id);
       const base = { ...session.data, accounts: session.data.accounts.map(account => ({ ...account, balance: account.id === "moey" ? 1000 : account.id === "bleap" ? 100 : 0 })) };
       await vault.save(session, saveTransfer(base, { id: "existing-transfer", fromAccountId: "moey", toAccountId: "bleap", amount: 300, date: "2026-09-30", notes: "" }));

@@ -11,9 +11,9 @@ test("private app file storage and API", async t => {
   const vite = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom", logLevel: "error" });
   try {
     const { createAppServer, localAppStorage } = await vite.ssrLoadModule("/server/appServer.ts");
-    const { UserVault, USERS_KEY } = await vite.ssrLoadModule("/src/planner/users/vault.ts");
-    const { saveTransfer } = await vite.ssrLoadModule("/src/planner/model.ts");
-    const { createInitialData } = await vite.ssrLoadModule("/src/planner/initialData.ts");
+    const { UserVault, USERS_KEY } = await vite.ssrLoadModule("/src/services/profileVault.ts");
+    const { saveTransfer } = await vite.ssrLoadModule("/src/utils/finance.ts");
+    const { createInitialData } = await vite.ssrLoadModule("/src/utils/initialData.ts");
     async function fixture(run) {
       const directory = temporaryAppDirectory(); let running = await startApp(createAppServer, directory);
       const restart = async () => { await running.close(); running = await startApp(createAppServer, directory); return running; };

@@ -2,6 +2,62 @@
 
 A personal finance planner for everyday purchases, monthly bills, and annual expenses. Built with React, TypeScript, Vite, and Recharts.
 
+## Project structure
+
+The frontend follows the React/Vite layout in the reference, with TypeScript extensions. Files are grouped by responsibility, and each screen has its own page module.
+
+```text
+savingsOS/
+  index.html
+  public/                   # Files served directly, including the favicon
+  src/
+    assets/                 # Imported app artwork
+    components/             # Reusable UI, grouped by purpose
+      accounts/
+      admin/
+      common/
+      expenses/
+      layout/
+      theme/
+      transfers/
+      users/
+    context/                # Context definitions and state providers
+    hooks/                  # useFinance, useUsers, useTheme
+    pages/                  # Overview, Expenses, Income, Accounts, etc.
+      admin/                # Separate admin portal and settings screen
+    services/               # App API, profile vault, legacy browser migration
+    styles/                 # Commented page, mobile, theme, and admin CSS
+    types/                  # Finance and legacy migration types
+    utils/                  # Finance calculations, initial data, CSV helpers
+    App.tsx                 # Routes and global providers
+    main.tsx                # React entry point and browser router
+    index.css               # Global styles and Tailwind entry point
+  server/                   # Local API and atomic file storage
+  tests/                    # Domain, UI, and persistence checks
+  package.json
+  vite.config.ts
+  README.md
+```
+
+Keep page composition in `pages`, shared UI in `components`, and reusable React logic in `hooks`. Context providers coordinate global state, `services` handles storage/API access, and `utils` contains helpers without React dependencies. The backend stays outside `src` because it runs on the local Node server. Private profile records remain in the ignored `.savingsos-data/` directory.
+
+## Portable Windows app
+
+Run the desktop app by double-clicking `savingsOS-Portable.exe`. Profiles live in a separate `savingsOS-data` folder beside it. Keep both together when moving the app.
+
+Build with `npm run windows:portable`. For this PC, `npm run windows:use-existing` copies existing profiles into an empty portable data folder without overwriting portable records. See [Windows portable app](docs/windows.md).
+
+## Android app
+
+The Android version works offline with private on-device profile files, password encryption, and backup sharing. See [Android build and installation](docs/android.md).
+
+```sh
+npm run android:doctor
+npm run android:apk
+```
+
+Phone and computer records are separate. Use a finance backup to transfer records.
+
 ## Run locally
 
 ```sh
@@ -29,7 +85,7 @@ npm run build
 
 ## Storage and payment behavior
 
-Users, profiles, balances, expenses, income, payments, and admin settings are stored in **`.savingsos-data/profiles.json`** on the computer running the app. They are not saved in browser local storage or IndexedDB. The same local server exposes the UI and storage API during both `npm run dev` and `npm run preview`. A static-only host does not provide this storage service. For a production preview, run `npm run build`, then `npm run preview`.
+In the desktop/browser edition, users, profiles, balances, expenses, income, payments, and admin settings are stored in **`.savingsos-data/profiles.json`** on the computer running the app. They are not saved in browser local storage or IndexedDB. The same local server exposes the UI and storage API during both `npm run dev` and `npm run preview`. A static-only host does not provide this storage service. For a production preview, run `npm run build`, then `npm run preview`.
 
 The **entire `.savingsos-data/` folder**, `backups/`, and the app's exported `savingsos-*-backup-*.json` files are ignored by Git. The private data folder is also blocked from web requests and is never included in the frontend build. Copy this folder separately when moving the app to another computer; a Git clone contains code only. Account balances are manual snapshots adjusted when you record internal transfers; income and bill payment records do not automatically adjust those snapshots. There is no bank connection, payment execution, or cloud sync.
 
@@ -81,7 +137,7 @@ To restore an entire app backup on the server computer, stop the app, keep a cop
 
 Use the moon/sun button in the top bar, or choose **Light mode** / **Dark mode** under **Settings → Appearance**. The sign-in screen also has a theme toggle. The choice is saved on this browser under `savings-os-theme` and synchronizes across open tabs. On a first visit, the app uses the device color preference. The saved theme is applied before the app renders to avoid a bright flash when opening dark mode.
 
-The sidebar and mobile header share the original `public/SOSLogo.svg` logo and wordmark, with the desktop logo row aligned to the top bar.
+The sidebar and mobile header import the original logo from `src/assets/savingsOS.svg` and share the same wordmark. `public/SOSLogo.svg` serves as the direct favicon. The desktop logo row aligns with the top bar.
 
 ## Smartphone layout
 
@@ -95,11 +151,12 @@ Tailwind v4 is already connected through the Vite plugin. Active components now 
 
 | File | Purpose |
 | --- | --- |
-| `src/styles/globals.css` | Single CSS entry point, Tailwind imports, font, global base rules, `@theme inline` tokens, and the `dark:` variant. |
-| `src/planner/planner.css` | Shared component details and numbered, commented sections for every page and screen. |
-| `src/planner/mobile.css` | Smartphone rules in matching page sections, plus compact-phone and accessibility adjustments. |
-| `src/planner/transfers.css` | Commented sections for transfer history, balance previews, Overview account activity, and smartphone rules. |
-| `src/planner/theme/theme.css` | Light/dark palettes, logo styles, chart colors, and the Appearance selector. |
+| `src/index.css` | Single CSS entry point, Tailwind imports, font, global base rules, `@theme inline` tokens, and the `dark:` variant. |
+| `src/styles/pages.css` | Shared component details and numbered, commented sections for every page and screen. |
+| `src/styles/mobile.css` | Smartphone rules in matching page sections, plus compact-phone and accessibility adjustments. |
+| `src/styles/transfers.css` | Commented sections for transfer history, balance previews, Overview account activity, and smartphone rules. |
+| `src/styles/admin.css` | Admin portal and profile management styles. |
+| `src/styles/theme.css` | Light/dark palettes, logo styles, chart colors, and the Appearance selector. |
 
 Use complete Tailwind class names in JSX. For example:
 

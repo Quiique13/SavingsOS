@@ -9,19 +9,29 @@ test("finance pages render with the shared context and coherent monthly totals",
   // This is a server render smoke check; it does not claim browser interaction coverage.
   const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom", logLevel: "error" });
   try {
-    const { ThemeContext } = await server.ssrLoadModule("/src/planner/theme/context.ts");
-    const { ThemeToggle, AppearanceSettings } = await server.ssrLoadModule("/src/planner/theme/ThemeControls.tsx");
-    const { Brand } = await server.ssrLoadModule("/src/planner/Brand.tsx");
-    const { AdminPortal } = await server.ssrLoadModule("/src/planner/AdminPortal.tsx");
-    const { Admin } = await server.ssrLoadModule("/src/planner/Admin.tsx");
-    const { UsersContext } = await server.ssrLoadModule("/src/planner/users/context.ts");
-    const { UserChooser, CreateUserDialog, UserSettings, UserGate } = await server.ssrLoadModule("/src/planner/users/Users.tsx");
-    const { FinanceContext } = await server.ssrLoadModule("/src/planner/context.ts");
-    const { ExpenseCards } = await server.ssrLoadModule("/src/planner/ExpenseCards.tsx");
-    const { MobileNav } = await server.ssrLoadModule("/src/planner/MobileNav.tsx");
-    const { Expenses, ExpenseForm, PaymentDialog } = await server.ssrLoadModule("/src/planner/Expenses.tsx");
-    const { Overview, Accounts, IncomePage, Insights, Settings } = await server.ssrLoadModule("/src/planner/Pages.tsx");
-    const { today, getRows } = await server.ssrLoadModule("/src/planner/model.ts");
+    const { ThemeContext } = await server.ssrLoadModule("/src/context/ThemeContext.ts");
+    const { ThemeToggle, AppearanceSettings } = await server.ssrLoadModule("/src/components/theme/ThemeControls.tsx");
+    const { default: appIcon } = await server.ssrLoadModule("/src/assets/savingsOS.svg");
+    const { Brand } = await server.ssrLoadModule("/src/components/common/Brand.tsx");
+    const { AdminPortal } = await server.ssrLoadModule("/src/pages/admin/AdminPortal.tsx");
+    const { Admin } = await server.ssrLoadModule("/src/pages/admin/AdminSettings.tsx");
+    const { UsersContext } = await server.ssrLoadModule("/src/context/UsersContext.ts");
+    const { UserChooser } = await server.ssrLoadModule("/src/pages/UserChooser.tsx");
+    const { CreateUserDialog } = await server.ssrLoadModule("/src/components/users/CreateUserDialog.tsx");
+    const { UserSettings } = await server.ssrLoadModule("/src/components/users/UserSettings.tsx");
+    const { UserGate } = await server.ssrLoadModule("/src/components/users/UserGate.tsx");
+    const { FinanceContext } = await server.ssrLoadModule("/src/context/FinanceContext.ts");
+    const { ExpenseCards } = await server.ssrLoadModule("/src/components/expenses/ExpenseCards.tsx");
+    const { MobileNav } = await server.ssrLoadModule("/src/components/layout/MobileNav.tsx");
+    const { Expenses } = await server.ssrLoadModule("/src/pages/Expenses.tsx");
+    const { ExpenseForm } = await server.ssrLoadModule("/src/components/expenses/ExpenseForm.tsx");
+    const { PaymentDialog } = await server.ssrLoadModule("/src/components/expenses/PaymentDialog.tsx");
+    const { Overview } = await server.ssrLoadModule("/src/pages/Overview.tsx");
+    const { Accounts } = await server.ssrLoadModule("/src/pages/Accounts.tsx");
+    const { IncomePage } = await server.ssrLoadModule("/src/pages/Income.tsx");
+    const { Insights } = await server.ssrLoadModule("/src/pages/Insights.tsx");
+    const { Settings } = await server.ssrLoadModule("/src/pages/Settings.tsx");
+    const { today, getRows } = await server.ssrLoadModule("/src/utils/finance.ts");
     const month = today().slice(0, 7);
     const data = {
       initialized: true,
@@ -78,7 +88,7 @@ test("finance pages render with the shared context and coherent monthly totals",
       assert.ok(render(ThemeToggle).includes("Switch to dark mode"));
       assert.ok(render(ThemeToggle, {}, {}, "dark").includes("Switch to light mode"));
       assert.ok(render(AppearanceSettings, {}, {}, "dark").includes('aria-pressed="true"'));
-      assert.ok(render(Brand).includes("/SOSLogo.svg"));
+      assert.ok(render(Brand).includes(renderToStaticMarkup(createElement("img", { src: appIcon })).match(/src="[^"]*"/)[0]));
       assert.ok(render(Brand).includes("savingsOS overview"));
       const nav = render(MobileNav, { menuOpen: false, onOpenMenu() {} });
       assert.ok(nav.includes('aria-label="Mobile navigation"'));
@@ -177,7 +187,8 @@ test("finance pages render with the shared context and coherent monthly totals",
     });
 
     await t.test("existing planner data is preserved and new user planners start empty", async () => {
-      const { createInitialData, loadExistingPlanner } = await server.ssrLoadModule("/src/planner/users/initialData.ts");
+      const { createInitialData } = await server.ssrLoadModule("/src/utils/initialData.ts");
+      const { loadExistingPlanner } = await server.ssrLoadModule("/src/services/legacyPlanner.ts");
       const fresh = createInitialData();
       assert.equal(fresh.expenses.length, 0);
       assert.equal(fresh.income.length, 0);

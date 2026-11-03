@@ -5,8 +5,8 @@ import ts from "typescript";
 
 const compile = file => ts.transpileModule(readFileSync(new URL(file, import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2023 } }).outputText;
 const url = source => "data:text/javascript;base64," + Buffer.from(source).toString("base64");
-const modelUrl = url(compile("../src/planner/model.ts"));
-const { UserVault, USERS_KEY } = await import(url(compile("../src/planner/users/vault.ts").replace('from "../model"', 'from "' + modelUrl + '"')));
+const modelUrl = url(compile("../src/utils/finance.ts"));
+const { UserVault, USERS_KEY } = await import(url(compile("../src/services/profileVault.ts").replace('from "../utils/finance"', 'from "' + modelUrl + '"')));
 const fixture = name => ({
   accounts: [{ id: "account", name, provider: "Manual", kind: "Spending", balance: 125, color: "#a4d17a" }],
   expenses: [{ id: "expense", name: name + " subscription", amount: 12.99, category: "Subscriptions", accountId: "account", due: "2026-10-20", frequency: "monthly", notes: "" }],
