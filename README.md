@@ -77,7 +77,7 @@ npm run build
 - **Overview:** monthly income, planned spending, payment progress, categories, next payments, per-account money in/out, and transfer history.
 - **Expenses:** add, edit, and delete one-time, monthly, and annual bills. Assign an account and category, set due dates, and record the actual payment date. Search, filter, export CSV, or switch to a payment calendar.
 - **Income:** record income sources, receiving accounts, amounts, and dates. Saving waits for confirmation from the app server and opens the month of the received date. Errors keep the form and entered values available for retry; an empty month links to the latest saved income month.
-- **Accounts:** Bleap, moey! by Crédito Agrícola, and Trading 212 are preconfigured. Accounts can be added and edited. Move money updates both recorded account balances.
+- **Accounts:** new users start with no accounts and create their own. Accounts can be added and edited. Move money updates both recorded account balances.
 - **Transfers:** record money moved between your own accounts, choose source/destination, amount, date, and notes; review monthly history, edit transfers, or delete and reverse them.
 - **Savings & investments:** reported balances for savings accounts, including Trading 212.
 - **Insights:** annual scheduled and paid expense totals, monthly charts, and monthly set-aside amounts for annual bills.
@@ -91,7 +91,7 @@ The **entire `.savingsos-data/` folder**, `backups/`, and the app's exported `sa
 
 On the first visit after upgrading, open the app in the browser that held your previous profiles. Its `savings-os-users-v1` registry is migrated into app files, with an original copy retained under `.savingsos-data/migrations/`. Only after the server confirms a successful save is the old browser registry removed. Migration preserves passwords, encrypted finance records, admin roles, existing users, and archived default profiles. Repeated migration does not duplicate or resurrect deleted profiles. Conflicting names, different admin accounts, or invalid data leave the original browser copy intact and display a migration notice. Older `savings-os-planner-v1` and legacy IndexedDB sources remain untouched; active records use app files exclusively.
 
-The landing page still offers **Add user**, and a fresh installation creates no default profile. New planners start with no expenses or income and the three default account names. The old unprotected Personal default is archived during migration rather than shown in the chooser.
+The landing page still offers **Add user**, and a fresh installation creates no default profile. New planners start with no accounts, expenses, or income. The old unprotected Personal default is archived during migration rather than shown in the chooser.
 
 Each recurring expense has a separate payment record for each due date. Paying one month does not mark future months paid. Month-end bills fall on the last valid day of shorter months and return to their original day afterward. Annual leap-day bills fall on 28 February in non-leap years. Future occurrences are generated from each expense's first due date.
 
@@ -137,7 +137,7 @@ To restore an entire app backup on the server computer, stop the app, keep a cop
 
 Use the moon/sun button in the top bar, or choose **Light mode** / **Dark mode** under **Settings → Appearance**. The sign-in screen also has a theme toggle. The choice is saved on this browser under `savings-os-theme` and synchronizes across open tabs. On a first visit, the app uses the device color preference. The saved theme is applied before the app renders to avoid a bright flash when opening dark mode.
 
-The sidebar and mobile header import the original logo from `src/assets/savingsOS.svg` and share the same wordmark. `public/SOSLogo.svg` serves as the direct favicon. The desktop logo row aligns with the top bar.
+The v2 sidebar and mobile header import the blue/mint logo from `src/assets/savingsOS-v2.svg` and share the same wordmark. `public/SOSLogo-v2.svg` serves as the direct favicon. The original green artwork is retained in `src/assets/savingsOS.svg`. Build the separate Android testing edition with `npm run android:apk:v2`; see [Android builds](docs/android.md).
 
 ## Smartphone layout
 

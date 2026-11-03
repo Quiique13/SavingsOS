@@ -11,7 +11,7 @@ test("finance pages render with the shared context and coherent monthly totals",
   try {
     const { ThemeContext } = await server.ssrLoadModule("/src/context/ThemeContext.ts");
     const { ThemeToggle, AppearanceSettings } = await server.ssrLoadModule("/src/components/theme/ThemeControls.tsx");
-    const { default: appIcon } = await server.ssrLoadModule("/src/assets/savingsOS.svg");
+    const { default: appIcon } = await server.ssrLoadModule("/src/assets/savingsOS-v2.svg");
     const { Brand } = await server.ssrLoadModule("/src/components/common/Brand.tsx");
     const { AdminPortal } = await server.ssrLoadModule("/src/pages/admin/AdminPortal.tsx");
     const { Admin } = await server.ssrLoadModule("/src/pages/admin/AdminSettings.tsx");

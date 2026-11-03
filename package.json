@@ -13,6 +13,7 @@
     "android:open": "cap open android",
     "android:doctor": "node scripts/build-android.mjs --check",
     "android:apk": "npm run android:sync && node scripts/build-android.mjs",
+    "android:apk:v2": "npm run build && node scripts/build-android-v2.mjs",
     "windows:portable": "npm run build && node scripts/build-windows.mjs",
     "windows:use-existing": "node scripts/prepare-windows-data.mjs"
   },

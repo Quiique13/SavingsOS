@@ -24,6 +24,28 @@ For Android Studio, use npm run android:sync followed by npm run android:open. C
 
 ## Install on your phone
 
+### Separate v2 testing APK
+
+On the `v2` branch, run:
+
+```powershell
+npm run android:apk:v2
+```
+
+This builds the current frontend and packages **savingsOS v2** with the blue/mint
+logo on charcoal. The package ID is `com.savingsos.app.v2`, so it installs
+alongside the original `com.savingsos.app` app and has its own private profiles.
+Use a finance backup from Settings if you want to copy records between them.
+
+The verified debug APK is `output/android/savingsOS-v2-debug.apk`. A SHA-256
+checksum, build metadata, and icon preview are saved beside it. The command
+stages the committed Android skeleton and current web build in a temporary
+directory; it does not overwrite local Android files or package computer data.
+The original APK remains at `output/android/savingsOS-debug.apk`.
+
+The v2 build requires Windows for its vector-to-PNG icon renderer and uses the
+same JDK/SDK requirements as the regular build.
+
 Copy the APK to your Android phone and open it with the Files app. If Android prompts, allow that app to install this APK. The debug APK is automatically signed and suitable for personal testing. For public distribution, create a signed release build with a private signing key and keep that key for future updates. Signing keys, SDK settings, generated web assets, and APK outputs are excluded from Git.
 
 ## Phone storage and backups
