@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { exportFile } from "../services/exportFile";
+import { browserStorage } from "../services/runtime";
 import type { Data } from '../types/finance';
 import {
   ArrowDownToLine,
@@ -110,10 +111,10 @@ export function Settings() {
           <div>
             <h2>Your data stays with you</h2>
             <p>
-              {native ? "Your profiles and finance records are saved in private files on this phone. They work without a computer or internet connection." : desktop ? "Your profiles and finance records are saved on this computer. The portable edition uses savingsOS-data next to the executable; keep both together when moving it. The installed edition uses your Windows app data folder." : "Your profiles and finance records are saved in this app's private data folder. Clearing browser data does not remove them."}
+              {browserStorage ? "Your profiles and finance records are saved only in this browser on this device. They are not uploaded to GitHub. Password-protected profiles keep their finance records encrypted." : native ? "Your profiles and finance records are saved in private files on this phone. They work without a computer or internet connection." : desktop ? "Your profiles and finance records are saved on this computer. The portable edition uses savingsOS-data next to the executable; keep both together when moving it. The installed edition uses your Windows app data folder." : "Your profiles and finance records are saved in this app's private data folder. Clearing browser data does not remove them."}
             </p>
             <p>
-              {native ? "Export a backup before uninstalling the app or clearing its app data. Phone and computer records stay separate." : desktop ? "Export a backup regularly. Phone and computer records stay separate." : "Export a backup regularly. The app data folder is excluded from Git, so your records stay out of the repository."}
+              {browserStorage ? "Clearing site data, using a different browser, or ending a private browsing session can remove this copy. Export a portable profile regularly to keep a backup or move to the desktop app." : native ? "Export a backup before uninstalling the app or clearing its app data. Phone and computer records stay separate." : desktop ? "Export a backup regularly. Phone and computer records stay separate." : "Export a backup regularly. The app data folder is excluded from Git, so your records stay out of the repository."}
             </p>
           </div>
         </section>

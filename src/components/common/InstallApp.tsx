@@ -1,6 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { Download, Monitor } from "lucide-react";
 import { useEffect, useState } from "react";
+import { browserStorage } from "../../services/runtime";
 
 type InstallPrompt = Event & {
   prompt: () => Promise<void>;
@@ -45,7 +46,7 @@ export function InstallApp() {
         <a className="button secondary small" href={releases} target="_blank" rel="noreferrer">GitHub releases</a>
         {prompt && <button className="button secondary small" onClick={() => void install()} disabled={installing}>Install browser app</button>}
       </div>
-      <p className="password-note">The browser app needs the local savingsOS server to stay running. Use the desktop app for a self-contained offline copy. Downloads require a published GitHub release.</p>
+      <p className="password-note">{browserStorage ? "The web app saves profiles in this browser. Export a portable profile before clearing site data or moving to another device. You can also install this website from your browser menu." : "The browser app needs the local savingsOS server to stay running. Use the desktop app for a self-contained offline copy. Downloads require a published GitHub release."}</p>
       {message && <p role="status">{message}</p>}
     </div>
   </section>;

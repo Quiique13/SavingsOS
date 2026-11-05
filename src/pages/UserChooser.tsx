@@ -17,6 +17,7 @@ import { ImportProfileDialog } from "../components/users/ImportProfileDialog";
 import { InstallApp } from "../components/common/InstallApp";
 import { useUsers } from "../hooks/useUsers";
 import { type User } from "../services/profileVault";
+import { browserStorage } from "../services/runtime";
 import { errorText, initials } from "../utils/profile";
 
 export function UserChooser() {
@@ -153,7 +154,7 @@ export function UserChooser() {
       </section>
       <p className="user-device-note">
         <ShieldCheck size={14} />
-        Profiles saved in this app.
+        {browserStorage ? "Profiles saved only in this browser. Export a backup regularly." : "Profiles saved in this app."}
       </p>
       {(Capacitor.isNativePlatform() || (typeof window !== "undefined" && !!window.savingsOSDesktop)) && <Link className="text-button" to="/admin">Admin sign-in</Link>}
       {creating && <CreateUserDialog onClose={() => setCreating(false)} />}

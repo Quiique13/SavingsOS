@@ -2,6 +2,16 @@
 
 A personal finance planner for everyday purchases, monthly bills, and annual expenses. Built with React, TypeScript, Vite, and Recharts.
 
+## Open the web app
+
+**[Launch savingsOS in your browser](https://quiique13.github.io/SavingsOS/)**
+
+The GitHub Pages edition works directly in your browser without installing Node.js or running a local server. Profiles and finance records are saved in this browser's IndexedDB, and password-protected profiles retain AES-GCM encryption. GitHub hosts the app files; your finance records are not uploaded. Each browser/device has separate records. Clearing site data or ending a private browsing session can remove them, so export backups regularly.
+
+To move between the web and desktop apps, select **Settings → Export portable profile**, then **Import profile** on the destination app's user screen. Passwords and all finance records are preserved. Existing desktop releases support this profile format.
+
+Build this edition with `npm run build:web` and preview with `npm run preview:web`. Open `/SavingsOS/` at the preview server's address. Hash routes keep navigation and reloads working on GitHub Pages. The `savingsOS web app` workflow tests and deploys pushes on `main` and `feat/portable-profile-installers`; repository Pages settings use **GitHub Actions**. This build only publishes `dist/`, never private app files.
+
 ## Project structure
 
 The frontend follows the React/Vite layout in the reference, with TypeScript extensions. Files are grouped by responsibility, and each screen has its own page module.
@@ -47,7 +57,7 @@ Download [savingsOS Portable](https://github.com/Quiique13/SavingsOS/releases/la
 
 To move a regular user from the web app to the desktop app, open **Settings → Portable profile → Export portable profile**. In the desktop user chooser, select **Import profile**, choose the exported JSON file, and enter the original password if protected. This transfers the profile name, identity, accounts, expenses, payments, income, and transfers while preserving password encryption. Import adds a profile and never overwrites existing users. A conflicting name can be changed during import; an existing profile ID requires signing in and restoring a finance backup instead. Each copy has separate records after import. Profiles without passwords export unencrypted. Administrator accounts use the existing admin backup flow.
 
-The web app includes an installation manifest. Use the browser’s **Install app** menu, or the install button when offered, for a separate browser window. This browser version still needs the local savingsOS server running; download the desktop app for a self-contained offline copy.
+The web app includes an installation manifest. Use the browser’s **Install app** menu, or the install button when offered, for a separate browser window. The GitHub Pages edition saves data in the browser and needs internet to load the app. The local-server edition needs its server running. Download the desktop app for a self-contained offline copy.
 
 Run the desktop app by double-clicking `savingsOS-Portable.exe`. Profiles live in a separate `savingsOS-data` folder beside it. Keep both together when moving the app.
 
@@ -93,7 +103,7 @@ npm run build
 
 ## Storage and payment behavior
 
-In the desktop/browser edition, users, profiles, balances, expenses, income, payments, and admin settings are stored in **`.savingsos-data/profiles.json`** on the computer running the app. They are not saved in browser local storage or IndexedDB. The same local server exposes the UI and storage API during both `npm run dev` and `npm run preview`. A static-only host does not provide this storage service. For a production preview, run `npm run build`, then `npm run preview`.
+In the desktop and local-server browser editions, users, profiles, balances, expenses, income, payments, and admin settings are stored in **`.savingsos-data/profiles.json`** on the computer running the app. These editions do not save finance records in browser local storage or IndexedDB. The same local server exposes the UI and storage API during both `npm run dev` and `npm run preview`. For a production preview, run `npm run build`, then `npm run preview`. The separate GitHub Pages build uses browser IndexedDB instead and has no server API.
 
 The **entire `.savingsos-data/` folder**, `backups/`, and the app's exported `savingsos-*-backup-*.json` files are ignored by Git. The private data folder is also blocked from web requests and is never included in the frontend build. Copy this folder separately when moving the app to another computer; a Git clone contains code only. Account balances are manual snapshots adjusted when you record internal transfers; income and bill payment records do not automatically adjust those snapshots. There is no bank connection, payment execution, or cloud sync.
 
