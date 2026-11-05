@@ -15,7 +15,7 @@ export function validateRegistry(raw: string): void {
   const registry = JSON.parse(raw) as Registry;
   for (const record of [...registry.records, ...(registry.archivedDefaultProfiles ?? [])]) {
     if (record.payload.kind === "plain" && !isValidBackup(record.payload.data))
-      throw new Error("A saved profile contains invalid finance records. Its files have been kept.");
+      throw new Error("A saved profile contains invalid finance records. Its records have been kept.");
   }
 }
 
@@ -30,8 +30,8 @@ const revision = (value: unknown): number => {
 };
 
 // One transaction at a time. Stage vault changes in memory and acknowledge only
-// after the complete registry reaches the phone's private files.
-export class NativeProfiles {
+// after the storage adapter confirms the complete registry has been saved.
+export class ProfileStore {
   private session: UserSession | null = null;
   private queue: Promise<unknown> = Promise.resolve();
   private disk: ProfileDisk;
@@ -104,7 +104,7 @@ export class NativeProfiles {
       await vault.listManagedUsers(nextSession);
       return { format: "savingsos-profiles-backup", version: 1, registry: JSON.parse(staged!) };
     } else if (path === "migrate") {
-      throw new Error("Import a finance backup from Settings to move computer records to this phone.");
+      throw new Error("Import a profile backup from the user screen to move records between browsers.");
     } else {
       throw new Error("App operation not found.");
     }

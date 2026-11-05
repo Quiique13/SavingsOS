@@ -1,13 +1,13 @@
-import { Capacitor } from "@capacitor/core";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, HashRouter } from "react-router-dom";
 import App from "./App";
+import { browserStorage } from "./services/runtime";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    {Capacitor.isNativePlatform()
+    {browserStorage
       ? <HashRouter><App /></HashRouter>
       : <BrowserRouter><App /></BrowserRouter>}
   </React.StrictMode>,

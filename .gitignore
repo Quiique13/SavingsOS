@@ -28,21 +28,6 @@ dist-ssr
 /backups/
 **/savingsos-*-backup-*.json
 
-# Android build output and machine-specific SDK settings
-/android/.gradle/
-/android/**/build/
-/android/local.properties
-/android/app/src/main/assets/public/
-/android/app/src/main/assets/capacitor.config.json
-/android/app/src/main/assets/capacitor.plugins.json
-/android/capacitor-cordova-android-plugins/
-/.android-tools/
-/output/android/
-*.jks
-*.keystore
-/android/keystore.properties
-
-# Portable Windows builds and portable profile folders
-/output/windows/
+# Generated output and private legacy profile folders
+/output/
 **/savingsOS-data/
-/.desktop-build/

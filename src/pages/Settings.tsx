@@ -1,5 +1,5 @@
-import { Capacitor } from "@capacitor/core";
 import { exportFile } from "../services/exportFile";
+import { browserStorage } from "../services/runtime";
 import type { Data } from '../types/finance';
 import {
   ArrowDownToLine,
@@ -29,13 +29,11 @@ export function Settings() {
   const [pending, setPending] = useState<Data | null>(null);
   const [restoreError, setRestoreError] = useState("");
   const [restoring, setRestoring] = useState(false);
-  const native = Capacitor.isNativePlatform();
-  const desktop = typeof window !== "undefined" && !!window.savingsOSDesktop;
   async function backup() {
     try {
       const filename = "savingsos-" + (currentUser?.name || "user").replace(/[^a-zA-Z0-9-]/g, "-") + "-backup-" + today() + ".json";
       const exported = await exportFile(filename, JSON.stringify(data, null, 2));
-      setMessage(exported ? (native ? "Backup shared. Save a copy somewhere safe." : "Backup exported. Keep it somewhere safe.") : "Export cancelled.");
+      setMessage(exported ? "Backup exported. Keep it somewhere safe." : "Export cancelled.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "The backup could not be exported. Try again.");
     }
@@ -79,7 +77,7 @@ export function Settings() {
           <div>
             <h2>Portable profile</h2>
             <p>Move your profile, accounts, expenses, payment history, income, and transfers to another copy of savingsOS. Password-protected profiles keep their encryption and use the same password. Profiles without a password are exported unencrypted.</p>
-            <p>On the desktop app’s user screen, choose Import profile and select this file. Existing profiles are kept. Each copy has independent records after import.</p>
+            <p>In savingsOS on another browser or device, choose Import profile on the user screen and select this file. Existing profiles are kept. Each copy has independent records after import.</p>
             <button className="button primary small" disabled={busy || saving} onClick={() => {
               setMessage("");
               void exportProfile().then(exported => setMessage(exported ? "Portable profile exported. Import it from the other app’s user screen." : "Export cancelled.")).catch(error => setMessage(error instanceof Error ? error.message : "The profile could not be exported."));
@@ -110,10 +108,10 @@ export function Settings() {
           <div>
             <h2>Your data stays with you</h2>
             <p>
-              {native ? "Your profiles and finance records are saved in private files on this phone. They work without a computer or internet connection." : desktop ? "Your profiles and finance records are saved on this computer. The portable edition uses savingsOS-data next to the executable; keep both together when moving it. The installed edition uses your Windows app data folder." : "Your profiles and finance records are saved in this app's private data folder. Clearing browser data does not remove them."}
+              {browserStorage ? "Your profiles and finance records are saved only in this browser on this device. They are not uploaded to GitHub. Password-protected profiles keep their finance records encrypted." : "Your profiles and finance records are saved in this app's private data folder. Clearing browser data does not remove them."}
             </p>
             <p>
-              {native ? "Export a backup before uninstalling the app or clearing its app data. Phone and computer records stay separate." : desktop ? "Export a backup regularly. Phone and computer records stay separate." : "Export a backup regularly. The app data folder is excluded from Git, so your records stay out of the repository."}
+              {browserStorage ? "Clearing site data, using a different browser, or ending a private browsing session can remove this copy. Export a portable profile regularly to keep a backup or move to another browser or device." : "Export a backup regularly. The app data folder is excluded from Git, so your records stay out of the repository."}
             </p>
           </div>
         </section>

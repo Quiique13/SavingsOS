@@ -5,6 +5,7 @@ import { USERS_KEY, type ListedUser, type User } from "../services/profileVault"
 import { type AdminSettings, type Data } from "../types/finance";
 import { today, withoutSamples } from "../utils/finance";
 import { createInitialData } from "../utils/initialData";
+import { browserStorage } from "../services/runtime";
 import { FinanceContext } from "./FinanceContext";
 import { UsersContext } from "./UsersContext";
 const message = (error: unknown) => error instanceof Error ? error.message : "The app could not complete this change. Saved records have not been replaced.";
@@ -42,7 +43,6 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     return task.catch(e => { setError(message(e)); throw e; }).finally(() => setPendingSaves(n => n - 1));
   }
   async function flush() { if (sessionRef.current) await persist(dataRef.current); else await queue.current.catch(() => { }); }
-  useEffect(() => window.savingsOSDesktop?.onBeforeClose(flush));
   async function perform(action: () => Promise<void>) {
     if (working.current) throw new Error("Please wait for the current user change to finish.");
     working.current = true; setBusy(true);
@@ -54,7 +54,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
       try {
         let state = await appRequest("state");
         let legacy: string | null = null;
-        try { legacy = window.localStorage.getItem(USERS_KEY); } catch { /* App files work even when browser storage is blocked. */ }
+        try { if (!browserStorage) legacy = window.localStorage.getItem(USERS_KEY); } catch { /* App files work even when browser storage is blocked. */ }
         if (legacy) {
           try {
             state = await appRequest("migrate", { registry: legacy });
