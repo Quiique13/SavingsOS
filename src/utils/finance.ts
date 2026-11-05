@@ -145,7 +145,7 @@ export function isValidBackup(d: unknown): d is Data {
   const str = (x: unknown): x is string => typeof x === "string";
   const date = (x: unknown) => str(x) && /^\d{4}-\d{2}-\d{2}$/.test(x) && Number.isFinite(new Date(x + "T12:00:00Z").getTime()) && new Date(x + "T12:00:00Z").toISOString().slice(0, 10) === x;
   const num = (x: unknown): x is number => typeof x === "number" && Number.isFinite(x);
-  if (!Array.isArray(v.accounts) || !v.accounts.length || !Array.isArray(v.expenses) || !Array.isArray(v.income) || !v.payments || typeof v.payments !== "object" || Array.isArray(v.payments))
+  if (!Array.isArray(v.accounts) || !Array.isArray(v.expenses) || !Array.isArray(v.income) || !v.payments || typeof v.payments !== "object" || Array.isArray(v.payments))
     return false;
   if (!v.accounts.every(a => a && str(a.id) && a.id.length > 0 && str(a.name) && str(a.provider) && str(a.color) && num(a.balance) && ["Spending", "Subscriptions", "Savings"].includes(a.kind)))
     return false;

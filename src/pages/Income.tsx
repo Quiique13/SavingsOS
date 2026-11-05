@@ -4,6 +4,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { Dialog } from "../components/common/Dialog";
 import { MonthPicker } from "../components/common/MonthPicker";
 import { PageHeading } from "../components/common/PageHeading";
@@ -66,9 +67,8 @@ export function IncomePage() {
   return (
     <section className="income-page min-w-0">
       <PageHeading
-        kicker="KEEP TRACK OF WHAT COMES IN"
         title="Income"
-        description="Your salary, side projects, and every little extra."
+        description="Track what you receive and where it goes."
       >
         <button className="button primary" onClick={() => openIncome("new")}>
           <Plus size={16} />
@@ -95,7 +95,7 @@ export function IncomePage() {
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h2>Money coming in</h2>
+            <h2>Income history</h2>
             <p>A record of every income source</p>
           </div>
         </div>
@@ -124,7 +124,7 @@ export function IncomePage() {
         {!rows.length && (
           <div className="empty-state">
             <TrendingUp size={28} />
-            <h3>A little more coming your way</h3>
+            <h3>No income this month</h3>
             <p>Add income to complete your monthly picture.</p>
             {latestIncomeMonth && latestIncomeMonth !== month && <div className="mt-4"><p>Your latest saved income is in {monthLabel(latestIncomeMonth)}.</p><button type="button" className="button secondary small" onClick={() => setMonth(latestIncomeMonth)}>View {monthLabel(latestIncomeMonth)}</button></div>}
             <button
@@ -142,7 +142,12 @@ export function IncomePage() {
           onClose={() => setEditing(null)}
           canClose={!savingIncome}
         >
-          <form className="planner-form" onSubmit={save}>
+          {!data.accounts.length ? (
+            <div className="planner-form">
+              <p>Create an account before recording income.</p>
+              <Link className="button primary" to="/accounts" onClick={() => setEditing(null)}>Add account</Link>
+            </div>
+          ) : <form className="planner-form" onSubmit={save}>
             <fieldset className="contents" disabled={savingIncome}>
               <label>
                 Source
@@ -209,7 +214,7 @@ export function IncomePage() {
                 <button className="button primary" disabled={savingIncome}>{savingIncome ? "Saving…" : "Save income"}</button>
               </div>
             </fieldset>
-          </form>
+          </form>}
         </Dialog>
       )}
     </section>

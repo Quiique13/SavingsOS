@@ -3,12 +3,14 @@ import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { extname, isAbsolute, relative, resolve, sep } from "node:path";
 import { createAppServer } from "./appServer";
+import { listenLoopback } from "./loopback";
 
 const mime: Record<string, string> = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8", ".json": "application/json",
   ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon",
   ".woff2": "font/woff2", ".woff": "font/woff", ".txt": "text/plain; charset=utf-8",
+  ".webmanifest": "application/manifest+json",
 };
 export async function startPortableHost(webDirectory: string, dataDirectory: string) {
   const web = resolve(webDirectory);
@@ -47,11 +49,9 @@ export async function startPortableHost(webDirectory: string, dataDirectory: str
       void serve(request, response).catch(() => { if (!response.headersSent) plain(response, 500, "The app could not load this file."); else response.end(); });
     });
   });
-  await new Promise<void>((ready, reject) => { http.once("error", reject); http.listen(0, "127.0.0.1", () => { http.off("error", reject); ready(); }); });
-  const address = http.address();
-  if (!address || typeof address === "string") throw new Error("The local app server could not start.");
+  const port = await listenLoopback(http);
   return {
-    url: "http://127.0.0.1:" + address.port,
+    url: "http://127.0.0.1:" + port,
     async close() { api.close(); http.closeAllConnections(); await new Promise<void>(done => http.close(() => done())); },
   };
 }

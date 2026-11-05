@@ -106,7 +106,21 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     await flush(); const backup = await appRequest<object>("profiles-backup");
     await exportFile("savingsos-profiles-backup-" + today() + ".json", JSON.stringify(backup, null, 2));
   });
-  return <UsersContext.Provider value={{ users, currentUser, busy, saving: pendingSaves > 0, error: bootError, notice, signIn, createUser, renameUser, deleteUser, refreshUsers, createAdmin, saveAdminSettings, signOut, configureUser, exportProfiles }}>
+  const importProfile = (profile: unknown, password: string, name: string) => perform(async () => {
+    if (sessionRef.current) throw new Error("Sign out before importing a portable profile.");
+    install(await appRequest("profile-import", { profile, password, name }));
+  });
+  const exportProfile = async () => {
+    let exported = false;
+    await perform(async () => {
+      await flush();
+      const profile = await appRequest<object>("profile-export");
+      const name = (sessionRef.current?.user.name || "user").replace(/[^a-zA-Z0-9-]/g, "-");
+      exported = await exportFile("savingsos-" + name + "-profile-backup-" + today() + ".json", JSON.stringify(profile, null, 2));
+    });
+    return exported;
+  };
+  return <UsersContext.Provider value={{ users, currentUser, busy, saving: pendingSaves > 0, error: bootError, notice, signIn, createUser, renameUser, deleteUser, refreshUsers, createAdmin, saveAdminSettings, signOut, configureUser, exportProfiles, exportProfile, importProfile }}>
     <FinanceContext.Provider value={{ data, update, save, ready, error: error || notice, clearDemo: () => update(withoutSamples) }}>{children}</FinanceContext.Provider>
   </UsersContext.Provider>;
 }

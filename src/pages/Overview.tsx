@@ -60,9 +60,8 @@ export function Overview() {
   return (
     <section className="overview-page min-w-0">
       <PageHeading
-        kicker="A GOOD DAY TO FEEL IN CONTROL"
-        title="Your money, at a glance"
-        description="A little perspective on where you are and where you're going."
+        title="Overview"
+        description="Your income, expenses, and account activity in one place."
       >
         <div className="page-actions flex flex-col gap-2 sm:flex-row"><button className="button secondary" onClick={() => { setTransferMessage(""); setMoving("new"); }}><ArrowLeftRight size={16} />Move money</button><button className="button primary" onClick={() => setAdding(true)}><Plus size={17} />Add expense</button></div>
       </PageHeading>
@@ -70,7 +69,7 @@ export function Overview() {
       <div className="page-toolbar flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <span className="period-label">
           <span className="live-dot" />
-          Your personal finance home
+          Monthly summary
         </span>
         <MonthPicker month={month} setMonth={setMonth} />
       </div>
@@ -110,7 +109,6 @@ export function Overview() {
           </div>
           <div className="stat-value">{money(income - total)}</div>
           <p>Recorded income minus all bills for this month</p>
-          <span className="stat-bottom">A plan for every euro.</span>
         </div>
       </div>
       <div className="overview-grid grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-2">
@@ -166,7 +164,7 @@ export function Overview() {
             ) : (
               <div className="empty-state">
                 <ReceiptText size={28} />
-                <h3>Your month is a blank canvas</h3>
+                <h3>No expenses this month</h3>
                 <p>Add expenses to see your spending breakdown.</p>
               </div>
             )}
@@ -176,7 +174,7 @@ export function Overview() {
           <div className="panel-heading">
             <div>
               <h2>Next on your list</h2>
-              <p>A little heads-up for upcoming payments</p>
+              <p>Your next unpaid expenses</p>
             </div>
             <Link className="text-button" to="/expenses">
               <ArrowUpRight size={17} />

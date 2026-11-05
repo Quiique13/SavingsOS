@@ -20,11 +20,45 @@ export function Transfers() {
   const [message, setMessage] = useState("");
   const transfers = (data.transfers ?? []).filter(transfer => transfer.date.startsWith(month)).slice().reverse().sort((a, b) => b.date.localeCompare(a.date));
   const moved = transfers.reduce((total, transfer) => total + Math.round(transfer.amount * 100), 0) / 100;
-  return <section className="transfers-page min-w-0"><PageHeading kicker="YOUR MONEY, BETWEEN YOUR ACCOUNTS" title="Transfers" description="See where your money moved, with income and expenses kept separate."><button className="button primary" onClick={() => { setMessage(""); setEditing("new"); }}><Plus size={16} />Move money</button></PageHeading>
-    {message && <p className="transfer-message" role="status">{message}</p>}
-    <div className="page-toolbar flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><span className="period-label">Transfers recorded this month</span><MonthPicker month={month} setMonth={setMonth} /></div>
-    <div className="transfer-summary grid grid-cols-1 gap-4 sm:grid-cols-2"><div className="stat-card"><div className="stat-label">Moved between accounts<ArrowLeftRight size={18} /></div><div className="stat-value">{money(moved)}</div><p>{transfers.length} transfer{transfers.length === 1 ? "" : "s"} in {monthLabel(month)}</p></div><div className="stat-card soft-green"><div className="stat-label">Combined recorded balance</div><div className="stat-value">{money(data.accounts.reduce((sum, account) => sum + Math.round(account.balance * 100), 0) / 100)}</div><p>Moving money keeps this combined total unchanged.</p></div></div>
-    <section className="panel"><div className="panel-heading"><div><h2>Transfer history</h2><p>From account, to account, date, and amount.</p></div></div><TransferList transfers={transfers} onEdit={setEditing} />{!transfers.length && latestMonth && latestMonth !== month && <div className="transfer-month-shortcut"><button className="button secondary" onClick={() => setMonth(latestMonth)}>View {monthLabel(latestMonth)}</button></div>}</section>
-    {editing && <TransferForm transfer={editing === "new" ? undefined : editing} onClose={() => setEditing(null)} onSaved={value => { setMonth(value); setEditing(null); setMessage("Transfer history and recorded balances saved."); }} />}
-  </section>;
+  return (
+    <section className="transfers-page min-w-0">
+      <PageHeading
+        title="Transfers"
+        description="Track money moved between your accounts."
+      >
+        <div className="expense-heading-actions">
+          <MonthPicker month={month} setMonth={setMonth} />
+          <button className="button primary" onClick={() => { setMessage(""); setEditing("new"); }}>
+            <Plus size={16} />Move money
+          </button>
+        </div>
+      </PageHeading>
+      {message && <p className="transfer-message" role="status">{message}</p>}
+      <div className="transfer-summary grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="stat-card">
+          <div className="stat-label">Moved this month<ArrowLeftRight size={18} /></div>
+          <div className="stat-value">{money(moved)}</div>
+          <p>{transfers.length} transfer{transfers.length === 1 ? "" : "s"} in {monthLabel(month)}</p>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Combined recorded balance</div>
+          <div className="stat-value">{money(data.accounts.reduce((sum, account) => sum + Math.round(account.balance * 100), 0) / 100)}</div>
+          <p>Transfers keep your combined balance unchanged.</p>
+        </div>
+      </div>
+      <section className="panel">
+        <div className="panel-heading">
+          <div><h2>Transfer history</h2><p>Select the edit icon to update or reverse a transfer.</p></div>
+          <span className="count-badge">{transfers.length}</span>
+        </div>
+        <TransferList transfers={transfers} onEdit={setEditing} />
+        {!transfers.length && latestMonth && latestMonth !== month && (
+          <div className="transfer-month-shortcut">
+            <button className="button secondary" onClick={() => setMonth(latestMonth)}>View {monthLabel(latestMonth)}</button>
+          </div>
+        )}
+      </section>
+      {editing && <TransferForm transfer={editing === "new" ? undefined : editing} onClose={() => setEditing(null)} onSaved={value => { setMonth(value); setEditing(null); setMessage("Transfer history and recorded balances saved."); }} />}
+    </section>
+  );
 }

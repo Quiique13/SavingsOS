@@ -1,5 +1,6 @@
 import { type AdminSettings, type Data } from "../types/finance";
 import { isValidAdminSettings, isValidBackup } from "../utils/finance";
+import { parsePortableProfile, type PortableProfile } from "./portableProfile";
 export const USERS_KEY = "savings-os-users-v1";
 const ITERATIONS = 600000;
 export type User = {
@@ -120,6 +121,26 @@ export class UserVault {
   }
   async register(name: string, data: Data, password = ""): Promise<UserSession> {
     return this.createProfile(name, data, password);
+  }
+  async exportProfile(session: UserSession): Promise<PortableProfile> {
+    const current = await this.refresh(session);
+    if (current.user.role === "admin") throw new Error("Use the admin profile backup to export administrator records.");
+    const record = this.read().records.find(r => r.user.id === current.user.id)!;
+    return parsePortableProfile({ format: "savingsos-portable-profile", version: 1, exportedAt: new Date().toISOString(), profile: record });
+  }
+  async importProfile(value: unknown, password = "", name?: string): Promise<UserSession> {
+    const transfer = parsePortableProfile(value);
+    const record = transfer.profile;
+    // Verify the password and the decrypted finance records before touching storage.
+    const isolated = new UserVault({ getItem: () => JSON.stringify({ version: 1, records: [record] }), setItem() {}, removeItem() {} });
+    const opened = await isolated.open(record.user.id, password);
+    const registry = this.read();
+    if ([...registry.records, ...(registry.archivedDefaultProfiles ?? [])].some(r => r.user.id === record.user.id))
+      throw new Error("This profile already exists here. To update its records, sign in and restore a finance backup from Settings.");
+    const user = { ...record.user, name: cleanName(name ?? record.user.name) };
+    const imported = { ...record, user, revision: 1 };
+    this.commit(imported, null);
+    return { ...opened, user, revision: 1 };
   }
   async create(admin: UserSession | null, name: string, data: Data, password = ""): Promise<UserSession> {
     const authority = await this.requireAdmin(admin);

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { fixtureAccounts } from "./account-fixtures.mjs";
 import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createServer } from "vite";
@@ -40,7 +41,7 @@ test("portable desktop serves only its bundled UI and preserves private profiles
       let result = await client.request("register", { name: "Portable Alice", password: "portable password" });
       assert.equal(result.status, 200);
       const id = result.value.session.user.id;
-      const next = { ...result.value.session.data, income: [{ id: "salary", name: "Private salary", amount: 1450, date: "2026-10-01", accountId: "moey" }] };
+      const next = { ...result.value.session.data, accounts: fixtureAccounts(), income: [{ id: "salary", name: "Private salary", amount: 1450, date: "2026-10-01", accountId: "moey" }] };
       result = await client.request("save", { data: next });
       assert.equal(result.status, 200);
       assert.ok(!readFileSync(join(data, "profiles.json"), "utf8").includes("Private salary"));

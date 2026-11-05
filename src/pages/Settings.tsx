@@ -15,13 +15,14 @@ import { Link } from "react-router-dom";
 import { Dialog } from "../components/common/Dialog";
 import { PageHeading } from "../components/common/PageHeading";
 import { AppearanceSettings } from "../components/theme/ThemeControls";
+import { InstallApp } from "../components/common/InstallApp";
 import { UserSettings } from "../components/users/UserSettings";
 import { useFinance } from "../hooks/useFinance";
 import { useUsers } from "../hooks/useUsers";
 import { isValidBackup, today } from "../utils/finance";
 
 export function Settings() {
-  const { currentUser } = useUsers();
+  const { currentUser, exportProfile, busy, saving } = useUsers();
   const { data, save, clearDemo } = useFinance();
   const file = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState("");
@@ -66,23 +67,35 @@ export function Settings() {
   return (
     <section className="settings-page min-w-0">
       <PageHeading
-        kicker="MAKE YOURSELF AT HOME"
         title="Settings"
-        description="Your preferences, your records, your peace of mind."
+        description="Manage your appearance, profile, and backups."
       />
       <div className="settings-stack flex w-full min-w-0 flex-col gap-4">
         <AppearanceSettings />
         <UserSettings />
+        <InstallApp />
+        {currentUser?.role !== "admin" && <section className="panel settings-section">
+          <span className="settings-icon"><ArrowDownToLine size={22} /></span>
+          <div>
+            <h2>Portable profile</h2>
+            <p>Move your profile, accounts, expenses, payment history, income, and transfers to another copy of savingsOS. Password-protected profiles keep their encryption and use the same password. Profiles without a password are exported unencrypted.</p>
+            <p>On the desktop app’s user screen, choose Import profile and select this file. Existing profiles are kept. Each copy has independent records after import.</p>
+            <button className="button primary small" disabled={busy || saving} onClick={() => {
+              setMessage("");
+              void exportProfile().then(exported => setMessage(exported ? "Portable profile exported. Import it from the other app’s user screen." : "Export cancelled.")).catch(error => setMessage(error instanceof Error ? error.message : "The profile could not be exported."));
+            }}><ArrowDownToLine size={15} />{busy ? "Preparing profile…" : "Export portable profile"}</button>
+          </div>
+        </section>}
         <section className="panel settings-section">
           <span className="settings-icon">
             <Wallet size={22} />
           </span>
           <div>
-            <h2>A little about your setup</h2>
+            <h2>Planner setup</h2>
             <p>Currency: Euro (EUR) · Payment timezone: Europe/Lisbon</p>
             <p>
-              Bleap for everyday spending, moey! for subscriptions, and Trading
-              212 for savings. You can edit these on the Accounts page.
+              Create and manage your spending, subscription, and savings accounts
+              on the Accounts page.
             </p>
           </div>
           <Link to="/accounts" className="button secondary small">
@@ -97,7 +110,7 @@ export function Settings() {
           <div>
             <h2>Your data stays with you</h2>
             <p>
-              {native ? "Your profiles and finance records are saved in private files on this phone. They work without a computer or internet connection." : desktop ? "Your profiles and finance records are saved in savingsOS-data next to the portable app. Move both together when taking the app to another computer." : "Your profiles and finance records are saved in this app's private data folder. Clearing browser data does not remove them."}
+              {native ? "Your profiles and finance records are saved in private files on this phone. They work without a computer or internet connection." : desktop ? "Your profiles and finance records are saved on this computer. The portable edition uses savingsOS-data next to the executable; keep both together when moving it. The installed edition uses your Windows app data folder." : "Your profiles and finance records are saved in this app's private data folder. Clearing browser data does not remove them."}
             </p>
             <p>
               {native ? "Export a backup before uninstalling the app or clearing its app data. Phone and computer records stay separate." : desktop ? "Export a backup regularly. Phone and computer records stay separate." : "Export a backup regularly. The app data folder is excluded from Git, so your records stay out of the repository."}
@@ -109,7 +122,7 @@ export function Settings() {
             <ArrowDownToLine size={22} />
           </span>
           <div>
-            <h2>A copy for safekeeping</h2>
+            <h2>Backup & restore</h2>
             <p>
               Download accounts, expenses, payment dates, income, and transfers for the
               current user. This exported JSON file is not password protected;

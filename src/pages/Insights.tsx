@@ -46,9 +46,8 @@ export function Insights() {
   return (
     <section className="insights-page min-w-0">
       <PageHeading
-        kicker="STEP BACK. SEE THE BIGGER PICTURE."
         title="Insights"
-        description="Turn the everyday details into a clearer plan for your year."
+        description="Review spending trends and plan for annual bills."
       >
         <label className="year-select">
           Year
@@ -101,7 +100,7 @@ export function Insights() {
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h2>A year of little decisions</h2>
+            <h2>The year in review</h2>
             <p>Your scheduled expenses and recorded payments, month by month</p>
           </div>
           <div className="chart-legend">
@@ -159,7 +158,7 @@ export function Insights() {
       <section className="panel annual-bills">
         <div className="panel-heading">
           <div>
-            <h2>Once a year. Always on your radar.</h2>
+            <h2>Annual bills</h2>
             <p>Annual bills, with a monthly amount you can set aside</p>
           </div>
         </div>

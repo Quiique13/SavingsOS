@@ -169,6 +169,10 @@ export function createAppServer(directory: string) {
       send(response, state(token));
       return;
     }
+    if (request.method === "GET" && path === "/api/profile-export") {
+      send(response, await vault.exportProfile(authenticated(token)));
+      return;
+    }
     if (request.method === "GET" && path === "/api/profiles-backup") {
       const session = authenticated(token);
       await vault.listManagedUsers(session);
@@ -195,16 +199,19 @@ export function createAppServer(directory: string) {
       } else if (
         path === "/api/sign-in" ||
         path === "/api/register" ||
+        path === "/api/profile-import" ||
         path === "/api/setup-admin"
       ) {
-        if (path === "/api/register" && actor(token))
+        if ((path === "/api/register" || path === "/api/profile-import") && actor(token))
           throw new HttpError(
             403,
             "Sign out to create a new profile, or use admin profile management.",
           );
         const password = textField(input.password, "password", true);
         const session =
-          path === "/api/sign-in"
+          path === "/api/profile-import"
+            ? await vault.importProfile(input.profile, password, textField(input.name, "name"))
+            : path === "/api/sign-in"
             ? await vault.open(textField(input.id, "profile ID"), password)
             : path === "/api/register"
               ? await vault.register(

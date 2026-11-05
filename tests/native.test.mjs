@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "vite";
+import { fixtureAccounts } from "./account-fixtures.mjs";
 
 test("offline Android profile storage", async t => {
   const vite = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom", logLevel: "error" });
@@ -22,12 +23,31 @@ test("offline Android profile storage", async t => {
     };
     const latest = fixture => [...fixture.files.keys()].filter(name => name.endsWith(".json")).sort().at(-1);
 
+    await t.test("new profiles stay empty after restart without changing an existing user's accounts", async () => {
+      const fixture = make();
+      let app = new NativeProfiles(fixture.disk());
+      let state = await app.request("register", { name: "Existing owner" });
+      assert.deepEqual(state.session.data.accounts, []);
+      const firstId = state.session.user.id;
+      const custom = [{ ...fixtureAccounts()[0], id: "custom-bank", name: "My own account", balance: 200 }];
+      state = await app.request("save", { revision: state.session.revision, data: { ...state.session.data, accounts: custom } });
+      await app.request("sign-out");
+      state = await app.request("register", { name: "New owner" });
+      assert.deepEqual(state.session.data.accounts, []);
+      const emptyId = state.session.user.id;
+      await app.request("save", { revision: state.session.revision, data: state.session.data });
+      app = new NativeProfiles(fixture.disk());
+      assert.deepEqual((await app.request("sign-in", { id: emptyId })).session.data.accounts, []);
+      assert.deepEqual((await app.request("sign-in", { id: firstId })).session.data.accounts, custom);
+    });
     await t.test("income, payments, transfers and backups survive a full app restart", async () => {
       const fixture = make();
       let app = new NativeProfiles(fixture.disk());
       let state = await app.request("register", { name: "Phone profile" });
       const id = state.session.user.id;
       let data = structuredClone(state.session.data);
+      assert.deepEqual(data.accounts, []);
+      data.accounts = fixtureAccounts();
       data.accounts[0].balance = 100;
       data.accounts[1].balance = 1000;
       data.income = [{ id: "salary", name: "Salary", amount: 1500, date: "2026-10-01", accountId: "moey" }];
@@ -50,7 +70,7 @@ test("offline Android profile storage", async t => {
       let app = new NativeProfiles(fixture.disk());
       let state = await app.request("register", { name: "Protected", password: "phone password" });
       const id = state.session.user.id;
-      const data = { ...state.session.data, income: [{ id: "secret", name: "Private salary", amount: 1700, date: "2026-10-01", accountId: "moey" }] };
+      const data = { ...state.session.data, accounts: fixtureAccounts(), income: [{ id: "secret", name: "Private salary", amount: 1700, date: "2026-10-01", accountId: "moey" }] };
       state = await app.request("save", { revision: state.session.revision, data });
       assert.ok(!fixture.files.get(latest(fixture)).includes("Private salary"));
       app = new NativeProfiles(fixture.disk());
@@ -69,7 +89,7 @@ test("offline Android profile storage", async t => {
       let state = await app.request("register", { name: "Durable" });
       const id = state.session.user.id;
       const before = fixture.files.get(latest(fixture));
-      const changed = { ...state.session.data, income: [{ id: "retry", name: "Retry salary", amount: 900, date: "2026-10-01", accountId: "moey" }] };
+      const changed = { ...state.session.data, accounts: fixtureAccounts(), income: [{ id: "retry", name: "Retry salary", amount: 900, date: "2026-10-01", accountId: "moey" }] };
       fixture.failWrite(true);
       await assert.rejects(app.request("save", { revision: state.session.revision, data: changed }), /could not save/);
       fixture.failWrite(false); fixture.failRename(true);

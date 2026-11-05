@@ -70,6 +70,12 @@ export class NativeProfiles {
           else throw error;
         }
       }
+    } else if (path === "profile-export") {
+      if (!nextSession) throw new Error("Sign in before exporting this profile.");
+      return vault.exportProfile(nextSession);
+    } else if (path === "profile-import") {
+      if (nextSession) throw new Error("Sign out before importing a portable profile.");
+      nextSession = await vault.importProfile(values.profile, field(values.password, "password", true), field(values.name, "name"));
     } else if (path === "register") {
       if (nextSession) throw new Error("Sign out to create a new profile, or use admin profile management.");
       nextSession = await vault.register(field(values.name, "name"), createInitialData(), field(values.password, "password", true));

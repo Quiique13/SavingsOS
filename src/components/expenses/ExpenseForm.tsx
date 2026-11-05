@@ -3,6 +3,7 @@ import {
   Trash2
 } from "lucide-react";
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { useFinance } from "../../hooks/useFinance";
 import { type Expense } from "../../types/finance";
 import { categories, today } from "../../utils/finance";
@@ -61,6 +62,16 @@ export function ExpenseForm({
       ),
     }));
     onClose();
+  }
+  if (!data.accounts.length) {
+    return (
+      <Dialog title="Add an account first" onClose={onClose}>
+        <div className="planner-form">
+          <p>Create an account before recording expenses.</p>
+          <Link className="button primary" to="/accounts" onClick={onClose}>Add account</Link>
+        </div>
+      </Dialog>
+    );
   }
   return (
     <Dialog
