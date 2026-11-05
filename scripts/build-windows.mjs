@@ -4,6 +4,7 @@ import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { build as bundle } from "esbuild";
 import { build as packageApp } from "electron-builder";
 
@@ -15,7 +16,8 @@ const application = path.join(stage, "application");
 const artifacts = path.join(stage, "artifacts");
 fs.mkdirSync(application, { recursive: true });
 fs.mkdirSync(artifacts);
-const desktopVersion = "1.0.0";
+const desktopVersion = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).version;
+const installer = process.argv.includes("--installer");
 const electronVersion = JSON.parse(fs.readFileSync(path.join(root, "node_modules/electron/package.json"), "utf8")).version;
 fs.writeFileSync(path.join(stage, "package.json"), JSON.stringify({ name: "savingsos-build", version: desktopVersion, devDependencies: { electron: electronVersion } }));
 fs.writeFileSync(path.join(application, "package.json"), JSON.stringify({
@@ -39,8 +41,9 @@ const config = {
   directories: { app: application, output: artifacts, buildResources: path.join(root, "desktop/assets") },
   files: ["main.cjs", "preload.cjs", "package.json", "web/**/*", "web/.vite/license.md", "icon.png", "icon.ico"],
   asar: true, compression: "normal", npmRebuild: false,
-  win: { target: [{ target: "portable", arch: ["x64"] }], icon: path.join(root, "desktop/assets/icon.ico"), artifactName: "savingsOS-Portable.exe", requestedExecutionLevel: "asInvoker" },
-  portable: { requestExecutionLevel: "user" },
+  win: { target: [{ target: "portable", arch: ["x64"] }, ...(installer ? [{ target: "nsis", arch: ["x64"] }] : [])], icon: path.join(root, "desktop/assets/icon.ico"), requestedExecutionLevel: "asInvoker" },
+  portable: { requestExecutionLevel: "user", artifactName: "savingsOS-Portable.exe" },
+  nsis: { artifactName: "savingsOS-Setup.exe", oneClick: false, perMachine: false, allowElevation: false, allowToChangeInstallationDirectory: true, createDesktopShortcut: true, createStartMenuShortcut: true, deleteAppDataOnUninstall: false },
 };
 console.log("Building portable savingsOS " + desktopVersion + " with Electron " + electronVersion);
 await packageApp({ projectDir: stage, config, publish: "never" });
@@ -61,7 +64,7 @@ async function smoke(executable, directory, portable) {
       child.once("error", error => { clearTimeout(timer); reject(error); });
       child.once("exit", code => { clearTimeout(timer); resolve(code); });
     });
-    assert.equal(code, 0, "Packaged application failed: " + log);
+    assert.equal(code, 0, "Packaged application failed: " + (fs.existsSync(resultFile) ? fs.readFileSync(resultFile, "utf8") : log));
     const result = JSON.parse(fs.readFileSync(resultFile, "utf8"));
     assert.equal(result.ok, true, result.error);
     assert.equal(result.resumed, run === 1, "Profile persistence across restarts failed");
@@ -76,6 +79,12 @@ await smoke(executable, path.join(stage, "smoke-portable"), true);
 const output = path.join(root, "output/windows");
 fs.mkdirSync(output, { recursive: true });
 fs.copyFileSync(executable, path.join(output, "savingsOS-Portable.exe"));
+const filenames = ["savingsOS-Portable.exe"];
+if (installer) {
+  fs.copyFileSync(path.join(artifacts, "savingsOS-Setup.exe"), path.join(output, "savingsOS-Setup.exe"));
+  filenames.push("savingsOS-Setup.exe");
+}
+fs.writeFileSync(path.join(output, "SHA256SUMS.txt"), filenames.map(name => createHash("sha256").update(fs.readFileSync(path.join(output, name))).digest("hex") + "  " + name).join("\n") + "\n");
 console.log("Portable app ready: " + path.join(output, "savingsOS-Portable.exe"));
 const resolved = fs.realpathSync(stage);
 if (path.dirname(resolved) !== temporaryRoot || !path.basename(resolved).startsWith("savingsos-windows-")) throw new Error("Unexpected staging path. Cleanup cancelled.");

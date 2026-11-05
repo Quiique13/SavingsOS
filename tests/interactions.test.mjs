@@ -556,6 +556,27 @@ test("profile selection and settings navigation", async t => {
       assert.ok(container.querySelector(".admin-profile-manager"));
       assert.ok(vault.list().some(user => user.name === "Anabela"));
     });
+    await t.test("the user screen imports an encrypted profile and opens its records", async () => {
+      const { vault } = await mount("/");
+      const entries = new Map();
+      const source = new UserVault({ getItem: key => entries.get(key) ?? null, setItem: (key, value) => entries.set(key, value), removeItem: key => entries.delete(key) });
+      const profile = await source.register("Transferred owner", { ...createInitialData(), accounts: fixtureAccounts() }, password);
+      const transfer = await source.exportProfile(profile);
+      await click(find("button", "Import profile"));
+      let file = container.querySelector('dialog input[type="file"]');
+      Object.defineProperty(file, "files", { configurable: true, value: [{ size: JSON.stringify(transfer).length, text: async () => JSON.stringify(transfer) }] });
+      await act(async () => file.dispatchEvent(new dom.window.Event("change", { bubbles: true })));
+      await waitFor(() => container.querySelector('dialog input[name="password"]'));
+      assert.ok(container.textContent.includes("Your password and encrypted finance records are preserved"));
+      await fill('dialog input[name="password"]', password);
+      const form = container.querySelector("dialog form");
+      await act(async () => form.dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true })));
+      await waitFor(() => container.querySelector(".finance-app"));
+      assert.ok(!container.querySelector(".user-welcome"));
+      const imported = await vault.open(profile.user.id, password);
+      assert.deepEqual(imported.data, profile.data);
+      assert.ok(vault.list().some(user => user.name === "Miguel"));
+    });
     await t.test("failed direct profile opens show an error without trapping the chooser", async () => {
       const { regular, store } = await mount();
       const registry = JSON.parse(store.getItem(USERS_KEY));

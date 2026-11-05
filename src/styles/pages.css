@@ -3080,6 +3080,13 @@
     text-align: center;
   }
 
+  .install-app-welcome {
+    width: min(680px, 100%);
+    min-width: 0;
+    text-align: left;
+  }
+  .install-app-welcome:empty { display: none; }
+
   .user-welcome-icon {
     display: grid;
     place-items: center;

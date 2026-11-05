@@ -1,7 +1,7 @@
 {
   "name": "savings-os",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,7 +15,8 @@
     "android:apk": "npm run android:sync && node scripts/build-android.mjs",
     "android:apk:v2": "npm run build && node scripts/build-android-v2.mjs",
     "windows:portable": "npm run build && node scripts/build-windows.mjs",
-    "windows:use-existing": "node scripts/prepare-windows-data.mjs"
+    "windows:use-existing": "node scripts/prepare-windows-data.mjs",
+    "windows:installer": "npm run build && node scripts/build-windows.mjs --installer"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",

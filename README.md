@@ -43,9 +43,17 @@ Keep page composition in `pages`, shared UI in `components`, and reusable React 
 
 ## Portable Windows app
 
+Download [savingsOS Portable](https://github.com/Quiique13/SavingsOS/releases/latest/download/savingsOS-Portable.exe) or the [Windows installer](https://github.com/Quiique13/SavingsOS/releases/latest/download/savingsOS-Setup.exe) from [GitHub Releases](https://github.com/Quiique13/SavingsOS/releases/latest). Both are Windows x64 apps with their own runtime and local server; no Node.js installation or internet connection is needed to use them. Releases also include SHA256SUMS.txt.
+
+To move a regular user from the web app to the desktop app, open **Settings → Portable profile → Export portable profile**. In the desktop user chooser, select **Import profile**, choose the exported JSON file, and enter the original password if protected. This transfers the profile name, identity, accounts, expenses, payments, income, and transfers while preserving password encryption. Import adds a profile and never overwrites existing users. A conflicting name can be changed during import; an existing profile ID requires signing in and restoring a finance backup instead. Each copy has separate records after import. Profiles without passwords export unencrypted. Administrator accounts use the existing admin backup flow.
+
+The web app includes an installation manifest. Use the browser’s **Install app** menu, or the install button when offered, for a separate browser window. This browser version still needs the local savingsOS server running; download the desktop app for a self-contained offline copy.
+
 Run the desktop app by double-clicking `savingsOS-Portable.exe`. Profiles live in a separate `savingsOS-data` folder beside it. Keep both together when moving the app.
 
 Build with `npm run windows:portable`. For this PC, `npm run windows:use-existing` copies existing profiles into an empty portable data folder without overwriting portable records. See [Windows portable app](docs/windows.md).
+
+Build both downloads with `npm run windows:installer`. The **Windows downloads** GitHub Actions workflow tests and builds them on pull requests or manual runs, and publishes release assets when a `v*` tag is pushed. Personal data folders are excluded from every package and workflow artifact.
 
 ## Android app
 

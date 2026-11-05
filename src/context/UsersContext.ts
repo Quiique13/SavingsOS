@@ -9,6 +9,8 @@ export type UsersState = {
   error: string;
   notice?: string;
   exportProfiles: () => Promise<void>;
+  exportProfile: () => Promise<boolean>;
+  importProfile: (profile: unknown, password: string, name: string) => Promise<void>;
   signIn: (id: string, password?: string) => Promise<void>;
   createUser: (name: string, password?: string) => Promise<void>;
   renameUser: (id: string, revision: number, name: string) => Promise<void>;

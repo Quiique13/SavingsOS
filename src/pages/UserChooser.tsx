@@ -13,6 +13,8 @@ import { Brand } from "../components/common/Brand";
 import { ThemeToggle } from "../components/theme/ThemeControls";
 import { CreateUserDialog } from "../components/users/CreateUserDialog";
 import { PasswordInput } from "../components/users/PasswordInput";
+import { ImportProfileDialog } from "../components/users/ImportProfileDialog";
+import { InstallApp } from "../components/common/InstallApp";
 import { useUsers } from "../hooks/useUsers";
 import { type User } from "../services/profileVault";
 import { errorText, initials } from "../utils/profile";
@@ -21,6 +23,7 @@ export function UserChooser() {
   const { users: allUsers, busy, signIn, notice, error: bootError } = useUsers();
   const users = allUsers.filter(user => user.role !== "admin");
   const [creating, setCreating] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
   const [error, setError] = useState("");
   async function choose(user: User) {
@@ -144,8 +147,7 @@ export function UserChooser() {
               ))}
             </div>}
             <button disabled={busy} className={"button create-user-button " + (users.length ? "secondary" : "primary")} onClick={() => setCreating(true)}><Plus size={16} />Add user</button>
-
-
+            <button disabled={busy} className="button secondary create-user-button" onClick={() => setImporting(true)}>Import profile</button>
           </>
         )}
       </section>
@@ -155,6 +157,8 @@ export function UserChooser() {
       </p>
       {(Capacitor.isNativePlatform() || (typeof window !== "undefined" && !!window.savingsOSDesktop)) && <Link className="text-button" to="/admin">Admin sign-in</Link>}
       {creating && <CreateUserDialog onClose={() => setCreating(false)} />}
+      {importing && <ImportProfileDialog onClose={() => setImporting(false)} />}
+      <div className="install-app-welcome"><InstallApp /></div>
     </div>
   );
 }

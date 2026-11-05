@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
+import { listenLoopback } from "../server/loopback.ts";
 const nativeFetch = globalThis.fetch;
 export function temporaryAppDirectory() { return mkdtempSync(join(tmpdir(), "savingsos-test-")); }
 export function removeTemporaryAppDirectory(directory) {
@@ -11,8 +12,8 @@ export function removeTemporaryAppDirectory(directory) {
 export async function startApp(createAppServer, directory) {
   const app = createAppServer(directory);
   const http = createServer((request, response) => app.middleware(request, response, () => { response.statusCode = 404; response.end(); }));
-  await new Promise(resolve => http.listen(0, "127.0.0.1", resolve));
-  return { app, base: "http://127.0.0.1:" + http.address().port, async close() { app.close(); http.closeAllConnections(); await new Promise(resolve => http.close(resolve)); } };
+  const port = await listenLoopback(http);
+  return { app, base: "http://127.0.0.1:" + port, async close() { app.close(); http.closeAllConnections(); await new Promise(resolve => http.close(resolve)); } };
 }
 export function appClient(base) {
   let cookie = "";

@@ -9,7 +9,8 @@ if (typeof globalThis.crypto === "undefined") Object.defineProperty(globalThis, 
 const smoke = process.argv.includes("--portable-smoke-test");
 const smokeDirectory = process.env.SAVINGSOS_SMOKE_DIRECTORY;
 if (smoke && (!smokeDirectory || !isAbsolute(smokeDirectory))) throw new Error("A separate absolute smoke-test directory is required.");
-const dataRoot = smoke ? smokeDirectory! : portableDataDirectory({
+const installed = app.isPackaged && !process.env.PORTABLE_EXECUTABLE_DIR;
+const dataRoot = smoke ? smokeDirectory! : installed ? join(app.getPath("appData"), "savingsOS") : portableDataDirectory({
   executable: app.getPath("exe"),
   portableDirectory: process.env.PORTABLE_EXECUTABLE_DIR,
   developmentDirectory: app.isPackaged ? undefined : join(process.cwd(), "output/windows/development"),
@@ -25,7 +26,7 @@ try {
   app.setPath("userData", join(dataRoot, "browser"));
   app.setAppLogsPath(join(dataRoot, "logs"));
 } catch (error) {
-  dialog.showErrorBox("savingsOS could not open its data folder", "Move the portable app to a writable folder, then open it again. Your existing records have been kept.\n\n" + (error instanceof Error ? error.message : String(error)));
+  dialog.showErrorBox("savingsOS could not open its data folder", "Check that the app's data folder is writable, then open it again. Your existing records have been kept.\n\n" + (error instanceof Error ? error.message : String(error)));
   app.exit(1);
 }
 let host: Awaited<ReturnType<typeof startPortableHost>> | undefined;
@@ -90,7 +91,7 @@ else {
       const existing = state.users.find((user: { name: string }) => user.name === "Portable test");
       state = existing ? await request("sign-in", { id: existing.id, password: "portable test password" }) : await request("register", { name: "Portable test", password: "portable test password" });
       if (!existing) {
-        const data = { ...state.session.data, income: [{ id: "portable-salary", name: "Portable test salary", amount: 1250, date: "2026-10-01", accountId: "moey" }] };
+        const data = { ...state.session.data, accounts: [{ id: "smoke-account", name: "Test account", provider: "Manual", kind: "Spending", balance: 0, color: "#a4d17a" }], income: [{ id: "portable-salary", name: "Portable test salary", amount: 1250, date: "2026-10-01", accountId: "smoke-account" }] };
         state = await request("save", { revision: state.session.revision, data });
       }
       if (state.session.data.income[0]?.amount !== 1250) throw new Error("The portable records did not persist.");
