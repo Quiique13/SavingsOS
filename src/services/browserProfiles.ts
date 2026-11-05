@@ -1,4 +1,4 @@
-import { NativeProfiles, validateRegistry, type ProfileDisk } from "./nativeProfiles";
+import { ProfileStore, validateRegistry, type ProfileDisk } from "./profileStore";
 
 const unavailable = () => new Error("Browser storage is unavailable. Allow site storage for savingsOS and reload. Existing records have been kept.");
 
@@ -57,4 +57,4 @@ export function createBrowserDisk(factory: IDBFactory = globalThis.indexedDB, na
   };
 }
 
-export const browserProfiles = new NativeProfiles(createBrowserDisk());
+export const browserProfiles = new ProfileStore(createBrowserDisk());

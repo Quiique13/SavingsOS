@@ -96,29 +96,6 @@ test("profile selection and settings navigation", async t => {
       await click(find("dialog button", "Cancel"));
       assert.equal((await vault.open(regular.user.id)).user.hasPassword, false);
     });
-    await t.test("portable close guard confirms saves and surfaces storage failures", async () => {
-      let closeHandler;
-      window.savingsOSDesktop = { onBeforeClose(handler) {
-        closeHandler = handler;
-        return () => { if (closeHandler === handler) closeHandler = undefined; };
-      } };
-      try {
-        const { vault, regular, store } = await mount();
-        assert.ok(find("a", "Admin sign-in"));
-        await click(find(".user-choice", "Miguel"));
-        await waitFor(() => container.querySelector(".settings-page") && closeHandler);
-        assert.ok(container.textContent.includes("savingsOS-data"));
-        const before = (await vault.open(regular.user.id)).revision;
-        await act(async () => { await closeHandler(); });
-        assert.ok((await vault.open(regular.user.id)).revision > before);
-        const original = store.setItem.bind(store);
-        store.setItem = () => { throw new Error("Portable disk write failed"); };
-        try {
-          await act(async () => { await assert.rejects(closeHandler(), /Portable disk write failed/); });
-          assert.ok(container.textContent.includes("Portable disk write failed"));
-        } finally { store.setItem = original; }
-      } finally { delete window.savingsOSDesktop; }
-    });
     await t.test("every finance page uses the shared layout after route reorganization", async () => {
       await mount("/dashboard");
       await click(find(".user-choice", "Miguel"));

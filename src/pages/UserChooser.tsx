@@ -1,5 +1,3 @@
-import { Capacitor } from "@capacitor/core";
-import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -156,7 +154,6 @@ export function UserChooser() {
         <ShieldCheck size={14} />
         {browserStorage ? "Profiles saved only in this browser. Export a backup regularly." : "Profiles saved in this app."}
       </p>
-      {(Capacitor.isNativePlatform() || (typeof window !== "undefined" && !!window.savingsOSDesktop)) && <Link className="text-button" to="/admin">Admin sign-in</Link>}
       {creating && <CreateUserDialog onClose={() => setCreating(false)} />}
       {importing && <ImportProfileDialog onClose={() => setImporting(false)} />}
       <div className="install-app-welcome"><InstallApp /></div>

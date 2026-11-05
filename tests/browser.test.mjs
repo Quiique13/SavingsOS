@@ -14,7 +14,7 @@ test("GitHub Pages browser profiles persist privately without a server", async t
     const { browserStorage } = await vite.ssrLoadModule("/src/services/runtime.ts");
     assert.equal(browserStorage, true);
     const { createBrowserDisk } = await vite.ssrLoadModule("/src/services/browserProfiles.ts");
-    const { NativeProfiles } = await vite.ssrLoadModule("/src/services/nativeProfiles.ts");
+    const { ProfileStore } = await vite.ssrLoadModule("/src/services/profileStore.ts");
     const { createInitialData } = await vite.ssrLoadModule("/src/utils/initialData.ts");
     const { UserVault } = await vite.ssrLoadModule("/src/services/profileVault.ts");
     const { appRequest } = await vite.ssrLoadModule("/src/services/appApi.ts");
@@ -32,16 +32,16 @@ test("GitHub Pages browser profiles persist privately without a server", async t
       assert.ok(!JSON.stringify(backup).includes("Browser private salary"));
     });
     await t.test("a fresh app instance requires the password and restores saved finance records", async () => {
-      const app = new NativeProfiles(createBrowserDisk(factory));
+      const app = new ProfileStore(createBrowserDisk(factory));
       assert.equal((await app.request("state")).session, null);
       await assert.rejects(app.request("sign-in", { id: backup.profile.user.id, password: "wrong" }), /incorrect/);
       const state = await app.request("sign-in", { id: backup.profile.user.id, password });
       assert.deepEqual(state.session.data, data);
     });
-    await t.test("browser exports import into a separate desktop-compatible registry", async () => {
+    await t.test("browser exports import into a separate web profile registry", async () => {
       let raw = null;
-      const desktop = new NativeProfiles({ read: async () => raw, write: async value => { raw = value; } });
-      const imported = await desktop.request("profile-import", { profile: backup, name: "Desktop owner", password });
+      const destination = new ProfileStore({ read: async () => raw, write: async value => { raw = value; } });
+      const imported = await destination.request("profile-import", { profile: backup, name: "Imported owner", password });
       assert.deepEqual(imported.session.data, data);
       assert.equal(imported.session.user.id, backup.profile.user.id);
       assert.ok(!raw.includes("Browser private salary"));
@@ -56,7 +56,7 @@ test("GitHub Pages browser profiles persist privately without a server", async t
       assert.equal(await second.read(), registry);
     });
     await t.test("stale tab sessions cannot overwrite a more recent finance save", async () => {
-      const a = new NativeProfiles(createBrowserDisk(factory)), b = new NativeProfiles(createBrowserDisk(factory));
+      const a = new ProfileStore(createBrowserDisk(factory)), b = new ProfileStore(createBrowserDisk(factory));
       const sessionA = await a.request("sign-in", { id: backup.profile.user.id, password });
       const sessionB = await b.request("sign-in", { id: backup.profile.user.id, password });
       await a.request("save", { revision: sessionA.session.revision, data });
@@ -72,7 +72,7 @@ test("GitHub Pages browser profiles persist privately without a server", async t
       const vault = new UserVault({ getItem: key => entries.get(key) ?? null, setItem: (key, value) => entries.set(key, value), removeItem: key => entries.delete(key) });
       const user = await vault.register("Plain owner", createInitialData());
       const plain = await vault.exportProfile(user);
-      const app = new NativeProfiles(disk);
+      const app = new ProfileStore(disk);
       const imported = await app.request("profile-import", { profile: plain, name: "Plain owner" });
       assert.equal(imported.session.user.hasPassword, false);
     });

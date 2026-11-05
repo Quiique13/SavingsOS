@@ -43,7 +43,6 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     return task.catch(e => { setError(message(e)); throw e; }).finally(() => setPendingSaves(n => n - 1));
   }
   async function flush() { if (sessionRef.current) await persist(dataRef.current); else await queue.current.catch(() => { }); }
-  useEffect(() => window.savingsOSDesktop?.onBeforeClose(flush));
   async function perform(action: () => Promise<void>) {
     if (working.current) throw new Error("Please wait for the current user change to finish.");
     working.current = true; setBusy(true);
