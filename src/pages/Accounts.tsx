@@ -73,7 +73,7 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
           <Plus size={16} />{translate(savings ? "Add savings account" : "Add account")}
         </button></div>
       </PageHeading>
-      {transferMessage && <p className="transfer-message" role="status">{translate(transferMessage)}</p>}
+      {transferMessage && <p className="status-message" role="status">{translate(transferMessage)}</p>}
       <div className="account-notice">
         <ShieldCheck size={17} />
         <span>{translate("Manually tracked · Transfers update both recorded balances. Set a fresh balance snapshot whenever you check your bank.")}</span>

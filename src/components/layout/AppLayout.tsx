@@ -218,7 +218,7 @@ export function AppLayout() {
             <div>
               <strong>{currentUser!.name}</strong>
               <small>
-                {currentUser!.hasPassword
+                {currentUser!.authProvider === "firebase" ? translate("Online account") : currentUser!.hasPassword
                   ? translate("Password protected")
                   : translate("Local user profile")}
               </small>
@@ -290,7 +290,7 @@ export function AppLayout() {
                 : saving
                   ? translate("Saving…")
                   : ready
-                    ? translate("Saved in the app")
+                    ? currentUser!.authProvider === "firebase" ? translate("Saved to your account") : translate("Saved in the app")
                     : translate("Loading your records")}
             </span>
             <ThemeToggle />
@@ -371,7 +371,7 @@ export function AppLayout() {
           <div className="planner-form">
             <p>{translate("Add everyday, monthly, or yearly expenses. Pick a due date and account, then click a payment status to record when you paid it.")}</p>
             <p>{translate("Recurring bills get their own payment record each month. Use the calendar to see what's due, and Insights for the annual picture.")}</p>
-            <p className="form-intro">{translate("Accounts are manually tracked. Data is saved in the app; export a backup from Settings to keep a separate copy.")}</p>
+            <p className="form-intro">{currentUser!.authProvider === "firebase" ? translate("Accounts are manually tracked. Online records are saved in Firebase; export a backup from Settings to keep a separate copy.") : translate("Accounts are manually tracked. Data is saved in the app; export a backup from Settings to keep a separate copy.")}</p>
             <button className="button primary" onClick={() => setHelp(false)}>{translate("Got it")}<ShieldCheck size={16} />
             </button>
           </div>

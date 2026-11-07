@@ -12,17 +12,22 @@ import { createInitialData } from "../utils/initialData";
 import { browserStorage } from "../services/runtime";
 import { FinanceContext } from "./FinanceContext";
 import { UsersContext } from "./UsersContext";
+import type { ProfileBackend } from "../services/cloudProfileStore";
+import { firebaseError } from "../services/firebaseErrors";
 const message = (error: unknown) =>
   error instanceof Error
     ? error.message
     : "The app could not complete this change. Saved records have not been replaced.";
 
-export function UsersProvider({ children }: { children: ReactNode }) {
+export function UsersProvider({ children, backend }: { children: ReactNode; backend?: ProfileBackend }) {
+  const request = backend?.request ?? appRequest;
   const sessionRef = useRef<AppSession | null>(null);
   const [data, setData] = useState(createInitialData);
   const dataRef = useRef(data);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const working = useRef(false);
+  const writes = useRef(0);
+  const dirty = useRef(false);
   const [users, setUsers] = useState<ListedUser[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
@@ -31,6 +36,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
   const [bootError, setBootError] = useState("");
   const [notice, setNotice] = useState("");
+  const [loadAttempt, setLoadAttempt] = useState(0);
   function install(state: AppState) {
     sessionRef.current = state.session;
     dataRef.current = state.session?.data ?? createInitialData();
@@ -38,11 +44,13 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     setCurrentUser(state.session?.user ?? null);
     setUsers(state.users);
     setError("");
+    dirty.current = false;
   }
   function persist(snapshot: Data): Promise<void> {
     const id = sessionRef.current?.user.id;
     if (!id) return Promise.resolve();
     setPendingSaves((n) => n + 1);
+    writes.current += 1;
     const task = queue.current
       .catch(() => {})
       .then(async () => {
@@ -51,7 +59,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
           throw new Error(
             "The active user changed before these records could be saved.",
           );
-        const state = await appRequest("save", {
+        const state = await request("save", {
           revision: session.revision,
           data: snapshot,
         });
@@ -59,18 +67,20 @@ export function UsersProvider({ children }: { children: ReactNode }) {
           sessionRef.current = state.session;
           setUsers(state.users);
           setError("");
+          if (dataRef.current === snapshot) dirty.current = false;
         }
       });
     queue.current = task;
     return task
       .catch((e) => {
-        setError(message(e));
-        throw e;
+        const cause = backend ? new Error(firebaseError(e)) : e;
+        setError(message(cause));
+        throw cause;
       })
-      .finally(() => setPendingSaves((n) => n - 1));
+      .finally(() => { writes.current -= 1; setPendingSaves((n) => n - 1); });
   }
   async function flush() {
-    if (sessionRef.current) await persist(dataRef.current);
+    if (sessionRef.current && (!backend || dirty.current)) await persist(dataRef.current);
     else await queue.current.catch(() => {});
   }
   async function perform(action: () => Promise<void>) {
@@ -87,18 +97,21 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   }
   useEffect(() => {
     let active = true;
+    let unsubscribe: (() => void) | undefined;
     async function initialize() {
+      setReady(false);
+      setBootError("");
       try {
-        let state = await appRequest("state");
+        let state = await request("state");
         let legacy: string | null = null;
         try {
-          if (!browserStorage) legacy = window.localStorage.getItem(USERS_KEY);
+          if (!backend && !browserStorage) legacy = window.localStorage.getItem(USERS_KEY);
         } catch {
           /* App files work even when browser storage is blocked. */
         }
         if (legacy) {
           try {
-            state = await appRequest("migrate", { registry: legacy });
+            state = await request("migrate", { registry: legacy });
             try {
               if (window.localStorage.getItem(USERS_KEY) === legacy)
                 window.localStorage.removeItem(USERS_KEY);
@@ -113,21 +126,29 @@ export function UsersProvider({ children }: { children: ReactNode }) {
               setNotice("Browser migration needs attention: " + message(e));
           }
         }
-        if (active) install(state);
+        if (active) {
+          install(state);
+          unsubscribe = backend?.subscribe?.(next => {
+            if (!active || writes.current || dirty.current || working.current || (typeof document !== "undefined" && document.querySelector("dialog[open]"))) return;
+            if (next.session?.user.id === sessionRef.current?.user.id && next.session!.revision > sessionRef.current!.revision) install(next);
+          }, cause => { if (active) setError(firebaseError(cause)); });
+        }
       } catch (e) {
-        if (active) setBootError(message(e));
+        if (active) setBootError(backend ? firebaseError(e) : message(e));
       }
       if (active) setReady(true);
     }
     void initialize();
     return () => {
       active = false;
+      unsubscribe?.();
     };
-  }, []);
+  }, [backend, request, loadAttempt]);
   const update = (fn: (previous: Data) => Data) => {
     if (!sessionRef.current) return;
     const next = fn(dataRef.current);
     dataRef.current = next;
+    dirty.current = true;
     setData(next);
     void persist(next).catch(() => {});
   };
@@ -135,9 +156,11 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     const userId = sessionRef.current?.user.id;
     if (!userId) throw new Error("Sign in before saving finance records.");
     const previous = dataRef.current;
+    const previouslyDirty = dirty.current;
     const next = fn(previous);
     // Later queued changes must include this change while the server confirms it.
     dataRef.current = next;
+    dirty.current = true;
     setData(next);
     try {
       await persist(next);
@@ -146,6 +169,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       if (sessionRef.current?.user.id === userId && dataRef.current === next) {
         dataRef.current = previous;
+        dirty.current = previouslyDirty;
         setData(previous);
       }
       throw error;
@@ -154,13 +178,13 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   const signIn = (id: string, password = "") =>
     perform(async () => {
       await flush();
-      install(await appRequest("sign-in", { id, password }));
+      install(await request("sign-in", { id, password }));
     });
   const createUser = (name: string, password = "") =>
     perform(async () => {
       await flush();
       install(
-        await appRequest(
+        await request(
           sessionRef.current ? "admin/create-user" : "register",
           { name, password, revision: sessionRef.current?.revision },
         ),
@@ -169,13 +193,13 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   const createAdmin = (name: string, password: string) =>
     perform(async () => {
       await flush();
-      install(await appRequest("setup-admin", { name, password }));
+      install(await request("setup-admin", { name, password }));
     });
   const renameUser = (id: string, revision: number, name: string) =>
     perform(async () => {
       await flush();
       install(
-        await appRequest("admin/rename-user", {
+        await request("admin/rename-user", {
           id,
           targetRevision: revision,
           name,
@@ -187,7 +211,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     perform(async () => {
       await flush();
       install(
-        await appRequest("admin/delete-user", {
+        await request("admin/delete-user", {
           id,
           targetRevision: revision,
           revision: sessionRef.current?.revision,
@@ -198,7 +222,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     perform(async () => {
       await flush();
       install(
-        await appRequest("admin/refresh-users", {
+        await request("admin/refresh-users", {
           revision: sessionRef.current?.revision,
         }),
       );
@@ -207,7 +231,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     perform(async () => {
       await flush();
       install(
-        await appRequest("admin/settings", {
+        await request("admin/settings", {
           settings,
           revision: sessionRef.current?.revision,
         }),
@@ -216,7 +240,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   const signOut = () =>
     perform(async () => {
       await flush();
-      install(await appRequest("sign-out", {}));
+      install(await request("sign-out", {}));
     });
   const configureUser = (
     name: string,
@@ -226,7 +250,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     perform(async () => {
       await flush();
       install(
-        await appRequest("configure", {
+        await request("configure", {
           name,
           password,
           currentPassword,
@@ -237,7 +261,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   const exportProfiles = () =>
     perform(async () => {
       await flush();
-      const backup = await appRequest<object>("profiles-backup");
+      const backup = await request<object>("profiles-backup");
       await exportFile(
         "savingsos-profiles-backup-" + today() + ".json",
         JSON.stringify(backup, null, 2),
@@ -247,13 +271,13 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     perform(async () => {
       if (sessionRef.current)
         throw new Error("Sign out before importing a portable profile.");
-      install(await appRequest("profile-import", { profile, password, name }));
+      install(await request("profile-import", { profile, password, name }));
     });
   const exportProfile = async () => {
     let exported = false;
     await perform(async () => {
       await flush();
-      const profile = await appRequest<object>("profile-export");
+      const profile = await request<object>("profile-export");
       const name = (sessionRef.current?.user.name || "user").replace(
         /[^a-zA-Z0-9-]/g,
         "-",
@@ -274,6 +298,9 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         saving: pendingSaves > 0,
         error: bootError,
         notice,
+        retryLoad: () => {
+          if (!sessionRef.current && !working.current && !writes.current) setLoadAttempt(attempt => attempt + 1);
+        },
         signIn,
         createUser,
         renameUser,
@@ -282,6 +309,10 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         createAdmin,
         saveAdminSettings,
         signOut,
+        deleteOnlineAccount: backend ? (password: string) => perform(async () => {
+          await flush();
+          install(await request("delete-account", { password, revision: sessionRef.current?.revision }));
+        }) : undefined,
         configureUser,
         exportProfiles,
         exportProfile,

@@ -35,7 +35,7 @@ export function Transfers() {
             <Plus size={16} />{translate("Move money")}</button>
         </div>
       </PageHeading>
-      {message && <p className="transfer-message" role="status">{translate(message)}</p>}
+      {message && <p className="status-message" role="status">{translate(message)}</p>}
       <div className="transfer-summary grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="stat-card">
           <div className="stat-label">{translate("Moved this month")}<ArrowLeftRight size={18} /></div>

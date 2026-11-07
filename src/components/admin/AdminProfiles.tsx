@@ -161,7 +161,7 @@ export function AdminProfiles() {
         </p>
       )}
       {message && (
-        <p className="user-success" role="status">
+        <p className="status-message" role="status">
           {translate(message)}
         </p>
       )}

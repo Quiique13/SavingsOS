@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name" translatable="false">savingsOS</string>
+    <string name="title_activity_main" translatable="false">savingsOS</string>
+    <string name="package_name">com.savingsos.app</string>
+    <string name="custom_url_scheme">com.savingsos.app</string>
+</resources>

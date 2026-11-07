@@ -18,10 +18,14 @@ import { useUsers } from "../hooks/useUsers";
 import { type User } from "../services/profileVault";
 import { browserStorage } from "../services/runtime";
 import { errorText, initials } from "../utils/profile";
+import { OnlineSignIn } from "../components/users/OnlineSignIn";
+import { useAuthentication } from "../context/AuthenticationContext";
 
 export function UserChooser() {
   useLanguage();
-  const { users: allUsers, busy, signIn, notice, error: bootError } = useUsers();
+  const { users: allUsers, busy: userBusy, signIn, notice, error: bootError, retryLoad } = useUsers();
+  const authentication = useAuthentication();
+  const busy = userBusy || !!authentication?.busy;
   const users = allUsers.filter(user => user.role !== "admin");
   const [creating, setCreating] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -74,13 +78,15 @@ export function UserChooser() {
         <p>
           {selected
             ? translate("Enter your password to unlock your planner.")
-            : users.length ? translate("Choose a user to open their planner.") : translate("Add your first user to start your personal finance planner.")}
+            : authentication?.enabled ? translate("Your money, organized in one place.") : users.length ? translate("Choose a user to open their planner.") : translate("Add your first user to start your personal finance planner.")}
         </p>
         {notice && <p className="user-error" role="alert">{translate(notice)}</p>}
+        {!selected && <OnlineSignIn disabled={userBusy} />}
         {bootError ? (
           <div className="user-error" role="alert">
             {translate(bootError)}
-            <p>{translate("Reload the app after resolving the storage problem. Existing records have been kept.")}</p>
+            <p>{authentication?.user ? translate("Resolve the cloud storage issue, then try again. Existing records have been kept.") : translate("Reload the app after resolving the storage problem. Existing records have been kept.")}</p>
+            {retryLoad && <button type="button" className="button secondary small" onClick={retryLoad} disabled={busy}>{translate("Try again")}</button>}
           </div>
         ) : selected ? (
           <form onSubmit={submit} className="planner-form sign-in-form">
@@ -115,6 +121,7 @@ export function UserChooser() {
           </form>
         ) : (
           <>
+            {authentication?.enabled && <div className="auth-divider local-profiles-heading"><span>{translate("Continue with a local profile")}</span></div>}
             {error && <p className="user-error" role="alert">{translate(error)}</p>}
             {users.length > 0 && <div className="user-list" aria-busy={busy}>
               {users.map((user) => (

@@ -33,7 +33,7 @@ export function Dialog({
       }}
     >
       <div className="dialog-head">
-        <div>
+        <div className="dialog-title">
           <span className="eyebrow">{translate("A LITTLE MORE ORGANIZED")}</span>
           <h2>{title}</h2>
         </div>

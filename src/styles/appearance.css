@@ -83,8 +83,6 @@
     --dashboard-blue: var(--scheme-accent);
     --dashboard-blue-soft: var(--scheme-soft);
     --dashboard-blue-ink: var(--scheme-strong);
-    --dashboard-chart-income: var(--scheme-strong);
-    --dashboard-chart-expenses: var(--scheme-accent);
     --ambient-blue: var(--scheme-soft);
     --ambient-sage: var(--scheme-canvas);
     --surface-highlight: var(--color-border);
@@ -107,10 +105,10 @@
     --color-tinted: var(--scheme-dark-soft);
     --color-focus: var(--scheme-dark-accent);
     --color-chart-paid: var(--scheme-dark-accent);
+    --color-chart-planned: color-mix(in srgb, var(--scheme-dark-accent) 55%, var(--scheme-dark-surface));
     --dashboard-blue: var(--scheme-dark-accent);
     --dashboard-blue-soft: var(--scheme-dark-soft);
     --dashboard-blue-ink: var(--scheme-dark-accent);
-    --dashboard-chart-income: var(--scheme-dark-accent);
     --ambient-blue: var(--scheme-dark-soft);
     --ambient-sage: var(--scheme-dark-canvas);
   }
@@ -188,5 +186,28 @@
     .scheme-heading > span { font-size: 10px; }
     .language-picker { max-width: none; }
     .language-picker select { font-size: 16px; }
+  }
+}
+
+/* Online accounts share the existing form, notice, and button system. */
+@layer components {
+  .online-signin { min-width: 0; }
+  .auth-description, .auth-privacy { color: var(--color-text-secondary); font-size: 12px; line-height: 1.7; }
+  .auth-description { margin: 0 0 18px; }
+  .auth-privacy { margin: 20px 0 0; font-size: 11px; }
+  .google-signin { width: 100%; }
+  .auth-divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; color: var(--color-text-secondary); font-size: 11px; }
+  .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--color-border); }
+  .auth-divider > span { max-width: 75%; text-align: center; }
+  .online-signin-form { padding: 0; }
+  .auth-links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; }
+  .auth-links .text-button { min-height: 36px; }
+  .auth-recovery { display: grid; gap: 12px; }
+  .auth-recovery p { overflow-wrap: anywhere; }
+  .online-account-settings .current-user-card { margin-bottom: 16px; }
+  .user-screen .online-signin .status-message { margin: 0; color: var(--color-text); }
+  @media (max-width: 767px) {
+    .online-signin-form input { font-size: 16px; }
+    .auth-links .text-button { min-height: 44px; }
   }
 }

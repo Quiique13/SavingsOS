@@ -74,14 +74,13 @@ export function IncomePage() {
         title={translate("Income")}
         description={translate("Track what you receive and where it goes.")}
       >
-        <button className="button primary" onClick={() => openIncome("new")}>
-          <Plus size={16} />{translate("Add income")}</button>
+        <div className="expense-heading-actions">
+          <MonthPicker month={month} setMonth={setMonth} />
+          <button className="button primary" onClick={() => openIncome("new")}>
+            <Plus size={16} />{translate("Add income")}</button>
+        </div>
       </PageHeading>
-      {message && <p className="income-save-message mb-4 rounded-lg border border-finance-border bg-finance-selected px-4 py-3 text-sm text-finance-ink" role="status">{translate(message)}</p>}
-      <div className="page-toolbar flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="period-label">{translate("Your income this month")}</span>
-        <MonthPicker month={month} setMonth={setMonth} />
-      </div>
+      {message && <p className="status-message" role="status">{translate(message)}</p>}
       <div className="stat-card income-stat">
         <div className="stat-label">{translate("Total received")}<TrendingUp size={18} />
         </div>

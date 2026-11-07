@@ -76,7 +76,7 @@ export function Overview() {
         </div>
         <MonthPicker month={month} setMonth={setMonth} />
       </div>
-      {transferMessage && <p className="transfer-message" role="status">{translate(transferMessage)}</p>}
+      {transferMessage && <p className="status-message" role="status">{translate(transferMessage)}</p>}
       <div className="dashboard-stats">
         <article className="summary-card balance-summary">
           <div className="summary-label">{translate("Total balance") + " "}<span className="summary-icon"><Wallet size={18} /></span></div>

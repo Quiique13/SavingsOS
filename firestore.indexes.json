@@ -1,0 +1,6 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    { "collectionGroup": "finance", "fieldPath": "dataJson", "indexes": [] }
+  ]
+}

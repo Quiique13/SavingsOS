@@ -21,7 +21,7 @@ export function Brand({
       <span className="brand-icon">
         <img src={appIcon} alt="" width={44} height={44} />
       </span>
-      <span className="brand-wordmark">{translate("savings")}<span className="brand-light">{translate("OS")}</span>
+      <span className="brand-wordmark" translate="no">savings<span className="brand-light">OS</span>
       </span>
     </Link>
   );

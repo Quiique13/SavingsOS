@@ -11,12 +11,14 @@ export function PasswordInput({
   autoComplete,
   required = true,
   minLength,
+  disabled = false,
 }: {
   name: string;
   label: string;
   autoComplete: string;
   required?: boolean;
   minLength?: number;
+  disabled?: boolean;
 }) {
   useLanguage();
   const [visible, setVisible] = useState(false);
@@ -31,10 +33,12 @@ export function PasswordInput({
           minLength={minLength}
           maxLength={128}
           required={required}
+          disabled={disabled}
         />
         <button
           type="button"
           className="icon-button"
+          disabled={disabled}
           aria-label={
             visible
               ? translate("Hide {{label}}", { label: label.toLowerCase() })

@@ -8,6 +8,7 @@ export type UsersState = {
   saving: boolean;
   error: string;
   notice?: string;
+  retryLoad?: () => void;
   exportProfiles: () => Promise<void>;
   exportProfile: () => Promise<boolean>;
   importProfile: (
@@ -23,6 +24,7 @@ export type UsersState = {
   createAdmin: (name: string, password: string) => Promise<void>;
   saveAdminSettings: (settings: AdminSettings) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteOnlineAccount?: (password: string) => Promise<void>;
   configureUser: (
     name: string,
     password: string | null,

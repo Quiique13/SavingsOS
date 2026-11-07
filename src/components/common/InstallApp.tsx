@@ -1,7 +1,8 @@
 import { translate, useLanguage } from "../../i18n";
 import { Monitor } from "lucide-react";
 import { useEffect, useState } from "react";
-import { browserStorage } from "../../services/runtime";
+import { browserStorage, nativeApp } from "../../services/runtime";
+import { useAuthentication } from "../../context/AuthenticationContext";
 
 type InstallPrompt = Event & {
   prompt: () => Promise<void>;
@@ -10,6 +11,7 @@ type InstallPrompt = Event & {
 
 export function InstallApp() {
   useLanguage();
+  const authentication = useAuthentication();
   const [prompt, setPrompt] = useState<InstallPrompt | null>(null);
   const [message, setMessage] = useState("");
   const [installing, setInstalling] = useState(false);
@@ -50,6 +52,7 @@ export function InstallApp() {
       setInstalling(false);
     }
   }
+  if (nativeApp) return null;
   return (
     <section className="panel settings-section">
       <span className="settings-icon">
@@ -74,7 +77,7 @@ export function InstallApp() {
           )}
         </div>
         <p className="password-note">
-          {browserStorage
+          {authentication?.user ? translate("Cloud saves require an internet connection. Local profiles remain available for offline use. Export backups regularly.") : browserStorage
             ? translate("Profiles stay in this browser. Export a profile backup before clearing site data or moving to another browser or device. Internet is needed to load the website.")
             : translate("Keep the local savingsOS web server running while using this copy. Export a profile backup to move your records to the hosted website.")}
         </p>

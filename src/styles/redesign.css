@@ -24,11 +24,13 @@
     --ambient-sage: #f0f1f3;
     --surface-highlight: #e9ebee;
     --surface-shadow: 0 3px 14px #252b3503;
+    --radius-panel: 20px;
+    --radius-control: 11px;
     --dashboard-blue: #8eafe1;
     --dashboard-blue-soft: #e4edfb;
     --dashboard-blue-ink: #3c5e91;
-    --dashboard-chart-income: #34363b;
-    --dashboard-chart-expenses: #a8c2e8;
+    --dashboard-chart-income: var(--color-chart-paid);
+    --dashboard-chart-expenses: var(--color-chart-planned);
   }
   :root[data-theme="dark"] {
     --color-canvas: #191b20;
@@ -56,8 +58,6 @@
     --dashboard-blue: #acc9f1;
     --dashboard-blue-soft: #303f57;
     --dashboard-blue-ink: #c5dbfa;
-    --dashboard-chart-income: #e3e9f2;
-    --dashboard-chart-expenses: #6f99d2;
   }
 }
 
@@ -97,22 +97,37 @@
   .topbar-right > .icon-button { border: 1px solid var(--color-border); background: var(--color-surface); }
   .page-content { max-width: 1530px; padding: 34px 34px 48px; }
   .page-heading { margin-bottom: 28px; gap: 20px; }
+  .page-heading > div:first-child { min-width: 0; }
   .page-heading h1 { font-size: 32px; font-weight: 550; letter-spacing: -1.2px; }
+  .page-heading h1, .page-heading p { overflow-wrap: anywhere; }
   .page-heading p { font-size: 12px; color: var(--color-text-secondary); }
-  .button { border-radius: 11px; min-height: 42px; padding: 11px 16px; }
+  .page-actions, .expense-heading-actions { display: flex; align-items: center; flex-wrap: wrap; min-width: 0; max-width: 100%; gap: 10px; }
+  .expense-heading-actions { flex-shrink: 1; }
+  .button { border-radius: var(--radius-control); min-height: 42px; max-width: 100%; padding: 11px 16px; white-space: normal; line-height: 1.5; text-align: center; }
+  .button > svg, .icon-button > svg { flex-shrink: 0; }
   .button.primary { background: var(--color-accent); color: var(--color-on-accent); box-shadow: none; }
   .button.primary:hover { background: var(--color-accent-hover); }
   .button.secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
-  .month-picker { border: 1px solid var(--color-border); box-shadow: none; background: var(--color-surface); }
-  .panel, .stat-card { border: 1px solid var(--color-border); border-radius: 22px; box-shadow: var(--surface-shadow); background: var(--color-surface); backdrop-filter: none; }
+  .month-picker { height: 42px; min-height: 42px; min-width: 0; border: 1px solid var(--color-border); border-radius: var(--radius-control); box-shadow: none; background: var(--color-surface); }
+  .month-picker > label { min-width: 0; }
+  .month-picker > label > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .month-picker > button, .month-picker > label > svg { flex-shrink: 0; }
+  .year-select select { min-height: 42px; border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); }
+  .panel, .stat-card { min-width: 0; border: 1px solid var(--color-border); border-radius: var(--radius-panel); box-shadow: var(--surface-shadow); background: var(--color-surface); backdrop-filter: none; }
   .panel-heading { padding: 23px 24px 18px; }
+  .panel-heading > div { min-width: 0; }
+  .panel-heading h2, .panel-heading p { overflow-wrap: anywhere; }
   .panel-heading h2, .section-heading h2 { font-size: 16px; font-weight: 550; letter-spacing: -0.4px; }
   .panel-heading p { font-size: 11px; line-height: 1.6; margin-top: 5px; }
   .panel-heading > svg { color: var(--color-text-secondary); }
-  .count-badge { border-radius: 50%; min-width: 26px; height: 26px; font-weight: 500; }
+  .count-badge { flex-shrink: 0; border-radius: 999px; min-width: 26px; height: 26px; padding: 0 8px; font-weight: 500; font-variant-numeric: tabular-nums; }
   .stats-grid > .stat-card:first-child, .transfer-summary > .stat-card:first-child, .income-stat { background: linear-gradient(125deg, #3c3e43, #26282d); --stat-muted: #c1c4cd; border-color: #3a3c42; box-shadow: none; }
   .stats-grid > .stat-card:first-child .stat-link { color: #c3d9fa !important; }
   .stat-value { font-size: clamp(26px, 2.5vw, 34px); letter-spacing: -1.2px; }
+  .stat-value, .account-balance, .income-row > b, .annual-amount strong, .transfer-row > b { font-variant-numeric: tabular-nums; }
+  .income-row > div:nth-child(2) { min-width: 0; }
+  .income-row strong, .income-row small { overflow-wrap: anywhere; }
+  .income-row > .category-icon, .income-row > .icon-button { flex-shrink: 0; }
   .progress-track { background: var(--color-surface-alt); height: 6px; }
   .progress-track i { background: var(--dashboard-blue); box-shadow: none; }
   .expense-summary > .stat-card:last-child { background: var(--dashboard-blue-soft); }
@@ -124,10 +139,43 @@
   .account-card { position: relative; overflow: hidden; }
   .account-card::before { position: absolute; content: ""; width: 210px; height: 210px; right: -130px; bottom: -130px; border: 35px solid var(--color-surface-alt); border-radius: 50%; pointer-events: none; }
   .account-card > * { position: relative; }
+  .account-card h2, .account-card > p { overflow-wrap: anywhere; }
   .savings-card { background: var(--dashboard-blue-soft); }
   .account-logo { border-radius: 50%; }
   .demo-banner { margin-bottom: 24px; border-radius: 12px; padding: 10px 14px; background: var(--color-surface); font-size: 11px; }
   .demo-badge { background: var(--dashboard-blue-soft); color: var(--dashboard-blue-ink); }
+
+  /* Shared feedback and dialogs use the same spacing in every workspace. */
+  .status-message, .finance-app .status-message, .admin-portal .status-message, .settings-section .status-message {
+    margin: 0 0 20px;
+    padding: 12px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-selected);
+    color: var(--color-text);
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+  .settings-section .status-message { margin: 16px 0 0; }
+  .error-banner, .user-error, .settings-section .user-error {
+    border-color: color-mix(in srgb, var(--color-danger) 25%, var(--color-border));
+    border-radius: var(--radius-control);
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+    overflow-wrap: anywhere;
+  }
+  .planner-dialog { border-color: var(--color-border); border-radius: var(--radius-panel); }
+  .dialog-head { position: sticky; top: 0; z-index: 2; gap: 16px; background: var(--color-surface-raised); }
+  .dialog-title { min-width: 0; }
+  .dialog-title h2 { overflow-wrap: anywhere; }
+  .dialog-head > .icon-button { flex-shrink: 0; }
+  .planner-form label, .form-grid > *, .transfer-balance-preview > div { min-width: 0; }
+  .transfer-balance-preview strong { overflow-wrap: anywhere; }
+  :is(.finance-app, .planner-dialog, .user-screen, .admin-portal) :is(button, a, input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
 
   /* Overview: clear totals, immediate actions, then detail on demand. */
   .welcome-label { display: block; margin-bottom: 12px; font-size: 10px; letter-spacing: 1.7px; font-weight: 550; color: var(--color-text-secondary); }
@@ -136,7 +184,7 @@
   .overview-heading h1 > span { color: var(--dashboard-blue-ink); }
   .overview-heading p { max-width: none; margin-top: 10px; }
   .dashboard-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-  .summary-card { display: flex; flex-direction: column; min-width: 0; min-height: 170px; padding: 21px 23px 17px; border: 1px solid var(--color-border); border-radius: 20px; background: var(--color-surface); }
+  .summary-card { display: flex; flex-direction: column; min-width: 0; min-height: 170px; padding: 21px 23px 17px; border: 1px solid var(--color-border); border-radius: var(--radius-panel); background: var(--color-surface); }
   .summary-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 450; }
   .summary-icon { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--color-surface-alt); color: var(--color-text-secondary); }
   .summary-value { display: block; margin: 15px 0 17px; font-size: clamp(23px, 2.2vw, 33px); font-weight: 550; line-height: 1.15; letter-spacing: -1.2px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -244,7 +292,7 @@
   .category-track { height: 5px; border-radius: 20px; background: var(--color-surface-alt); overflow: hidden; }
   .category-track > i { display: block; height: 100%; border-radius: inherit; }
   .quiet-empty { color: var(--color-text-secondary); font-size: 12px; line-height: 1.8; }
-  .savings-spotlight { display: flex; align-items: center; gap: 14px; padding: 23px; border-radius: 21px; background: #303238; color: #fff !important; }
+  .savings-spotlight { display: flex; align-items: center; gap: 14px; padding: 23px; border-radius: var(--radius-panel); background: #303238; color: #fff !important; }
   .savings-spotlight:hover { background: #3c414b; }
   .savings-spotlight-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: #ffffff0d; color: #b6cdef; flex-shrink: 0; }
   .savings-spotlight > span:nth-child(2) { min-width: 0; }
@@ -296,6 +344,7 @@
     .summary-card { min-height: 155px; }
   }
   @media (max-width: 767px) {
+    :root { --radius-panel: 18px; }
     .sidebar { width: min(300px, calc(100vw - 32px)); padding: 0 18px max(16px, env(safe-area-inset-bottom)); background: var(--color-surface); }
     .sidebar > .brand { height: 80px; min-height: 80px; margin-bottom: 16px; }
     .sidebar .nav-link { min-height: 48px; font-size: 13px; }
@@ -307,6 +356,13 @@
     .page-heading { align-items: stretch; gap: 20px; margin-bottom: 24px; }
     .page-heading h1 { font-size: 30px; }
     .page-heading p { font-size: 12px; }
+    .page-actions, .expense-heading-actions { width: 100%; align-items: stretch; }
+    .expense-heading-actions > .month-picker { flex: 1 1 100%; }
+    .expense-heading-actions > .button { flex: 1 1 auto; }
+    .month-picker { height: 46px; min-height: 46px; }
+    .month-picker > button { min-width: 44px; }
+    .year-select select { min-height: 46px; font-size: 16px; }
+    .frequency-picker button, .view-toggle button { min-height: 44px; }
     .overview-heading { flex-direction: row; align-items: center; }
     .overview-heading > div { width: 100%; }
     .overview-heading h1 { font-size: 35px; letter-spacing: -1.5px; }
@@ -314,7 +370,7 @@
     .overview-heading .month-picker > label { flex: 1; }
     .welcome-label { font-size: 8px; letter-spacing: 1.4px; }
     .dashboard-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
-    .summary-card { min-height: 157px; padding: 16px 15px; border-radius: 17px; }
+    .summary-card { min-height: 157px; padding: 16px 15px; }
     .summary-label { align-items: flex-start; font-size: 10px; gap: 4px; }
     .summary-icon { width: 25px; height: 25px; }
     .summary-icon > svg { width: 14px; height: 14px; }
@@ -332,7 +388,7 @@
     .dashboard-accounts { grid-row: 4; }
     .spending-panel { grid-row: 5; }
     .savings-spotlight { grid-row: 6; }
-    .panel { border-radius: 20px; }
+    .panel, .stat-card, .planner-dialog { border-radius: var(--radius-panel); }
     .panel-heading { padding: 20px 18px 17px; }
     .panel-heading h2 { font-size: 15px; }
     .panel-heading p { font-size: 10px; }

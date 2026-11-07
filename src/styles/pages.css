@@ -2955,27 +2955,9 @@
     margin-top: 17px;
   }
 
-  .settings-message {
-    background: var(--dark-tinted, #edf4e5);
-    border: 1px solid var(--dark-border, #e2ecd7);
-    border-radius: 7px;
-    padding: 14px 20px;
-    font-size: 11px;
-    color: var(--dark-text-muted, #8fa774);
-  }
-
   .settings-section p {
     font-size: 12px;
     color: var(--dark-text-muted, #96a485);
-  }
-
-  .user-success {
-    font-size: 12px !important;
-    color: var(--dark-text-secondary, #698b52) !important;
-    border-radius: 6px;
-    background: var(--dark-tinted, #eef4e7);
-    padding: 10px 13px;
-    margin-top: 15px !important;
   }
 
   .current-user-card {

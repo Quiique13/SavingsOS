@@ -59,7 +59,6 @@ account|conta|compte|cuenta
 tracked account|conta registada|compte suivi|cuenta registrada
 account activity|atividade da conta|activité du compte|actividad de la cuenta
 savings account|conta de poupança|compte d’épargne|cuenta de ahorro
-savings|poupanças|épargne|ahorros
 transfer|transferência|virement|transferencia
 income entries in|rendimentos em|revenus enregistrés en|ingresos registrados en
 as paid.|como pago.|comme payé.|como pagado.
@@ -79,5 +78,4 @@ transfers. Restoring it replaces only the current user profile. Other users are 
 Switch to|Mudar para|Passer en|Cambiar a
 mode|modo|mode|modo
 s|s|s|s
-OS|OS|OS|OS
 `;

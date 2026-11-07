@@ -2,6 +2,8 @@
 
 A web app for planning everyday purchases, monthly bills, annual expenses, income, accounts, and transfers. Built with React, TypeScript, Vite, and Recharts.
 
+An Android version is available through Capacitor, using the same interface and Firebase accounts. See the [Android build and installation guide](android.md).
+
 ## Open the web app
 
 [Open savingsOS](https://quiique13.github.io/SavingsOS/) · [Deployment status](https://github.com/Quiique13/SavingsOS/actions/workflows/webapp-pages.yml)
@@ -33,6 +35,8 @@ npm run preview:web
 Open `/SavingsOS/` at the preview server's address. Hash routes keep navigation and reloads working on GitHub Pages. The repository uses one branch, `main`. The `savingsOS web app` workflow tests and publishes changes from `main`. Repository Pages settings use **GitHub Actions**.
 
 ## Profiles, storage, and backups
+
+**Online accounts:** Google and email/password sign-in can sync a private planner across devices using Firebase. Follow the [Firebase setup and migration guide](firebase.md) before using cloud accounts. The local storage details below apply to local profiles. Cloud saves require internet; existing local profiles remain independent and are not uploaded automatically.
 
 - **GitHub Pages:** profiles and finance records are saved only in this browser's IndexedDB on this device. They are not uploaded to GitHub. Each browser and device has separate records. Clearing site data or ending a private browsing session can remove this copy.
 - **Local web server:** profiles are saved in `.savingsos-data/profiles.json`. Clearing browser data does not remove these app files. Keep that private folder when moving the local server.
@@ -78,3 +82,5 @@ tests/              Domain, UI, browser persistence, and local API checks
 ```
 
 The same web UI supports mobile and larger screens. Keep page composition in `pages`, reusable UI in `components`, and storage logic in `services`.
+
+The product name is always **savingsOS**, with this exact spelling and capitalization in every language. Never translate the name or its individual parts. Surrounding interface text and financial terms such as “Savings” are localized normally. Keep the wordmark marked `translate="no"` to exclude it from browser translation.

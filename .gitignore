@@ -11,6 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+/.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 
 # Editor directories and files
 .vscode/*
@@ -31,3 +35,38 @@ dist-ssr
 # Generated output and private legacy profile folders
 /output/
 **/savingsOS-data/
+/.android-tools/
+*.jks
+*.keystore
+
+# Local environment, credentials, and private keys
+.env
+.env.*
+!.env.example
+/.aws/
+/.ssh/
+/.codex/
+*.pem
+*.key
+*.p12
+*.pfx
+**/service-account*.json
+**/*serviceAccount*.json
+**/*firebase-adminsdk*.json
+credentials.json
+token.json
+tokens.json
+**/service_account*.json
+.npmrc
+.netrc
+.pypirc
+keystore.properties
+signing.properties
+
+# Local databases and scratch files
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+/tmp/
+/.gradle/

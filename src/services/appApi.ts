@@ -1,9 +1,13 @@
 import { type Data } from "../types/finance";
 import { type ListedUser, type User } from "./profileVault";
-import { browserStorage } from "./runtime";
+import { browserStorage, nativeApp } from "./runtime";
 export type AppSession = { user: User; revision: number; data: Data };
 export type AppState = { users: ListedUser[]; session: AppSession | null };
 export async function appRequest<T = AppState>(path: string, input?: object): Promise<T> {
+  if (nativeApp) {
+    const { nativeProfiles } = await import("./nativeAppApi");
+    return nativeProfiles.request<T>(path, input);
+  }
   if (browserStorage) {
     const { browserProfiles } = await import("./browserProfiles");
     return browserProfiles.request<T>(path, input);

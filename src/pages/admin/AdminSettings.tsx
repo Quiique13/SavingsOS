@@ -46,7 +46,7 @@ export function Admin() {
         <label>{translate("Reminder lead time (days)")}<input type="number" required min={0} max={30} step={1} value={Number.isFinite(draft.reminderDays) ? draft.reminderDays : ""} onChange={e => change("reminderDays", e.target.value === "" ? NaN : Number(e.target.value))} /></label>
       </div><label className="user-checkbox"><input type="checkbox" checked={draft.experimentalFeatures} onChange={e => change("experimentalFeatures", e.target.checked)} /><span><strong>{translate("Experimental features")}</strong><small>{translate("Placeholder switch for upcoming features.")}</small></span></label></fieldset>
 
-      {error && <p className="user-error" role="alert">{translate(error)}</p>}{message && <p className="user-success" role="status">{translate(message)}</p>}
+      {error && <p className="user-error" role="alert">{translate(error)}</p>}{message && <p className="status-message" role="status">{translate(message)}</p>}
       <div className="admin-form-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button type="button" className="button secondary" disabled={busy} onClick={() => { setDraft({ ...placeholderAdminSettings }); setMessage("Placeholder values restored in the form. Save to apply."); setError(""); }}><RotateCcw size={16} />{translate("Reset placeholders")}</button><button className="button primary" disabled={busy}><Save size={16} />{busy ? translate("Saving…") : translate("Save admin settings")}</button></div>
     </form>
     <AdminProfiles />

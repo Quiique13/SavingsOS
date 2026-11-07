@@ -4,6 +4,8 @@ import { parsePortableProfile, type PortableProfile } from "./portableProfile";
 export const USERS_KEY = "savings-os-users-v1";
 const ITERATIONS = 600000;
 export type User = {
+  authProvider?: "firebase";
+  email?: string;
   role?: "user" | "admin";
   id: string;
   name: string;

@@ -11,6 +11,7 @@ import { useUsers } from "../../hooks/useUsers";
 import { errorText, initials } from "../../utils/profile";
 import { Dialog } from "../common/Dialog";
 import { PasswordInput } from "./PasswordInput";
+import { OnlineAccountSettings } from "./OnlineAccountSettings";
 
 export function UserSettings({ accountOnly = false }: { accountOnly?: boolean }) {
   useLanguage();
@@ -21,6 +22,7 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   if (!currentUser) return null;
+  if (currentUser.authProvider === "firebase") return <OnlineAccountSettings />;
   const user = currentUser;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -115,7 +117,7 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
 
         <p className="password-note">{translate("Password protection encrypts the saved data for this profile. Exported finance backups and older app copies are separate. There is no password recovery. Export a backup regularly.")}</p>
         {message && (
-          <p className="user-success" role="status">
+          <p className="status-message" role="status">
             {translate(message)}
           </p>
         )}

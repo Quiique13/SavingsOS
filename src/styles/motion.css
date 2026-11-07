@@ -55,7 +55,7 @@
   .filter-row, .calendar-selection { animation: surface-arrive 160ms var(--motion-ease); }
   .planner-dialog[open] { animation: dialog-arrive 200ms var(--motion-ease) both; }
   .planner-dialog[open]::backdrop { animation: fade-arrive 160ms ease-out; }
-  .transfer-message, .income-save-message, .error-banner, .user-error {
+  .status-message, .error-banner, .user-error {
     animation: fade-arrive 160ms ease-out;
   }
   .progress-track i { transition: width 320ms var(--motion-ease); }

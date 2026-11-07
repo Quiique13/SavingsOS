@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/finance/planner {
+      function owner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      function validPlanner() {
+        return request.resource.data.keys().hasOnly(['version', 'revision', 'dataJson', 'updatedAt'])
+          && request.resource.data.keys().hasAll(['version', 'revision', 'dataJson', 'updatedAt'])
+          && request.resource.data.version == 1
+          && request.resource.data.revision is int
+          && request.resource.data.dataJson is string
+          && request.resource.data.dataJson.size() <= 900000
+          && request.resource.data.updatedAt == request.time;
+      }
+      allow get: if owner();
+      allow list: if false;
+      allow create: if owner() && validPlanner() && request.resource.data.revision == 1;
+      allow update: if owner() && validPlanner()
+        && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if owner();
+    }
+    // Everything else is private, including local administrator functions.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

@@ -3,15 +3,16 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./components/layout/AppLayout";
 import { UserGate } from "./components/users/UserGate";
 import { ThemeProvider } from "./context/ThemeProvider";
-import { UsersProvider } from "./context/UsersProvider";
 import { Expenses } from "./pages/Expenses";
 import { Settings } from "./pages/Settings";
 import { LanguageSync } from "./components/common/LanguageSync";
+import { NativeControls } from "./components/common/NativeControls";
 import { translate, useLanguage } from "./i18n";
 
 const Overview = lazy(() =>
   import("./pages/Overview").then((module) => ({ default: module.Overview })),
 );
+const AuthenticationProvider = lazy(() => import("./context/AuthenticationProvider").then(module => ({ default: module.AuthenticationProvider })));
 const Accounts = lazy(() =>
   import("./pages/Accounts").then((module) => ({ default: module.Accounts })),
 );
@@ -33,7 +34,7 @@ const AdminPortal = lazy(() =>
 export function AppRoutes() {
   useLanguage();
   return (
-    <><LanguageSync />
+    <><LanguageSync /><NativeControls />
     <Suspense
       fallback={
         <div className="loading-state">
@@ -73,9 +74,9 @@ export function AppRoutes() {
 export default function App() {
   return (
     <ThemeProvider>
-      <UsersProvider>
+      <Suspense fallback={<div className="loading-state"><p>{translate("Opening your space...")}</p></div>}><AuthenticationProvider>
         <AppRoutes />
-      </UsersProvider>
+      </AuthenticationProvider></Suspense>
     </ThemeProvider>
   );
 }

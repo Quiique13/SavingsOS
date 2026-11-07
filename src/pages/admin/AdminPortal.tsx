@@ -1,7 +1,7 @@
 import { translate, useLanguage } from "../../i18n";
 import { ArrowLeft, LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Brand } from "../../components/common/Brand";
 import { ThemeToggle } from "../../components/theme/ThemeControls";
 import { CreateUserDialog } from "../../components/users/CreateUserDialog";
@@ -35,6 +35,7 @@ export function AdminPortal() {
     catch (e) { setError(e instanceof Error ? e.message : "Your settings could not be saved. Try signing out again."); }
   }
   if (!ready) return <div className="loading-state"><p>{translate("Opening admin…")}</p></div>;
+  if (currentUser?.authProvider === "firebase") return <Navigate to="/dashboard" replace />;
   if (currentUser?.role === "admin" && !bootError) return <div className="admin-portal">
     <header className="admin-portal-header"><Brand /><div><span className="admin-save-status">{saving ? translate("Saving…") : translate("Admin workspace")}</span><ThemeToggle /><button className="button secondary small" disabled={busy} onClick={() => void leave()}><LogOut size={16} />{translate("Sign out")}</button></div></header>
     <main className="admin-portal-content">{notice && <p className="user-error" role="alert">{translate(notice)}</p>}<Admin key={currentUser.id} /><LanguageSettings /><section className="admin-account-section"><UserSettings accountOnly /></section></main>

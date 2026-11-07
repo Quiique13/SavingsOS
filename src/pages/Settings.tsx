@@ -26,6 +26,7 @@ import { isValidBackup, today } from "../utils/finance";
 export function Settings() {
   useLanguage();
   const { currentUser, exportProfile, busy, saving } = useUsers();
+  const online = currentUser?.authProvider === "firebase";
   const { data, save, clearDemo } = useFinance();
   const file = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState("");
@@ -80,8 +81,8 @@ export function Settings() {
           <span className="settings-icon"><ArrowDownToLine size={22} /></span>
           <div>
             <h2>{translate("Portable profile")}</h2>
-            <p>{translate("Move your profile, accounts, expenses, payment history, income, and transfers to another copy of savingsOS. Password-protected profiles keep their encryption and use the same password. Profiles without a password are exported unencrypted.")}</p>
-            <p>{translate("In savingsOS on another browser or device, choose Import profile on the user screen and select this file. Existing profiles are kept. Each copy has independent records after import.")}</p>
+            <p>{online ? translate("This exports an unencrypted local copy of your online planner. It does not contain your Google credentials or account password. Keep it somewhere safe.") : translate("Move your profile, accounts, expenses, payment history, income, and transfers to another copy of savingsOS. Password-protected profiles keep their encryption and use the same password. Profiles without a password are exported unencrypted.")}</p>
+            <p>{online ? translate("Sign in with the same online account on another device to open your synced planner. Imported local copies are independent.") : translate("In savingsOS on another browser or device, choose Import profile on the user screen and select this file. Existing profiles are kept. Each copy has independent records after import.")}</p>
             <button className="button primary small" disabled={busy || saving} onClick={() => {
               setMessage("");
               void exportProfile().then(exported => setMessage(exported ? "Portable profile exported. Import it from the other app’s user screen." : "Export cancelled.")).catch(error => setMessage(error instanceof Error ? error.message : "The profile could not be exported."));
@@ -105,12 +106,12 @@ export function Settings() {
             <ShieldCheck size={22} />
           </span>
           <div>
-            <h2>{translate("Your data stays with you")}</h2>
+            <h2>{online ? translate("Cloud storage and privacy") : translate("Your data stays with you")}</h2>
             <p>
-              {browserStorage ? translate("Your profiles and finance records are saved only in this browser on this device. They are not uploaded to GitHub. Password-protected profiles keep their finance records encrypted.") : translate("Your profiles and finance records are saved in this app's private data folder. Clearing browser data does not remove them.")}
+              {online ? translate("Your finance records are stored in Firebase under your signed-in account. Cloud records use Firebase access controls and are not encrypted with your local profile password.") : browserStorage ? translate("Your profiles and finance records are saved only in this browser on this device. They are not uploaded to GitHub. Password-protected profiles keep their finance records encrypted.") : translate("Your profiles and finance records are saved in this app's private data folder. Clearing browser data does not remove them.")}
             </p>
             <p>
-              {browserStorage ? translate("Clearing site data, using a different browser, or ending a private browsing session can remove this copy. Export a portable profile regularly to keep a backup or move to another browser or device.") : translate("Export a backup regularly. The app data folder is excluded from Git, so your records stay out of the repository.")}
+              {online ? translate("Cloud saves require an internet connection. Local profiles remain available for offline use. Export backups regularly.") : browserStorage ? translate("Clearing site data, using a different browser, or ending a private browsing session can remove this copy. Export a portable profile regularly to keep a backup or move to another browser or device.") : translate("Export a backup regularly. The app data folder is excluded from Git, so your records stay out of the repository.")}
             </p>
           </div>
         </section>
@@ -120,12 +121,14 @@ export function Settings() {
           </span>
           <div>
             <h2>{translate("Backup & restore")}</h2>
+            {online && <p>{translate("To bring an existing local planner here, open that local profile and export a finance backup. Then sign in to your online account and restore that backup below. Review the confirmation before replacing any cloud records.")}</p>}
             <p>{translate("Download accounts, expenses, payment dates, income, and transfers for the current user. This exported JSON file is not password protected; keep it somewhere safe.")}</p>
             <div className="settings-actions flex flex-wrap gap-2">
               <button className="button primary small" onClick={backup}>
                 <ArrowDownToLine size={15} />{translate("Export backup")}</button>
               <button
                 className="button secondary small"
+                disabled={busy || saving}
                 onClick={() => file.current?.click()}
               >
                 <Upload size={15} />{translate("Restore backup")}</button>
@@ -161,7 +164,7 @@ export function Settings() {
           </section>
         )}
         {message && (
-          <p className="settings-message" role="status">
+          <p className="status-message" role="status">
             {translate(message)}
           </p>
         )}
