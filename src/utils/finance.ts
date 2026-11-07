@@ -10,8 +10,15 @@ export function isValidAdminSettings(value: unknown): value is AdminSettings {
     typeof v.experimentalFeatures === "boolean" && typeof v.announcement === "string" && v.announcement.length <= 500;
 }
 export const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Lisbon", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-export const money = (n: number) => new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" }).format(n);
-export const dateLabel = (d: string, options?: Intl.DateTimeFormatOptions) => new Date(d + "T12:00:00").toLocaleDateString("en-GB", options ?? { day: "numeric", month: "short" });
+// Keep financial calculations independent of the UI; display formatting follows
+// the app's document language and defaults to English outside the browser.
+function formattingLocale(currency = false) {
+  const language = typeof document === "undefined" ? "en" : document.documentElement.lang;
+  return ({ pt: "pt-PT", fr: "fr-FR", es: "es-ES" } as Record<string, string>)[language] ?? (currency ? "en-IE" : "en-GB");
+}
+export const money = (n: number) => new Intl.NumberFormat(formattingLocale(true), { style: "currency", currency: "EUR" }).format(n);
+export const compactMoney = (n: number) => new Intl.NumberFormat(formattingLocale(true), { style: "currency", currency: "EUR", notation: "compact", maximumFractionDigits: 1 }).format(n);
+export const dateLabel = (d: string, options?: Intl.DateTimeFormatOptions) => new Date(d + "T12:00:00").toLocaleDateString(formattingLocale(), options ?? { day: "numeric", month: "short" });
 export const monthLabel = (m: string) => dateLabel(m + "-01", { month: "long", year: "numeric" });
 export const shiftMonth = (m: string, n: number) => { const d = new Date(m + "-01T12:00:00"); d.setMonth(d.getMonth() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; };
 export const categories = ["Housing", "Groceries", "Subscriptions", "Utilities", "Transport", "Health", "Shopping", "Eating out", "Other"];

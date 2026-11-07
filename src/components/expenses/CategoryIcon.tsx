@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n";
 import {
   Car,
   Cloud,
@@ -19,6 +20,7 @@ export function CategoryIcon({
   category: string;
   name?: string;
 }) {
+  useLanguage();
   const Icon = name.includes("Spotify")
     ? Music2
     : name.includes("Netflix")
@@ -26,15 +28,15 @@ export function CategoryIcon({
       : name.includes("iCloud")
         ? Cloud
         : {
-          Housing: House,
-          Groceries: ShoppingBasket,
-          Utilities: Zap,
-          Health: Heart,
-          Transport: Car,
-          Shopping: ShoppingBag,
-          "Eating out": Utensils,
-          Subscriptions: Repeat2,
-        }[category] || Layers;
+            Housing: House,
+            Groceries: ShoppingBasket,
+            Utilities: Zap,
+            Health: Heart,
+            Transport: Car,
+            Shopping: ShoppingBag,
+            "Eating out": Utensils,
+            Subscriptions: Repeat2,
+          }[category] || Layers;
   return (
     <span
       className={

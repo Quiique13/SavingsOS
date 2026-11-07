@@ -1,8 +1,9 @@
+import { translate, useLanguage } from "../../i18n";
 import {
   CalendarDays,
   ChevronDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { monthLabel, shiftMonth } from "../../utils/finance";
 
@@ -13,10 +14,11 @@ export function MonthPicker({
   month: string;
   setMonth: (m: string) => void;
 }) {
+  useLanguage();
   return (
     <div className="month-picker">
       <button
-        aria-label="Previous month"
+        aria-label={translate("Previous month")}
         onClick={() => setMonth(shiftMonth(month, -1))}
       >
         <ChevronLeft size={16} />
@@ -25,7 +27,7 @@ export function MonthPicker({
         <CalendarDays size={15} />
         <span>{monthLabel(month)}</span>
         <input
-          aria-label="Select month"
+          aria-label={translate("Select month")}
           type="month"
           value={month}
           onChange={(e) => {
@@ -35,7 +37,7 @@ export function MonthPicker({
         <ChevronDown size={13} />
       </label>
       <button
-        aria-label="Next month"
+        aria-label={translate("Next month")}
         onClick={() => setMonth(shiftMonth(month, 1))}
       >
         <ChevronRight size={16} />

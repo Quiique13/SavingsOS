@@ -202,7 +202,10 @@ export function createAppServer(directory: string) {
         path === "/api/profile-import" ||
         path === "/api/setup-admin"
       ) {
-        if ((path === "/api/register" || path === "/api/profile-import") && actor(token))
+        if (
+          (path === "/api/register" || path === "/api/profile-import") &&
+          actor(token)
+        )
           throw new HttpError(
             403,
             "Sign out to create a new profile, or use admin profile management.",
@@ -210,20 +213,24 @@ export function createAppServer(directory: string) {
         const password = textField(input.password, "password", true);
         const session =
           path === "/api/profile-import"
-            ? await vault.importProfile(input.profile, password, textField(input.name, "name"))
+            ? await vault.importProfile(
+                input.profile,
+                password,
+                textField(input.name, "name"),
+              )
             : path === "/api/sign-in"
-            ? await vault.open(textField(input.id, "profile ID"), password)
-            : path === "/api/register"
-              ? await vault.register(
-                  textField(input.name, "name"),
-                  createInitialData(),
-                  password,
-                )
-              : await vault.createAdmin(
-                  textField(input.name, "name"),
-                  createInitialData(),
-                  password,
-                );
+              ? await vault.open(textField(input.id, "profile ID"), password)
+              : path === "/api/register"
+                ? await vault.register(
+                    textField(input.name, "name"),
+                    createInitialData(),
+                    password,
+                  )
+                : await vault.createAdmin(
+                    textField(input.name, "name"),
+                    createInitialData(),
+                    password,
+                  );
         if (token) sessions.delete(token);
         token = randomBytes(32).toString("hex");
         sessions.set(token, {

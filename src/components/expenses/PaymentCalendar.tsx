@@ -1,6 +1,5 @@
-import {
-  CalendarDays
-} from "lucide-react";
+import { translate, useLanguage, weekdayLabels } from "../../i18n";
+import { CalendarDays } from "lucide-react";
 import { useState } from "react";
 import { type Row } from "../../types/finance";
 import { dateLabel, money, monthLabel, today } from "../../utils/finance";
@@ -16,6 +15,7 @@ export function Calendar({
   compact?: boolean;
   onSelect: (r: Row) => void;
 }) {
+  useLanguage();
   const [selected, setSelected] = useState<string | null>(null);
   const first = new Date(month + "-01T12:00:00");
   const offset = (first.getDay() + 6) % 7;
@@ -33,12 +33,12 @@ export function Calendar({
       }
     >
       <div className="aside-title">
-        <h3>{compact ? "Payment calendar" : monthLabel(month)}</h3>
+        <h3>{compact ? translate("Payment calendar") : monthLabel(month)}</h3>
         <CalendarDays size={15} />
       </div>
       {compact && <p className="calendar-month">{monthLabel(month)}</p>}
       <div className="calendar-grid">
-        {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+        {weekdayLabels().map((d, i) => (
           <span className="weekday" key={i}>
             {d}
           </span>
@@ -51,7 +51,7 @@ export function Calendar({
           const bills = rows.filter((r) => r.date === date);
           return (
             <button
-              aria-label={dateLabel(date) + " · " + bills.length + " expenses"}
+              aria-label={dateLabel(date) + " · " + bills.length + " " + translate("expenses")}
               key={date}
               className={
                 (date === today() ? "today " : "") +
@@ -80,17 +80,11 @@ export function Calendar({
       </div>
       <div className="calendar-legend">
         <span>
-          <i style={{ background: "#458269" }} />
-          Paid
-        </span>
+          <i style={{ background: "#458269" }} />{translate("Paid")}</span>
         <span>
-          <i style={{ background: "#caa66e" }} />
-          Upcoming
-        </span>
+          <i style={{ background: "#caa66e" }} />{translate("Upcoming")}</span>
         <span>
-          <i style={{ background: "#c67563" }} />
-          Overdue
-        </span>
+          <i style={{ background: "#c67563" }} />{translate("Overdue")}</span>
       </div>
       {selected && (
         <div className="calendar-selection">
@@ -103,7 +97,7 @@ export function Calendar({
               </button>
             ))
           ) : (
-            <p>No expenses due on this day.</p>
+            <p>{translate("No expenses due on this day.")}</p>
           )}
         </div>
       )}

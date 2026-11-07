@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "../../i18n";
 import {
   KeyRound,
   LogOut,
@@ -12,6 +13,7 @@ import { Dialog } from "../common/Dialog";
 import { PasswordInput } from "./PasswordInput";
 
 export function UserSettings({ accountOnly = false }: { accountOnly?: boolean }) {
+  useLanguage();
   const { currentUser, busy, configureUser, signOut } = useUsers();
   const [action, setAction] = useState<"name" | "password" | "remove" | null>(
     null,
@@ -63,25 +65,22 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
         <Users size={22} />
       </span>
       <div>
-        <h2>{accountOnly ? "Admin account" : "Users & passwords"}</h2>
-        <p>
-          Each user has their own accounts, expenses, income, and payment
-          history.
-        </p>
+        <h2>{accountOnly ? translate("Admin account") : translate("Users & passwords")}</h2>
+        <p>{translate("Each user has their own accounts, expenses, income, and payment history.")}</p>
         <div className="current-user-card">
           <span className="user-avatar">{initials(user.name)}</span>
           <div>
             <strong>{user.name}</strong>
             <small>
               {user.hasPassword
-                ? "Password protected · saved profile data is encrypted"
-                : "No password · anyone with access to this app can open this profile"}
+                ? translate("Password protected · saved profile data is encrypted")
+                : translate("No password · anyone with access to this app can open this profile")}
             </small>
           </div>
           <button
             className="icon-button"
             disabled={busy}
-            aria-label="Rename current user"
+            aria-label={translate("Rename current user")}
             onClick={() => open("name")}
           >
             <Pencil size={15} />
@@ -94,16 +93,14 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
             onClick={() => open("password")}
           >
             <KeyRound size={15} />
-            {user.hasPassword ? "Change password" : "Set a password"}
+            {user.hasPassword ? translate("Change password") : translate("Set a password")}
           </button>
           {user.hasPassword && user.role !== "admin" && (
             <button
               className="button secondary small"
               disabled={busy}
               onClick={() => open("remove")}
-            >
-              Remove password
-            </button>
+            >{translate("Remove password")}</button>
           )}
           {!accountOnly && <button
             className="button secondary small"
@@ -113,24 +110,18 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
               void signOut().catch((e) => setError(errorText(e)));
             }}
           >
-            <LogOut size={15} />
-            Switch user
-          </button>}
+            <LogOut size={15} />{translate("Switch user")}</button>}
         </div>
 
-        <p className="password-note">
-          Password protection encrypts the saved data for this profile. Exported
-          finance backups and older app copies are separate. There is no
-          password recovery. Export a backup regularly.
-        </p>
+        <p className="password-note">{translate("Password protection encrypts the saved data for this profile. Exported finance backups and older app copies are separate. There is no password recovery. Export a backup regularly.")}</p>
         {message && (
           <p className="user-success" role="status">
-            {message}
+            {translate(message)}
           </p>
         )}
         {error && !action && (
           <p className="user-error" role="alert">
-            {error}
+            {translate(error)}
           </p>
         )}
       </div>
@@ -138,21 +129,19 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
         <Dialog
           title={
             action === "name"
-              ? "Rename your user"
+              ? translate("Rename your user")
               : action === "remove"
-                ? "Remove password?"
+                ? translate("Remove password?")
                 : user.hasPassword
-                  ? "Change your password"
-                  : "Set a password"
+                  ? translate("Change your password")
+                  : translate("Set a password")
           }
           onClose={() => setAction(null)}
           canClose={!busy}
         >
           <form className="planner-form" onSubmit={submit}>
             {action === "name" ? (
-              <label>
-                User name
-                <input
+              <label>{translate("User name")}<input
                   autoFocus
                   name="name"
                   defaultValue={user.name}
@@ -166,7 +155,7 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
                 {user.hasPassword && (
                   <PasswordInput
                     name="current"
-                    label="Current password"
+                    label={translate("Current password")}
                     autoComplete="current-password"
                   />
                 )}
@@ -174,32 +163,26 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
                   <>
                     <PasswordInput
                       name="password"
-                      label="New password"
+                      label={translate("New password")}
                       autoComplete="new-password"
                       minLength={8}
                     />
                     <PasswordInput
                       name="confirm"
-                      label="Confirm new password"
+                      label={translate("Confirm new password")}
                       autoComplete="new-password"
                       minLength={8}
                     />
-                    <p className="password-note">
-                      Use 8 to 128 characters. Keep it somewhere safe: forgotten
-                      passwords cannot be recovered.
-                    </p>
+                    <p className="password-note">{translate("Use 8 to 128 characters. Keep it somewhere safe: forgotten passwords cannot be recovered.")}</p>
                   </>
                 ) : (
-                  <p className="form-intro">
-                    Anyone using this browser will be able to open {user.name}'s
-                    planner without a password.
-                  </p>
+                  <p className="form-intro">{translate("Anyone using this browser will be able to open {{name}}’s planner without a password.", { name: user.name })}</p>
                 )}
               </>
             )}
             {error && (
               <p className="user-error" role="alert">
-                {error}
+                {translate(error)}
               </p>
             )}
             <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -208,15 +191,13 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
                 className="button secondary"
                 disabled={busy}
                 onClick={() => setAction(null)}
-              >
-                Cancel
-              </button>
+              >{translate("Cancel")}</button>
               <button className="button primary" disabled={busy}>
                 {busy
-                  ? "Saving…"
+                  ? translate("Saving…")
                   : action === "remove"
-                    ? "Remove password"
-                    : "Save changes"}
+                    ? translate("Remove password")
+                    : translate("Save changes")}
                 <ShieldCheck size={16} />
               </button>
             </div>

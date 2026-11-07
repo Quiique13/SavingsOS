@@ -32,7 +32,10 @@ export class FileStore {
       return readFileSync(this.file, "utf8");
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
-      throw new Error("The app data file could not be read. Saved records have not been changed.", { cause: error });
+      throw new Error(
+        "The app data file could not be read. Saved records have not been changed.",
+        { cause: error },
+      );
     }
   }
   setItem(key: string, value: string): void {
@@ -60,7 +63,10 @@ export class FileStore {
       } catch {
         /* Preserve the last complete data file. */
       }
-      throw new Error("The app data file could not be saved. Check disk space and folder access. Existing records have not been replaced.", { cause: error });
+      throw new Error(
+        "The app data file could not be saved. Check disk space and folder access. Existing records have not been replaced.",
+        { cause: error },
+      );
     }
   }
   async locked<T>(action: () => Promise<T>): Promise<T> {

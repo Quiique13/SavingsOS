@@ -89,12 +89,105 @@ test("profile selection and settings navigation", async t => {
       assert.equal((await vault.open(regular.user.id)).user.name, "Miguel");
       await click(find("button", "Dark mode"));
       assert.equal(document.documentElement.dataset.theme, "dark");
+      await click(find(".scheme-option", "Sage"));
+      assert.equal(document.documentElement.dataset.colorScheme, "sage");
+      assert.equal(document.documentElement.dataset.theme, "dark");
+      assert.equal(document.querySelector('meta[name="theme-color"]').content, "#19211d");
       await click(find("button", "Light mode"));
+      assert.equal(document.documentElement.dataset.theme, "light");
+      assert.equal(document.documentElement.dataset.colorScheme, "sage");
+      for (const [name, id] of [["Ocean", "ocean"], ["Lavender", "lavender"], ["Rose", "rose"], ["Amber", "amber"], ["Graphite", "graphite"]]) {
+        await click(find(".scheme-option", name));
+        assert.equal(document.documentElement.dataset.colorScheme, id);
+        assert.equal(localStorage.getItem("savings-os-color-scheme"), id);
+        assert.equal(container.querySelectorAll('.scheme-option[aria-pressed="true"]').length, 1);
+        assert.equal(container.querySelector('.scheme-option[aria-pressed="true"]').dataset.scheme, id);
+      }
+      await act(async () => root.unmount());
+      root = createRoot(container);
+      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/settings"] }, e(AppRoutes))))));
+      await waitFor(() => container.querySelector(".settings-page"));
+      assert.equal(document.documentElement.dataset.colorScheme, "graphite");
+      assert.equal(container.querySelector('.scheme-option[aria-pressed="true"]').dataset.scheme, "graphite");
       assert.equal(document.documentElement.dataset.theme, "light");
       await click(find("button", "Set a password"));
       assert.ok(container.querySelector('dialog[open][aria-label="Set a password"]'));
       await click(find("dialog button", "Cancel"));
       assert.equal((await vault.open(regular.user.id)).user.hasPassword, false);
+    });
+    await t.test("settings switches all four languages, persists the choice, and keeps saved values canonical", async () => {
+      const { vault, regular } = await mount("/settings");
+      const session = await vault.open(regular.user.id);
+      const { today } = await server.ssrLoadModule("/src/utils/finance.ts");
+      const month = today().slice(0, 7);
+      const original = { ...session.data, expenses: [
+        { id: "language-rent", name: "My original rent", amount: 650, category: "Housing", accountId: "bleap", due: month + "-01", frequency: "monthly", notes: "Original notes: été, verão" },
+        { id: "custom-category", name: "Custom category record", amount: 20, category: "Source", accountId: "moey", due: month + "-02", frequency: "monthly", notes: "Keep Source untranslated" },
+      ] };
+      await vault.save(session, original);
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".settings-page"));
+      assert.equal(container.querySelector(".language-picker select").value, "en");
+      assert.equal(document.documentElement.lang, "en");
+      for (const [code, settings, overview, housing, expenses] of [
+        ["pt", "Definições", "Visão geral", "Habitação", "Despesas"],
+        ["fr", "Paramètres", "Vue d’ensemble", "Logement", "Dépenses"],
+        ["es", "Configuración", "Resumen", "Vivienda", "Gastos"],
+        ["en", "Settings", "Overview", "Housing", "Expenses"],
+      ]) {
+        await fill(".language-picker select", code);
+        assert.equal(document.documentElement.lang, code);
+        assert.equal(container.querySelector(".settings-page h1").textContent, settings);
+        assert.equal(container.querySelector('.sidebar nav a[href="/dashboard"] span').textContent, overview);
+        await click(container.querySelector('.sidebar nav a[href="/expenses"]'));
+        await waitFor(() => container.querySelector(".expenses-page"));
+        assert.equal(container.querySelector(".expenses-page h1").textContent, expenses);
+        assert.ok(container.querySelector(".expense-table").textContent.includes(housing));
+        assert.ok(container.querySelector(".expense-table").textContent.includes("Source"));
+        const status = container.querySelector('.table-controls select');
+        assert.equal(status.value, "All statuses");
+        await fill(".table-controls select", "Unpaid");
+        assert.equal(container.querySelectorAll(".expense-table tbody tr").length, 2);
+        await click(container.querySelector(".expense-heading-actions > button.primary"));
+        assert.equal(container.querySelector('select[name="category"] option[value="Housing"]').textContent, housing);
+        await click(container.querySelector("dialog .dialog-head button"));
+        await click(container.querySelector('aside a[href="/settings"]'));
+        await waitFor(() => container.querySelector(".settings-page"));
+      }
+      assert.deepEqual((await vault.open(regular.user.id)).data.expenses, original.expenses);
+      await fill(".language-picker select", "fr");
+      await click(container.querySelector('.sidebar nav a[href="/expenses"]'));
+      await waitFor(() => container.querySelector(".expenses-page"));
+      await click(container.querySelector(".expense-heading-actions > button.primary"));
+      await fill('input[name="name"]', "Original name: aluguel / loyer");
+      await fill('input[name="amount"]', "12.34");
+      await fill('select[name="category"]', "Housing");
+      await fill('textarea[name="notes"]', "Keep my accents: français, português");
+      await act(async () => container.querySelector("dialog form").dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true })));
+      await waitFor(() => !container.querySelector("dialog"));
+      await waitFor(() => !container.querySelector(".local-status").textContent.includes("Enregistrement"));
+      const record = (await vault.open(regular.user.id)).data.expenses.find(expense => expense.name === "Original name: aluguel / loyer");
+      assert.equal(record.category, "Housing");
+      assert.equal(record.amount, 12.34);
+      assert.equal(record.notes, "Keep my accents: français, português");
+      await click(container.querySelector('aside a[href="/settings"]'));
+      await waitFor(() => container.querySelector(".settings-page"));
+      await act(async () => root.unmount()); root = createRoot(container);
+      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/settings"] }, e(AppRoutes))))));
+      await waitFor(() => container.querySelector(".settings-page"));
+      assert.equal(container.querySelector(".language-picker select").value, "fr");
+      assert.equal(container.querySelector(".settings-page h1").textContent, "Paramètres");
+      await act(async () => {
+        localStorage.setItem("savings-os-language", "es");
+        window.dispatchEvent(new dom.window.StorageEvent("storage", { key: "savings-os-language", newValue: "es" }));
+      });
+      assert.equal(container.querySelector(".settings-page h1").textContent, "Configuración");
+      await act(async () => {
+        localStorage.setItem("savings-os-language", "unsupported");
+        window.dispatchEvent(new dom.window.StorageEvent("storage", { key: "savings-os-language", newValue: "unsupported" }));
+      });
+      assert.equal(container.querySelector(".language-picker select").value, "en");
+      assert.equal(container.querySelector(".settings-page h1").textContent, "Settings");
     });
     await t.test("every finance page uses the shared layout after route reorganization", async () => {
       await mount("/dashboard");
@@ -121,14 +214,34 @@ test("profile selection and settings navigation", async t => {
       await waitFor(() => container.querySelector(".user-choice"));
       assert.equal(container.querySelector(".finance-app"), null);
     });
-    await t.test("compact navigation preserves page state and remembers the expanded preference", async () => {
+    await t.test("home opens the overview and its shortcuts open the existing entry forms", async () => {
+      await mount("/");
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".overview-page"));
+      assert.equal(container.querySelector(".sidebar-collapsed"), null);
+      assert.ok(container.querySelector(".overview-heading h1").textContent.includes("Miguel"));
+      assert.equal(container.querySelectorAll(".dashboard-stats .summary-card").length, 4);
+      await click(find(".quick-actions button", "Add expense"));
+      assert.ok(container.querySelector('dialog[open][aria-label="Add an expense"]'));
+      await click(container.querySelector('button[aria-label="Close dialog"]'));
+      await click(find(".quick-actions a", "Record income"));
+      await waitFor(() => container.querySelector('dialog[open][aria-label="Add income"]'));
+      await click(container.querySelector('button[aria-label="Close dialog"]'));
+      await click(container.querySelector('.sidebar nav a[href="/transfers"]'));
+      await waitFor(() => container.querySelector(".transfers-page"));
+      await click(container.querySelector('button[aria-label="Move money from moey!"]'));
+      assert.equal(container.querySelector('select[name="fromAccount"]').value, "moey");
+      assert.notEqual(container.querySelector('select[name="toAccount"]').value, "moey");
+      await click(container.querySelector('button[aria-label="Close dialog"]'));
+    });
+    await t.test("navigation starts expanded, preserves page state, and remembers its preference", async () => {
       await mount("/expenses");
       await click(find(".user-choice", "Miguel"));
       await waitFor(() => container.querySelector(".expenses-page"));
       const toggle = () => container.querySelector(".sidebar-toggle");
-      assert.ok(container.querySelector(".finance-app.sidebar-collapsed"));
-      assert.equal(toggle().getAttribute("aria-expanded"), "false");
-      assert.equal(toggle().getAttribute("aria-label"), "Expand navigation");
+      assert.equal(container.querySelector(".finance-app.sidebar-collapsed"), null);
+      assert.equal(toggle().getAttribute("aria-expanded"), "true");
+      assert.equal(toggle().getAttribute("aria-label"), "Collapse navigation");
       for (const link of container.querySelectorAll(".sidebar nav a")) {
         assert.ok(link.getAttribute("aria-label"));
         assert.equal(link.title, link.getAttribute("aria-label"));
@@ -136,6 +249,11 @@ test("profile selection and settings navigation", async t => {
       assert.ok(container.querySelector('.sidebar a[aria-label="Settings"]'));
       assert.ok(container.querySelector(".profile-signout"));
       await fill('input[aria-label="Search expenses"]', "rent");
+      await click(toggle());
+      assert.equal(toggle().getAttribute("aria-expanded"), "false");
+      assert.equal(toggle().getAttribute("aria-label"), "Expand navigation");
+      assert.ok(container.querySelector(".sidebar-collapsed"));
+      assert.equal(container.querySelector('input[aria-label="Search expenses"]').value, "rent");
       await click(toggle());
       assert.equal(toggle().getAttribute("aria-expanded"), "true");
       assert.equal(toggle().getAttribute("aria-label"), "Collapse navigation");
@@ -169,6 +287,7 @@ test("profile selection and settings navigation", async t => {
       await mount("/expenses");
       await click(find(".user-choice", "Miguel"));
       await waitFor(() => container.querySelector(".expenses-page"));
+      await click(container.querySelector(".sidebar-toggle"));
       const previousMatchMedia = window.matchMedia;
       window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
       try {
@@ -371,13 +490,15 @@ test("profile selection and settings navigation", async t => {
       assert.equal(saved.accounts.find(account => account.id === "bleap").balance, 400);
       assert.deepEqual(saved.income, income); assert.deepEqual(saved.expenses, []);
       assert.equal(container.querySelector('input[aria-label="Select month"]').value, "2026-09");
-      assert.equal(container.querySelector(".stats-grid .stat-value").textContent, "€1,367.29");
+      assert.equal(container.querySelector(".dashboard-stats .summary-card:nth-child(2) .summary-value").textContent, "€1,367.29");
+      assert.equal(container.querySelector(".balance-summary .summary-value").textContent, "€1,100.00");
       const cardValues = name => Object.fromEntries([...container.querySelector('[aria-label="' + name + ' account activity"]').querySelectorAll("dl > div")].map(row => [row.querySelector("dt").textContent, row.querySelector("dd").textContent]));
       assert.equal(cardValues("moey!")["Transfers out"], "−€300.00");
       assert.equal(cardValues("moey!")["Income"], "+€1,367.29");
       assert.equal(cardValues("Bleap")["Transfers in"], "+€300.00");
       assert.equal(cardValues("Bleap")["Income"], "€0.00");
-      await click(container.querySelector('.overview-transfer-history a[href^="/transfers"]'));
+      assert.ok(container.querySelector(".recent-activity").textContent.includes("Account transfer"));
+      await click(container.querySelector('.recent-activity a[href^="/transfers"]'));
       await waitFor(() => container.querySelector(".transfers-page"));
       assert.equal(container.querySelectorAll(".transfer-row").length, 1);
       assert.equal(container.querySelector('input[aria-label="Select month"]').value, "2026-09");

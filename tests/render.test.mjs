@@ -51,7 +51,7 @@ test("finance pages render with the shared context and coherent monthly totals",
     const user = { id: "personal", name: "Personal", hasPassword: false, createdAt: "2026-10-01" };
     const protectedUser = { id: "ana", name: "Ana", hasPassword: true, createdAt: "2026-10-01" };
     const userState = { users: [user, protectedUser], currentUser: user, busy: false, saving: false, error: "", async signIn() {}, async createUser() {}, async signOut() {}, async configureUser() {}, async createAdmin() {}, async saveAdminSettings() {}, async renameUser() {}, async deleteUser() {}, async refreshUsers() {}, async exportProfiles() {} };
-    const render = (component, props = {}, overrides = {}, theme = "light", path = "/") => renderToStaticMarkup(createElement(ThemeContext.Provider, { value: { theme, setTheme() {} } }, createElement(UsersContext.Provider, { value: { ...userState, ...overrides } }, createElement(FinanceContext.Provider, { value: state }, createElement(MemoryRouter, { initialEntries: [path] }, createElement(component, props))))));
+    const render = (component, props = {}, overrides = {}, theme = "light", path = "/") => renderToStaticMarkup(createElement(ThemeContext.Provider, { value: { theme, setTheme() {}, colorScheme: "ocean", setColorScheme() {} } }, createElement(UsersContext.Provider, { value: { ...userState, ...overrides } }, createElement(FinanceContext.Provider, { value: state }, createElement(MemoryRouter, { initialEntries: [path] }, createElement(component, props))))));
     await t.test("expenses show correct paid, unpaid and total amounts", () => {
       const html = render(Expenses);
       for (const text of ["Apartment rent", "Spotify Premium", "€657.99", "€650.00", "€7.99"]) assert.ok(html.includes(text), text);

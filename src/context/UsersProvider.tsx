@@ -1,14 +1,21 @@
 import { exportFile } from "../services/exportFile";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { appRequest, type AppSession, type AppState } from "../services/appApi";
-import { USERS_KEY, type ListedUser, type User } from "../services/profileVault";
+import {
+  USERS_KEY,
+  type ListedUser,
+  type User,
+} from "../services/profileVault";
 import { type AdminSettings, type Data } from "../types/finance";
 import { today, withoutSamples } from "../utils/finance";
 import { createInitialData } from "../utils/initialData";
 import { browserStorage } from "../services/runtime";
 import { FinanceContext } from "./FinanceContext";
 import { UsersContext } from "./UsersContext";
-const message = (error: unknown) => error instanceof Error ? error.message : "The app could not complete this change. Saved records have not been replaced.";
+const message = (error: unknown) =>
+  error instanceof Error
+    ? error.message
+    : "The app could not complete this change. Saved records have not been replaced.";
 
 export function UsersProvider({ children }: { children: ReactNode }) {
   const sessionRef = useRef<AppSession | null>(null);
@@ -27,26 +34,56 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   function install(state: AppState) {
     sessionRef.current = state.session;
     dataRef.current = state.session?.data ?? createInitialData();
-    setData(dataRef.current); setCurrentUser(state.session?.user ?? null); setUsers(state.users); setError("");
+    setData(dataRef.current);
+    setCurrentUser(state.session?.user ?? null);
+    setUsers(state.users);
+    setError("");
   }
   function persist(snapshot: Data): Promise<void> {
     const id = sessionRef.current?.user.id;
     if (!id) return Promise.resolve();
-    setPendingSaves(n => n + 1);
-    const task = queue.current.catch(() => { }).then(async () => {
-      const session = sessionRef.current;
-      if (!session || session.user.id !== id) throw new Error("The active user changed before these records could be saved.");
-      const state = await appRequest("save", { revision: session.revision, data: snapshot });
-      if (sessionRef.current?.user.id === id) { sessionRef.current = state.session; setUsers(state.users); setError(""); }
-    });
+    setPendingSaves((n) => n + 1);
+    const task = queue.current
+      .catch(() => {})
+      .then(async () => {
+        const session = sessionRef.current;
+        if (!session || session.user.id !== id)
+          throw new Error(
+            "The active user changed before these records could be saved.",
+          );
+        const state = await appRequest("save", {
+          revision: session.revision,
+          data: snapshot,
+        });
+        if (sessionRef.current?.user.id === id) {
+          sessionRef.current = state.session;
+          setUsers(state.users);
+          setError("");
+        }
+      });
     queue.current = task;
-    return task.catch(e => { setError(message(e)); throw e; }).finally(() => setPendingSaves(n => n - 1));
+    return task
+      .catch((e) => {
+        setError(message(e));
+        throw e;
+      })
+      .finally(() => setPendingSaves((n) => n - 1));
   }
-  async function flush() { if (sessionRef.current) await persist(dataRef.current); else await queue.current.catch(() => { }); }
+  async function flush() {
+    if (sessionRef.current) await persist(dataRef.current);
+    else await queue.current.catch(() => {});
+  }
   async function perform(action: () => Promise<void>) {
-    if (working.current) throw new Error("Please wait for the current user change to finish.");
-    working.current = true; setBusy(true);
-    try { await action(); } finally { working.current = false; setBusy(false); }
+    if (working.current)
+      throw new Error("Please wait for the current user change to finish.");
+    working.current = true;
+    setBusy(true);
+    try {
+      await action();
+    } finally {
+      working.current = false;
+      setBusy(false);
+    }
   }
   useEffect(() => {
     let active = true;
@@ -54,24 +91,45 @@ export function UsersProvider({ children }: { children: ReactNode }) {
       try {
         let state = await appRequest("state");
         let legacy: string | null = null;
-        try { if (!browserStorage) legacy = window.localStorage.getItem(USERS_KEY); } catch { /* App files work even when browser storage is blocked. */ }
+        try {
+          if (!browserStorage) legacy = window.localStorage.getItem(USERS_KEY);
+        } catch {
+          /* App files work even when browser storage is blocked. */
+        }
         if (legacy) {
           try {
             state = await appRequest("migrate", { registry: legacy });
-            try { if (window.localStorage.getItem(USERS_KEY) === legacy) window.localStorage.removeItem(USERS_KEY); }
-            catch { if (active) setNotice("Your profiles are saved in the app, but the old browser copy could not be removed."); }
-          } catch (e) { if (active) setNotice("Browser migration needs attention: " + message(e)); }
+            try {
+              if (window.localStorage.getItem(USERS_KEY) === legacy)
+                window.localStorage.removeItem(USERS_KEY);
+            } catch {
+              if (active)
+                setNotice(
+                  "Your profiles are saved in the app, but the old browser copy could not be removed.",
+                );
+            }
+          } catch (e) {
+            if (active)
+              setNotice("Browser migration needs attention: " + message(e));
+          }
         }
         if (active) install(state);
-      } catch (e) { if (active) setBootError(message(e)); }
+      } catch (e) {
+        if (active) setBootError(message(e));
+      }
       if (active) setReady(true);
     }
-    void initialize(); return () => { active = false; };
+    void initialize();
+    return () => {
+      active = false;
+    };
   }, []);
   const update = (fn: (previous: Data) => Data) => {
     if (!sessionRef.current) return;
-    const next = fn(dataRef.current); dataRef.current = next; setData(next);
-    void persist(next).catch(() => { });
+    const next = fn(dataRef.current);
+    dataRef.current = next;
+    setData(next);
+    void persist(next).catch(() => {});
   };
   const save = async (fn: (previous: Data) => Data): Promise<void> => {
     const userId = sessionRef.current?.user.id;
@@ -79,48 +137,169 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     const previous = dataRef.current;
     const next = fn(previous);
     // Later queued changes must include this change while the server confirms it.
-    dataRef.current = next; setData(next);
+    dataRef.current = next;
+    setData(next);
     try {
       await persist(next);
-      if (sessionRef.current?.user.id !== userId) throw new Error("The active user changed before the save completed.");
+      if (sessionRef.current?.user.id !== userId)
+        throw new Error("The active user changed before the save completed.");
     } catch (error) {
       if (sessionRef.current?.user.id === userId && dataRef.current === next) {
-        dataRef.current = previous; setData(previous);
+        dataRef.current = previous;
+        setData(previous);
       }
       throw error;
     }
   };
-  const signIn = (id: string, password = "") => perform(async () => { await flush(); install(await appRequest("sign-in", { id, password })); });
-  const createUser = (name: string, password = "") => perform(async () => {
-    await flush();
-    install(await appRequest(sessionRef.current ? "admin/create-user" : "register", { name, password, revision: sessionRef.current?.revision }));
-  });
-  const createAdmin = (name: string, password: string) => perform(async () => { await flush(); install(await appRequest("setup-admin", { name, password })); });
-  const renameUser = (id: string, revision: number, name: string) => perform(async () => { await flush(); install(await appRequest("admin/rename-user", { id, targetRevision: revision, name, revision: sessionRef.current?.revision })); });
-  const deleteUser = (id: string, revision: number) => perform(async () => { await flush(); install(await appRequest("admin/delete-user", { id, targetRevision: revision, revision: sessionRef.current?.revision })); });
-  const refreshUsers = () => perform(async () => { await flush(); install(await appRequest("admin/refresh-users", { revision: sessionRef.current?.revision })); });
-  const saveAdminSettings = (settings: AdminSettings) => perform(async () => { await flush(); install(await appRequest("admin/settings", { settings, revision: sessionRef.current?.revision })); });
-  const signOut = () => perform(async () => { await flush(); install(await appRequest("sign-out", {})); });
-  const configureUser = (name: string, password: string | null, currentPassword = "") => perform(async () => { await flush(); install(await appRequest("configure", { name, password, currentPassword, revision: sessionRef.current?.revision })); });
-  const exportProfiles = () => perform(async () => {
-    await flush(); const backup = await appRequest<object>("profiles-backup");
-    await exportFile("savingsos-profiles-backup-" + today() + ".json", JSON.stringify(backup, null, 2));
-  });
-  const importProfile = (profile: unknown, password: string, name: string) => perform(async () => {
-    if (sessionRef.current) throw new Error("Sign out before importing a portable profile.");
-    install(await appRequest("profile-import", { profile, password, name }));
-  });
+  const signIn = (id: string, password = "") =>
+    perform(async () => {
+      await flush();
+      install(await appRequest("sign-in", { id, password }));
+    });
+  const createUser = (name: string, password = "") =>
+    perform(async () => {
+      await flush();
+      install(
+        await appRequest(
+          sessionRef.current ? "admin/create-user" : "register",
+          { name, password, revision: sessionRef.current?.revision },
+        ),
+      );
+    });
+  const createAdmin = (name: string, password: string) =>
+    perform(async () => {
+      await flush();
+      install(await appRequest("setup-admin", { name, password }));
+    });
+  const renameUser = (id: string, revision: number, name: string) =>
+    perform(async () => {
+      await flush();
+      install(
+        await appRequest("admin/rename-user", {
+          id,
+          targetRevision: revision,
+          name,
+          revision: sessionRef.current?.revision,
+        }),
+      );
+    });
+  const deleteUser = (id: string, revision: number) =>
+    perform(async () => {
+      await flush();
+      install(
+        await appRequest("admin/delete-user", {
+          id,
+          targetRevision: revision,
+          revision: sessionRef.current?.revision,
+        }),
+      );
+    });
+  const refreshUsers = () =>
+    perform(async () => {
+      await flush();
+      install(
+        await appRequest("admin/refresh-users", {
+          revision: sessionRef.current?.revision,
+        }),
+      );
+    });
+  const saveAdminSettings = (settings: AdminSettings) =>
+    perform(async () => {
+      await flush();
+      install(
+        await appRequest("admin/settings", {
+          settings,
+          revision: sessionRef.current?.revision,
+        }),
+      );
+    });
+  const signOut = () =>
+    perform(async () => {
+      await flush();
+      install(await appRequest("sign-out", {}));
+    });
+  const configureUser = (
+    name: string,
+    password: string | null,
+    currentPassword = "",
+  ) =>
+    perform(async () => {
+      await flush();
+      install(
+        await appRequest("configure", {
+          name,
+          password,
+          currentPassword,
+          revision: sessionRef.current?.revision,
+        }),
+      );
+    });
+  const exportProfiles = () =>
+    perform(async () => {
+      await flush();
+      const backup = await appRequest<object>("profiles-backup");
+      await exportFile(
+        "savingsos-profiles-backup-" + today() + ".json",
+        JSON.stringify(backup, null, 2),
+      );
+    });
+  const importProfile = (profile: unknown, password: string, name: string) =>
+    perform(async () => {
+      if (sessionRef.current)
+        throw new Error("Sign out before importing a portable profile.");
+      install(await appRequest("profile-import", { profile, password, name }));
+    });
   const exportProfile = async () => {
     let exported = false;
     await perform(async () => {
       await flush();
       const profile = await appRequest<object>("profile-export");
-      const name = (sessionRef.current?.user.name || "user").replace(/[^a-zA-Z0-9-]/g, "-");
-      exported = await exportFile("savingsos-" + name + "-profile-backup-" + today() + ".json", JSON.stringify(profile, null, 2));
+      const name = (sessionRef.current?.user.name || "user").replace(
+        /[^a-zA-Z0-9-]/g,
+        "-",
+      );
+      exported = await exportFile(
+        "savingsos-" + name + "-profile-backup-" + today() + ".json",
+        JSON.stringify(profile, null, 2),
+      );
     });
     return exported;
   };
-  return <UsersContext.Provider value={{ users, currentUser, busy, saving: pendingSaves > 0, error: bootError, notice, signIn, createUser, renameUser, deleteUser, refreshUsers, createAdmin, saveAdminSettings, signOut, configureUser, exportProfiles, exportProfile, importProfile }}>
-    <FinanceContext.Provider value={{ data, update, save, ready, error: error || notice, clearDemo: () => update(withoutSamples) }}>{children}</FinanceContext.Provider>
-  </UsersContext.Provider>;
+  return (
+    <UsersContext.Provider
+      value={{
+        users,
+        currentUser,
+        busy,
+        saving: pendingSaves > 0,
+        error: bootError,
+        notice,
+        signIn,
+        createUser,
+        renameUser,
+        deleteUser,
+        refreshUsers,
+        createAdmin,
+        saveAdminSettings,
+        signOut,
+        configureUser,
+        exportProfiles,
+        exportProfile,
+        importProfile,
+      }}
+    >
+      <FinanceContext.Provider
+        value={{
+          data,
+          update,
+          save,
+          ready,
+          error: error || notice,
+          clearDemo: () => update(withoutSamples),
+        }}
+      >
+        {children}
+      </FinanceContext.Provider>
+    </UsersContext.Provider>
+  );
 }

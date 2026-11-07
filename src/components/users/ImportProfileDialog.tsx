@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "../../i18n";
 import { useRef, useState, type FormEvent } from "react";
 import { useUsers } from "../../hooks/useUsers";
 import { parsePortableProfile, type PortableProfile } from "../../services/portableProfile";
@@ -6,6 +7,7 @@ import { Dialog } from "../common/Dialog";
 import { PasswordInput } from "./PasswordInput";
 
 export function ImportProfileDialog({ onClose }: { onClose: () => void }) {
+  useLanguage();
   const { importProfile, busy } = useUsers();
   const [profile, setProfile] = useState<PortableProfile | null>(null);
   const [name, setName] = useState("");
@@ -31,21 +33,21 @@ export function ImportProfileDialog({ onClose }: { onClose: () => void }) {
     try { await importProfile(profile, password, name); onClose(); }
     catch (e) { setError(errorText(e)); }
   }
-  return <Dialog title="Import portable profile" onClose={onClose} canClose={!busy}>
+  return <Dialog title={translate("Import portable profile")} onClose={onClose} canClose={!busy}>
     <form className="planner-form" onSubmit={submit}>
-      <p>Choose the portable profile exported from Settings on your other copy of savingsOS. This adds your profile and keeps existing users.</p>
-      <label>Profile file<input type="file" accept=".json,application/json" disabled={busy} onChange={e => void read(e.target.files?.[0])} /></label>
-      {reading && <p role="status">Reading profile…</p>}
+      <p>{translate("Choose the portable profile exported from Settings on your other copy of savingsOS. This adds your profile and keeps existing users.")}</p>
+      <label>{translate("Profile file")}<input type="file" accept=".json,application/json" disabled={busy} onChange={e => void read(e.target.files?.[0])} /></label>
+      {reading && <p role="status">{translate("Reading profile…")}</p>}
       {profile && <>
-        <label>Profile name<input required maxLength={50} value={name} disabled={busy} onChange={e => setName(e.target.value)} autoComplete="username" /></label>
-        <p>{profile.profile.user.hasPassword ? "Your password and encrypted finance records are preserved. Enter the original password to verify and unlock this copy." : "This profile has no password. Its finance records are unencrypted."}</p>
-        {profile.profile.user.hasPassword && <PasswordInput name="password" label="Profile password" autoComplete="current-password" />}
-        <p className="password-note">The two copies have separate records after importing. To update an existing copy later, restore a finance backup from Settings.</p>
+        <label>{translate("Profile name")}<input required maxLength={50} value={name} disabled={busy} onChange={e => setName(e.target.value)} autoComplete="username" /></label>
+        <p>{profile.profile.user.hasPassword ? translate("Your password and encrypted finance records are preserved. Enter the original password to verify and unlock this copy.") : translate("This profile has no password. Its finance records are unencrypted.")}</p>
+        {profile.profile.user.hasPassword && <PasswordInput name="password" label={translate("Profile password")} autoComplete="current-password" />}
+        <p className="password-note">{translate("The two copies have separate records after importing. To update an existing copy later, restore a finance backup from Settings.")}</p>
       </>}
-      {error && <p className="user-error" role="alert">{error}</p>}
+      {error && <p className="user-error" role="alert">{translate(error)}</p>}
       <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <button type="button" className="button secondary" disabled={busy} onClick={onClose}>Cancel</button>
-        <button className="button primary" disabled={!profile || reading || busy}>{busy ? "Importing…" : "Import and open profile"}</button>
+        <button type="button" className="button secondary" disabled={busy} onClick={onClose}>{translate("Cancel")}</button>
+        <button className="button primary" disabled={!profile || reading || busy}>{busy ? translate("Importing…") : translate("Import and open profile")}</button>
       </div>
     </form>
   </Dialog>;

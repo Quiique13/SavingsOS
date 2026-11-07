@@ -1,10 +1,11 @@
+import { translate, useLanguage } from "../i18n";
 import {
   Pencil,
   Plus,
   TrendingUp
 } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Dialog } from "../components/common/Dialog";
 import { MonthPicker } from "../components/common/MonthPicker";
 import { PageHeading } from "../components/common/PageHeading";
@@ -13,13 +14,16 @@ import { type Income } from "../types/finance";
 import { dateLabel, money, monthLabel, today } from "../utils/finance";
 
 export function IncomePage() {
+  useLanguage();
   const { data, save: saveData } = useFinance();
-  const [month, setMonth] = useState(today().slice(0, 7));
-  const [editing, setEditing] = useState<Income | "new" | null>(null);
+  const [parameters] = useSearchParams();
+  const requestedMonth = parameters.get("month");
+  const [month, setMonth] = useState(requestedMonth && /^\d{4}-(0[1-9]|1[0-2])$/.test(requestedMonth) ? requestedMonth : today().slice(0, 7));
+  const [editing, setEditing] = useState<Income | "new" | null>(parameters.get("add") === "1" ? "new" : null);
   const [savingIncome, setSavingIncome] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [message, setMessage] = useState("");
-  const [draftId, setDraftId] = useState("");
+  const [draftId, setDraftId] = useState(() => parameters.get("add") === "1" ? crypto.randomUUID() : "");
   const latestIncomeMonth = data.income.reduce((latest, entry) => entry.date.slice(0, 7) > latest ? entry.date.slice(0, 7) : latest, "");
   function openIncome(entry: Income | "new") {
     setDraftId(entry === "new" ? crypto.randomUUID() : entry.id);
@@ -47,7 +51,7 @@ export function IncomePage() {
     try {
       await saveData(d => ({ ...d, income: d.income.some(entry => entry.id === item.id) ? d.income.map(entry => entry.id === item.id ? item : entry) : [...d.income, item] }));
       setMonth(item.date.slice(0, 7));
-      setMessage(item.name + " saved for " + monthLabel(item.date.slice(0, 7)) + ".");
+      setMessage(translate("{{name}} saved for {{month}}.", { name: item.name, month: monthLabel(item.date.slice(0, 7)) }));
       setEditing(null);
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "This income could not be saved. Your form is still here; try again.");
@@ -58,7 +62,7 @@ export function IncomePage() {
     setSaveError(""); setSavingIncome(true);
     try {
       await saveData(d => ({ ...d, income: d.income.filter(entry => entry.id !== editing.id) }));
-      setMessage(editing.name + " deleted."); setEditing(null);
+      setMessage(translate("{{name}} deleted.", { name: editing.name })); setEditing(null);
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "This income could not be deleted. Try again.");
     } finally { setSavingIncome(false); }
@@ -67,36 +71,32 @@ export function IncomePage() {
   return (
     <section className="income-page min-w-0">
       <PageHeading
-        title="Income"
-        description="Track what you receive and where it goes."
+        title={translate("Income")}
+        description={translate("Track what you receive and where it goes.")}
       >
         <button className="button primary" onClick={() => openIncome("new")}>
-          <Plus size={16} />
-          Add income
-        </button>
+          <Plus size={16} />{translate("Add income")}</button>
       </PageHeading>
-      {message && <p className="income-save-message mb-4 rounded-lg border border-finance-border bg-finance-selected px-4 py-3 text-sm text-finance-ink" role="status">{message}</p>}
+      {message && <p className="income-save-message mb-4 rounded-lg border border-finance-border bg-finance-selected px-4 py-3 text-sm text-finance-ink" role="status">{translate(message)}</p>}
       <div className="page-toolbar flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="period-label">Your income this month</span>
+        <span className="period-label">{translate("Your income this month")}</span>
         <MonthPicker month={month} setMonth={setMonth} />
       </div>
       <div className="stat-card income-stat">
-        <div className="stat-label">
-          Total received
-          <TrendingUp size={18} />
+        <div className="stat-label">{translate("Total received")}<TrendingUp size={18} />
         </div>
         <div className="stat-value">
           {money(rows.reduce((s, i) => s + i.amount, 0))}
         </div>
         <p>
-          {rows.length} income entries in {monthLabel(month)}
+          {translate("{{count}} income entries in {{month}}", { count: rows.length, month: monthLabel(month) })}
         </p>
       </div>
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h2>Income history</h2>
-            <p>A record of every income source</p>
+            <h2>{translate("Income history")}</h2>
+            <p>{translate("A record of every income source")}</p>
           </div>
         </div>
         {rows.map((i) => (
@@ -114,7 +114,7 @@ export function IncomePage() {
             <b className="green-text">+{money(i.amount)}</b>
             <button
               className="icon-button"
-              aria-label={"Edit " + i.name}
+              aria-label={translate("Edit") + " " + i.name}
               onClick={() => openIncome(i)}
             >
               <Pencil size={16} />
@@ -124,46 +124,40 @@ export function IncomePage() {
         {!rows.length && (
           <div className="empty-state">
             <TrendingUp size={28} />
-            <h3>No income this month</h3>
-            <p>Add income to complete your monthly picture.</p>
-            {latestIncomeMonth && latestIncomeMonth !== month && <div className="mt-4"><p>Your latest saved income is in {monthLabel(latestIncomeMonth)}.</p><button type="button" className="button secondary small" onClick={() => setMonth(latestIncomeMonth)}>View {monthLabel(latestIncomeMonth)}</button></div>}
+            <h3>{translate("No income this month")}</h3>
+            <p>{translate("Add income to complete your monthly picture.")}</p>
+            {latestIncomeMonth && latestIncomeMonth !== month && <div className="mt-4"><p>{translate("Your latest saved income is in") + " "}{monthLabel(latestIncomeMonth)}.</p><button type="button" className="button secondary small" onClick={() => setMonth(latestIncomeMonth)}>{translate("View") + " "}{monthLabel(latestIncomeMonth)}</button></div>}
             <button
               className="button secondary small"
               onClick={() => openIncome("new")}
-            >
-              Add income
-            </button>
+            >{translate("Add income")}</button>
           </div>
         )}
       </section>
       {editing && (
         <Dialog
-          title={item ? "Edit income" : "Add income"}
+          title={item ? translate("Edit income") : translate("Add income")}
           onClose={() => setEditing(null)}
           canClose={!savingIncome}
         >
           {!data.accounts.length ? (
             <div className="planner-form">
-              <p>Create an account before recording income.</p>
-              <Link className="button primary" to="/accounts" onClick={() => setEditing(null)}>Add account</Link>
+              <p>{translate("Create an account before recording income.")}</p>
+              <Link className="button primary" to="/accounts" onClick={() => setEditing(null)}>{translate("Add account")}</Link>
             </div>
           ) : <form className="planner-form" onSubmit={save}>
             <fieldset className="contents" disabled={savingIncome}>
-              <label>
-                Source
-                <input
+              <label>{translate("Source")}<input
                   autoFocus
                   name="name"
                   defaultValue={item?.name}
-                  placeholder="e.g. Monthly salary"
+                  placeholder={translate("e.g. Monthly salary")}
                   required
                   maxLength={100}
                 />
               </label>
               <div className="form-grid grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <label>
-                  Amount (€)
-                  <input
+                <label>{translate("Amount (€)")}<input
                     name="amount"
                     type="number"
                     min="0.01"
@@ -172,9 +166,7 @@ export function IncomePage() {
                     required
                   />
                 </label>
-                <label>
-                  Received on
-                  <input
+                <label>{translate("Received on")}<input
                     name="date"
                     type="date"
                     defaultValue={item?.date || today()}
@@ -183,9 +175,7 @@ export function IncomePage() {
                   />
                 </label>
               </div>
-              <label>
-                Received into
-                <select name="account" defaultValue={item?.accountId}>
+              <label>{translate("Received into")}<select name="account" defaultValue={item?.accountId}>
                   {data.accounts.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name}
@@ -193,25 +183,21 @@ export function IncomePage() {
                   ))}
                 </select>
               </label>
-              {saveError && <p className="user-error" role="alert">{saveError}</p>}
+              {saveError && <p className="user-error" role="alert">{translate(saveError)}</p>}
               <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 {item && (
                   <button
                     type="button"
                     className="danger-link"
                     onClick={() => void removeIncome()}
-                  >
-                    Delete entry
-                  </button>
+                  >{translate("Delete entry")}</button>
                 )}
                 <button
                   type="button"
                   className="button secondary"
                   onClick={() => setEditing(null)}
-                >
-                  Cancel
-                </button>
-                <button className="button primary" disabled={savingIncome}>{savingIncome ? "Saving…" : "Save income"}</button>
+                >{translate("Cancel")}</button>
+                <button className="button primary" disabled={savingIncome}>{savingIncome ? translate("Saving…") : translate("Save income")}</button>
               </div>
             </fieldset>
           </form>}

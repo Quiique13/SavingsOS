@@ -6,6 +6,8 @@ import { ThemeProvider } from "./context/ThemeProvider";
 import { UsersProvider } from "./context/UsersProvider";
 import { Expenses } from "./pages/Expenses";
 import { Settings } from "./pages/Settings";
+import { LanguageSync } from "./components/common/LanguageSync";
+import { translate, useLanguage } from "./i18n";
 
 const Overview = lazy(() =>
   import("./pages/Overview").then((module) => ({ default: module.Overview })),
@@ -29,11 +31,13 @@ const AdminPortal = lazy(() =>
 );
 
 export function AppRoutes() {
+  useLanguage();
   return (
+    <><LanguageSync />
     <Suspense
       fallback={
         <div className="loading-state">
-          <p>Opening your space...</p>
+          <p>{translate("Opening your space...")}</p>
         </div>
       }
     >
@@ -46,7 +50,7 @@ export function AppRoutes() {
             </UserGate>
           }
         >
-          <Route index element={<Navigate to="/expenses" replace />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Overview />} />
           <Route path="expenses" element={<Expenses />} />
           <Route path="income" element={<Income />} />
@@ -59,10 +63,11 @@ export function AppRoutes() {
           />
           <Route path="insights" element={<Insights />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/expenses" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>
     </Suspense>
+    </>
   );
 }
 export default function App() {

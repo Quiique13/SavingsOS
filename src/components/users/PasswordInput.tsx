@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "../../i18n";
 import {
   Eye,
   EyeOff
@@ -17,6 +18,7 @@ export function PasswordInput({
   required?: boolean;
   minLength?: number;
 }) {
+  useLanguage();
   const [visible, setVisible] = useState(false);
   return (
     <label>
@@ -35,8 +37,8 @@ export function PasswordInput({
           className="icon-button"
           aria-label={
             visible
-              ? "Hide " + label.toLowerCase()
-              : "Show " + label.toLowerCase()
+              ? translate("Hide {{label}}", { label: label.toLowerCase() })
+              : translate("Show {{label}}", { label: label.toLowerCase() })
           }
           onClick={() => setVisible(!visible)}
         >

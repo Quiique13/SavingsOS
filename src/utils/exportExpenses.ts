@@ -1,6 +1,7 @@
 import { exportFile } from "../services/exportFile";
 import type { Account } from "../types/finance";
 import { type Row } from "../types/finance";
+import { categoryLabel, translate } from "../i18n";
 
 export async function exportCSV(
   rows: Row[],
@@ -16,15 +17,15 @@ export async function exportCSV(
       "Frequency",
       "Status",
       "Paid date",
-    ],
+    ].map(heading => translate(heading)),
     ...rows.map((r) => [
       r.name,
       r.amount,
-      r.category,
+      categoryLabel(r.category),
       accounts.find((a) => a.id === r.accountId)?.name || "",
       r.date,
-      r.frequency,
-      r.status,
+      translate(r.frequency === "once" ? "One-time" : r.frequency === "monthly" ? "Monthly" : "Yearly"),
+      translate(r.status),
       r.paidDate || "",
     ]),
   ]

@@ -1,6 +1,5 @@
-import {
-  Check
-} from "lucide-react";
+import { translate, useLanguage } from "../../i18n";
+import { Check } from "lucide-react";
 import { type FormEvent } from "react";
 import { useFinance } from "../../hooks/useFinance";
 import { type Row } from "../../types/finance";
@@ -15,6 +14,7 @@ export function PaymentDialog({
   row: Row;
   onClose: () => void;
 }) {
+  useLanguage();
   const { update } = useFinance();
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -23,19 +23,17 @@ export function PaymentDialog({
     onClose();
   }
   return (
-    <Dialog title="Mark as paid" onClose={onClose}>
+    <Dialog title={translate("Mark as paid")} onClose={onClose}>
       <form className="planner-form" onSubmit={submit}>
         <div className="payment-preview">
           <CategoryIcon category={row.category} name={row.name} />
           <div>
             <strong>{row.name}</strong>
-            <p>Due {dateLabel(row.date)}</p>
+            <p>{translate("Due") + " "}{dateLabel(row.date)}</p>
           </div>
           <strong>{money(row.amount)}</strong>
         </div>
-        <label>
-          Payment date
-          <input
+        <label>{translate("Payment date")}<input
             autoFocus
             name="paidDate"
             type="date"
@@ -44,17 +42,11 @@ export function PaymentDialog({
             required
           />
         </label>
-        <p className="form-intro">
-          This marks only the payment due on {dateLabel(row.date)} as paid.
-        </p>
+        <p className="form-intro">{translate("This marks only the payment due on {{date}} as paid.", { date: dateLabel(row.date) })}</p>
         <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" className="button secondary" onClick={onClose}>
-            Cancel
-          </button>
+          <button type="button" className="button secondary" onClick={onClose}>{translate("Cancel")}</button>
           <button className="button primary">
-            <Check size={16} />
-            Confirm payment
-          </button>
+            <Check size={16} />{translate("Confirm payment")}</button>
         </div>
       </form>
     </Dialog>

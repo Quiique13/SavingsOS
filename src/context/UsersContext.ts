@@ -10,7 +10,11 @@ export type UsersState = {
   notice?: string;
   exportProfiles: () => Promise<void>;
   exportProfile: () => Promise<boolean>;
-  importProfile: (profile: unknown, password: string, name: string) => Promise<void>;
+  importProfile: (
+    profile: unknown,
+    password: string,
+    name: string,
+  ) => Promise<void>;
   signIn: (id: string, password?: string) => Promise<void>;
   createUser: (name: string, password?: string) => Promise<void>;
   renameUser: (id: string, revision: number, name: string) => Promise<void>;
@@ -19,6 +23,10 @@ export type UsersState = {
   createAdmin: (name: string, password: string) => Promise<void>;
   saveAdminSettings: (settings: AdminSettings) => Promise<void>;
   signOut: () => Promise<void>;
-  configureUser: (name: string, password: string | null, currentPassword?: string) => Promise<void>;
+  configureUser: (
+    name: string,
+    password: string | null,
+    currentPassword?: string,
+  ) => Promise<void>;
 };
 export const UsersContext = createContext<UsersState | null>(null);

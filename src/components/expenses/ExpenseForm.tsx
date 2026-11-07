@@ -1,7 +1,5 @@
-import {
-  Plus,
-  Trash2
-} from "lucide-react";
+import { categoryLabel, translate, useLanguage } from "../../i18n";
+import { Plus, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useFinance } from "../../hooks/useFinance";
@@ -18,6 +16,7 @@ export function ExpenseForm({
   month: string;
   onClose: () => void;
 }) {
+  useLanguage();
   const { data, update } = useFinance();
   const [frequency, setFrequency] = useState<Expense["frequency"]>(
     expense?.frequency ?? "monthly",
@@ -65,40 +64,36 @@ export function ExpenseForm({
   }
   if (!data.accounts.length) {
     return (
-      <Dialog title="Add an account first" onClose={onClose}>
+      <Dialog title={translate("Add an account first")} onClose={onClose}>
         <div className="planner-form">
-          <p>Create an account before recording expenses.</p>
-          <Link className="button primary" to="/accounts" onClick={onClose}>Add account</Link>
+          <p>{translate("Create an account before recording expenses.")}</p>
+          <Link className="button primary" to="/accounts" onClick={onClose}>{translate("Add account")}</Link>
         </div>
       </Dialog>
     );
   }
   return (
     <Dialog
-      title={expense ? "Edit expense" : "Add an expense"}
+      title={expense ? translate("Edit expense") : translate("Add an expense")}
       onClose={onClose}
     >
       <form onSubmit={save} className="planner-form">
         <p className="form-intro">
           {expense
-            ? "Changes apply to this expense and its recurring schedule."
-            : "Make room for everything, from your morning coffee to your annual bills."}
+            ? translate("Changes apply to this expense and its recurring schedule.")
+            : translate("Make room for everything, from your morning coffee to your annual bills.")}
         </p>
-        <label>
-          Expense name
-          <input
+        <label>{translate("Expense name")}<input
             autoFocus
             name="name"
-            placeholder="e.g. Spotify Premium"
+            placeholder={translate("e.g. Spotify Premium")}
             defaultValue={expense?.name}
             required
             maxLength={100}
           />
         </label>
         <div className="form-grid grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label>
-            Amount (€)
-            <input
+          <label>{translate("Amount (€)")}<input
               name="amount"
               type="number"
               min="0.01"
@@ -109,9 +104,7 @@ export function ExpenseForm({
               required
             />
           </label>
-          <label>
-            Category
-            <select
+          <label>{translate("Category")}<select
               name="category"
               defaultValue={expense?.category || "Subscriptions"}
             >
@@ -121,15 +114,13 @@ export function ExpenseForm({
                   ...(expense ? [expense.category] : []),
                 ]),
               ).map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} value={c}>{categoryLabel(c)}</option>
               ))}
             </select>
           </label>
         </div>
         <div className="form-grid grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label>
-            Pay from
-            <select
+          <label>{translate("Pay from")}<select
               required
               name="account"
               defaultValue={
@@ -145,7 +136,7 @@ export function ExpenseForm({
             </select>
           </label>
           <label>
-            {frequency === "once" ? "Due date" : "First due date"}
+            {frequency === "once" ? translate("Due date") : translate("First due date")}
             <input
               name="due"
               type="date"
@@ -157,9 +148,7 @@ export function ExpenseForm({
             />
           </label>
         </div>
-        <label>
-          Repeat
-          <div className="frequency-picker">
+        <label>{translate("Repeat")}<div className="frequency-picker">
             {(["once", "monthly", "yearly"] as const).map((f) => (
               <button
                 type="button"
@@ -168,20 +157,19 @@ export function ExpenseForm({
                 onClick={() => setFrequency(f)}
               >
                 {f === "once"
-                  ? "One-time"
+                  ? translate("One-time")
                   : f === "monthly"
-                    ? "Every month"
-                    : "Every year"}
+                    ? translate("Every month")
+                    : translate("Every year")}
               </button>
             ))}
           </div>
         </label>
-        <label>
-          Notes <span className="muted">(optional)</span>
+        <label>{translate("Notes") + " "}<span className="muted">{translate("(optional)")}</span>
           <textarea
             name="notes"
             rows={2}
-            placeholder="Anything you'd like to remember…"
+            placeholder={translate("Anything you'd like to remember…")}
             defaultValue={expense?.notes}
           />
         </label>
@@ -189,17 +177,13 @@ export function ExpenseForm({
           <div className="delete-area">
             {deleting ? (
               <>
-                <span>Delete this expense and all its payment history?</span>
-                <button type="button" className="danger-link" onClick={remove}>
-                  Yes, delete
-                </button>
+                <span>{translate("Delete this expense and all its payment history?")}</span>
+                <button type="button" className="danger-link" onClick={remove}>{translate("Yes, delete")}</button>
                 <button
                   type="button"
                   className="text-button"
                   onClick={() => setDeleting(false)}
-                >
-                  Keep it
-                </button>
+                >{translate("Keep it")}</button>
               </>
             ) : (
               <button
@@ -207,17 +191,14 @@ export function ExpenseForm({
                 className="danger-link"
                 onClick={() => setDeleting(true)}
               >
-                <Trash2 size={14} /> Delete expense
-              </button>
+                <Trash2 size={14} />{" " + translate("Delete expense")}</button>
             )}
           </div>
         )}
         <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" className="button secondary" onClick={onClose}>
-            Cancel
-          </button>
+          <button type="button" className="button secondary" onClick={onClose}>{translate("Cancel")}</button>
           <button className="button primary">
-            {expense ? "Save changes" : "Add expense"}
+            {expense ? translate("Save changes") : translate("Add expense")}
             <Plus size={16} />
           </button>
         </div>

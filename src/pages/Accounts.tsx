@@ -1,3 +1,4 @@
+import { translate, useLanguage } from "../i18n";
 import {
   ArrowLeftRight,
   ArrowUpRight,
@@ -19,6 +20,7 @@ import { type Account } from "../types/finance";
 import { money } from "../utils/finance";
 
 export function Accounts({ savings = false }: { savings?: boolean }) {
+  useLanguage();
   const { data, update } = useFinance();
   const [editing, setEditing] = useState<Account | "new" | null>(null);
   const [moving, setMoving] = useState(false);
@@ -54,31 +56,27 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
       }
     >
       <PageHeading
-        title={savings ? "Savings & investments" : "Accounts"}
+        title={savings ? translate("Savings & investments") : translate("Accounts")}
         description={
           savings
-            ? "Track the balances you’re setting aside for the future."
-            : "Manage your accounts and recorded balances."
+            ? translate("Track the balances you’re setting aside for the future.")
+            : translate("Manage your accounts and recorded balances.")
         }
       >
-        <div className="page-actions flex flex-col gap-2 sm:flex-row"><button className="button secondary" onClick={() => { setTransferMessage(""); setMoving(true); }}><ArrowLeftRight size={16} />Move money</button><button
+        <div className="page-actions flex flex-col gap-2 sm:flex-row"><button className="button secondary" onClick={() => { setTransferMessage(""); setMoving(true); }}><ArrowLeftRight size={16} />{translate("Move money")}</button><button
           className="button primary"
           onClick={() => {
             setEditing("new");
             setRemove(false);
           }}
         >
-          <Plus size={16} />
-          Add {savings ? "savings account" : "account"}
+          <Plus size={16} />{translate(savings ? "Add savings account" : "Add account")}
         </button></div>
       </PageHeading>
-      {transferMessage && <p className="transfer-message" role="status">{transferMessage}</p>}
+      {transferMessage && <p className="transfer-message" role="status">{translate(transferMessage)}</p>}
       <div className="account-notice">
         <ShieldCheck size={17} />
-        <span>
-          Manually tracked · Transfers update both recorded balances. Set a fresh
-          balance snapshot whenever you check your bank.
-        </span>
+        <span>{translate("Manually tracked · Transfers update both recorded balances. Set a fresh balance snapshot whenever you check your bank.")}</span>
       </div>
       <div className="account-cards full-accounts grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {list.map((a) => (
@@ -95,10 +93,10 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
                   ? "212"
                   : a.name.slice(0, 1).toUpperCase()}
               </div>
-              <span className="account-type">{a.kind}</span>
+              <span className="account-type">{translate(a.kind)}</span>
               <button
                 className="icon-button"
-                aria-label={"Edit " + a.name}
+                aria-label={translate("Edit") + " " + a.name}
                 onClick={() => {
                   setEditing(a);
                   setRemove(false);
@@ -109,18 +107,16 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
             </div>
             <h2>{a.name}</h2>
             <p>{a.provider}</p>
-            <span className="eyebrow">RECORDED BALANCE</span>
+            <span className="eyebrow">{translate("RECORDED BALANCE")}</span>
             <div className="account-balance">{money(a.balance)}</div>
             <div className="account-card-footer">
-              <span>EUR · Manual tracking</span>
+              <span>{translate("EUR · Manual tracking")}</span>
               <button
                 onClick={() => {
                   setEditing(a);
                   setRemove(false);
                 }}
-              >
-                Update balance
-                <ArrowUpRight size={14} />
+              >{translate("Update balance")}<ArrowUpRight size={14} />
               </button>
             </div>
           </section>
@@ -129,10 +125,10 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
       {!list.length && (
         <div className="panel empty-state">
           <Landmark size={30} />
-          <h3>{savings ? "No savings accounts yet" : "No accounts yet"}</h3>
-          <p>{savings ? "Add a savings account to track your progress." : "Create your first account to start tracking your money."}</p>
+          <h3>{savings ? translate("No savings accounts yet") : translate("No accounts yet")}</h3>
+          <p>{savings ? translate("Add a savings account to track your progress.") : translate("Create your first account to start tracking your money.")}</p>
           <button className="button primary" onClick={() => { setEditing("new"); setRemove(false); }}>
-            <Plus size={16} />Add {savings ? "savings account" : "account"}
+            <Plus size={16} />{translate(savings ? "Add savings account" : "Add account")}
           </button>
         </div>
       )}
@@ -141,65 +137,57 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
           <CircleHelp size={21} />
         </div>
         <div>
-          <h3>Everything has its place</h3>
+          <h3>{translate("Everything has its place")}</h3>
           <p>
             {savings
-              ? "Update your reported balance whenever you check your savings or investment provider. This keeps your savings overview current without assuming investment returns."
-              : "Assign an account to each expense to see which balance needs to cover it. Payment tracking and reported balances are separate, so enter your latest bank balance whenever you need a fresh snapshot."}
+              ? translate("Update your reported balance whenever you check your savings or investment provider. This keeps your savings overview current without assuming investment returns.")
+              : translate("Assign an account to each expense to see which balance needs to cover it. Payment tracking and reported balances are separate, so enter your latest bank balance whenever you need a fresh snapshot.")}
           </p>
         </div>
         <Link
           to={savings ? "/accounts" : "/expenses"}
           className="button secondary small"
         >
-          {savings ? "All accounts" : "See expenses"}
+          {savings ? translate("All accounts") : translate("See expenses")}
           <ArrowUpRight size={15} />
         </Link>
       </section>
       {moving && <TransferForm onClose={() => setMoving(false)} onSaved={() => { setMoving(false); setTransferMessage("Transfer history and recorded balances saved."); }} />}
       {editing && (
         <Dialog
-          title={editing === "new" ? "Add an account" : "Update account"}
+          title={editing === "new" ? translate("Add an account") : translate("Update account")}
           onClose={() => setEditing(null)}
         >
           <form className="planner-form" onSubmit={save}>
-            <label>
-              Account name
-              <input
+            <label>{translate("Account name")}<input
                 autoFocus
                 name="name"
                 defaultValue={actual?.name}
-                placeholder="e.g. Trading 212"
+                placeholder={translate("e.g. Trading 212")}
                 required
                 maxLength={80}
               />
             </label>
-            <label>
-              Description
-              <input
+            <label>{translate("Description")}<input
                 name="provider"
                 defaultValue={actual?.provider}
-                placeholder="What do you use it for?"
+                placeholder={translate("What do you use it for?")}
                 maxLength={120}
               />
             </label>
             <div className="form-grid grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label>
-                Purpose
-                <select
+              <label>{translate("Purpose")}<select
                   name="kind"
                   defaultValue={
                     actual?.kind || (savings ? "Savings" : "Spending")
                   }
                 >
                   {["Spending", "Subscriptions", "Savings"].map((k) => (
-                    <option key={k}>{k}</option>
+                    <option key={k} value={k}>{translate(k)}</option>
                   ))}
                 </select>
               </label>
-              <label>
-                Reported balance (€)
-                <input
+              <label>{translate("Reported balance (€)")}<input
                   type="number"
                   step="0.01"
                   name="balance"
@@ -208,20 +196,13 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
                 />
               </label>
             </div>
-            <p className="form-intro">
-              Enter your current balance as a snapshot. Recording a bill payment
-              doesn't change this number. Transfers adjust both recorded balances.
-            </p>
+            <p className="form-intro">{translate("Enter your current balance as a snapshot. Recording a bill payment doesn't change this number. Transfers adjust both recorded balances.")}</p>
             {actual &&
               (data.accounts.length === 1 ||
                 data.expenses.some((e) => e.accountId === actual.id) ||
                 data.income.some((i) => i.accountId === actual.id) ||
                 (data.transfers ?? []).some(transfer => transfer.fromAccountId === actual.id || transfer.toAccountId === actual.id) ? (
-                <p className="form-intro">
-                  Keep at least one account, and reassign its expenses and
-                  income before removing it. Accounts linked to transfer history
-                  must be kept until those transfers are reassigned or reversed.
-                </p>
+                <p className="form-intro">{translate("Keep at least one account, and reassign its expenses and income before removing it. Accounts linked to transfer history must be kept until those transfers are reassigned or reversed.")}</p>
               ) : (
                 <div className="delete-area">
                   <button
@@ -240,7 +221,7 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
                     }
                   >
                     <Trash2 size={14} />
-                    {remove ? "Confirm remove account" : "Remove account"}
+                    {remove ? translate("Confirm remove account") : translate("Remove account")}
                   </button>
                 </div>
               ))}
@@ -249,12 +230,8 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
                 type="button"
                 className="button secondary"
                 onClick={() => setEditing(null)}
-              >
-                Cancel
-              </button>
-              <button className="button primary">
-                Save account
-                <Check size={16} />
+              >{translate("Cancel")}</button>
+              <button className="button primary">{translate("Save account")}<Check size={16} />
               </button>
             </div>
           </form>
