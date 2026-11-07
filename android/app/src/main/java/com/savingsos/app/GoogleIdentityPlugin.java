@@ -71,7 +71,7 @@ public class GoogleIdentityPlugin extends Plugin {
                         public void onError(GetCredentialException error) {
                             pending = null;
                             if (error instanceof GetCredentialCancellationException)
-                                call.reject("Google sign-in was cancelled.", "auth/popup-closed-by-user", error);
+                                call.reject("Google sign-in did not finish. If you did not cancel, check the Android app's package and signing certificate in Firebase.", "native-google/not-completed", error);
                             else if (error instanceof NoCredentialException)
                                 call.reject("Add a Google account to this device, then try again.", "native-google/no-credential", error);
                             else call.reject("Google sign-in could not open. Check this Android app's Firebase configuration and signing certificate.", "native-google/configuration", error);

@@ -125,6 +125,8 @@ test("online planners preserve records across devices and reject stale saves", a
       assert.match(firebaseError({ code: "auth/popup-blocked" }), /pop-ups/);
       assert.match(firebaseError({ code: "permission-denied" }), /security rules/);
       assert.equal(firebaseError({ code: "auth/user-not-found" }), firebaseError({ code: "auth/wrong-password" }));
+      assert.match(firebaseError({ code: "native-google/not-completed" }), /If you did not cancel/);
+      assert.equal(firebaseError({ code: "auth/popup-closed-by-user" }), "Google sign-in was cancelled.");
     });
     await t.test("disabled Firestore is diagnosed separately from genuine network and permission failures", async () => {
       const offline = Object.assign(new Error("Client is offline"), { code: "unavailable" });

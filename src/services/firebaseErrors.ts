@@ -1,6 +1,7 @@
 export function firebaseError(error: unknown): string {
   const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
   const messages: Record<string, string> = {
+    "native-google/not-completed": "Google sign-in did not finish. If you did not cancel, check the Android app's package and signing certificate in Firebase.",
     "auth/invalid-credential": "The email or password is incorrect.",
     "auth/wrong-password": "The email or password is incorrect.",
     "auth/user-not-found": "The email or password is incorrect.",

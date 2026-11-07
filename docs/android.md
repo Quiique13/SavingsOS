@@ -1,5 +1,7 @@
 # savingsOS for Android
 
+**[Download the latest APK](https://github.com/Quiique13/SavingsOS/releases/latest/download/savingsOS.apk)** from GitHub Releases. The download is named `savingsOS.apk`; the release notes identify its version and signing type.
+
 The Android app packages the current React interface using Capacitor. Its package/application ID is **`com.savingsos.app`**, defined in `android/app/build.gradle` and `capacitor.config.ts`. The app name is always **savingsOS**, without translation. Launcher and splash artwork come from the existing blue/mint vector logo.
 
 ## Build and install a test APK
@@ -40,7 +42,9 @@ SHA-1:   86:64:B3:55:A4:0F:88:3D:C4:2F:76:62:C3:58:5C:BC:7A:52:F9:96
 SHA-256: E4:0E:1B:1E:FA:10:D8:30:A1:0C:79:C7:7E:04:74:B0:85:B8:02:C9:BF:61:03:23:94:AB:ED:33:18:41:EB:90
 ```
 
-The configuration supplied during restoration includes a Web OAuth client, but does not list an Android OAuth client (`client_type: 1`). Verify the fingerprints are saved in Firebase, then download a refreshed `google-services.json` if needed. A missing or mismatched Android OAuth client can prevent the Google chooser from completing even when the APK builds successfully.
+The current `google-services.json` includes both a Web OAuth client (`client_type: 3`, used as the native chooser's server client ID) and an Android OAuth client (`client_type: 1`) registered for `com.savingsos.app` with the debug SHA-1 above. Keep these in the same Firebase/Google Cloud project. If you change signing certificates, register the new fingerprint in Firebase and download the refreshed config.
+
+If Google closes after you select an account, check the package and actual APK signing certificate against the Android OAuth client first. This native flow uses Android OAuth registration rather than Firebase's browser authorized-domain list. Android Credential Manager can report cancellation for configuration/authorization failures too; the app does not automatically retry that response. After adding a missing SHA-1 in Firebase, allow the change to propagate and manually retry. If the Web client ID is unchanged, server-side certificate registration can fix an already installed build as well. If the problem continues, collect device diagnostics; this symptom alone does not prove a certificate mismatch.
 
 Other machines generate different debug certificates. Register their fingerprints too, or use a stable signing key. Release keys and Play App Signing have their own fingerprints; the debug fingerprints do not authorize a future release. Never commit signing keystores or passwords.
 

@@ -11,6 +11,14 @@
         "android_client_info": { "package_name": "com.savingsos.app" }
       },
       "oauth_client": [
+        {
+          "client_id": "303880340930-ejv7rfev0ptt2tsus1e249m95fggij1p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savingsos.app",
+            "certificate_hash": "8664b355a40f883dc42f7662c3585cbc7a52f996"
+          }
+        },
         { "client_id": "303880340930-48hdl04pob5mrabfqia2tv14pv9c07kk.apps.googleusercontent.com", "client_type": 3 }
       ],
       "api_key": [ { "current_key": "AIzaSyDZ16VvlyVCl5jTvxYSjrRW2gAdYTw_cC0" } ],

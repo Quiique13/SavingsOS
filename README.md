@@ -1,27 +1,24 @@
 # savingsOS
 
-Plan your spending, track bills and income, and manage your accounts in one place.
+Plan spending, track bills and income, and manage your accounts.
 
-## [Open savingsOS web app](https://quiique13.github.io/SavingsOS/)
+## [Open the web app](https://quiique13.github.io/SavingsOS/)
 
-Use it directly in your browser on desktop or mobile. No setup required.
+**[Download Android APK](https://github.com/Quiique13/SavingsOS/releases/latest/download/savingsOS.apk)** · [All releases](https://github.com/Quiique13/SavingsOS/releases)
 
-Sign in with Google or email/password to use an online planner across devices, or keep using local profiles on this device. Online accounts require the [Firebase setup](docs/firebase.md), including published security rules. Existing local profiles are preserved.
+Sign in with Google or email/password to sync your planner across devices, or use local profiles. The Android APK is a debug-signed test build; install updates over the existing app to retain its data.
 
-**Android:** build an installable test APK with `npm run android:apk`. See the [Android guide](docs/android.md) for setup, Google sign-in, and existing profile compatibility.
+## Development
 
-**Continue on another computer:** use Node.js 24.12 or newer, then run `git pull --ff-only`, `npm ci`, and `npm run dev`. Source code and public Firebase app configuration are versioned. Private finance records, backups, local environment files, signing keys, build tools, and generated APKs are excluded. Use the same online account to open your cloud planner; transfer local profiles through a private exported backup. Android builds need the toolchain described in the Android guide and that computer's signing fingerprint registered in Firebase.
-
-[Full guide](docs/guide.md) · [Deployment status](https://github.com/Quiique13/SavingsOS/actions/workflows/webapp-pages.yml)
-
-<details>
-<summary>Run locally</summary>
+Use Node.js 24.12 or newer:
 
 ```sh
+git clone https://github.com/Quiique13/SavingsOS.git
+cd SavingsOS
 npm ci
 npm run dev
 ```
 
-Built with React, TypeScript, Vite, and Recharts. See the [guide](docs/guide.md) for builds, storage, backups, and project structure.
+On another computer, run `git pull --ff-only` and `npm ci` in your existing checkout. Private records, backups, environment files, and signing keys are excluded from Git. Sign in to your online account or transfer local profiles through a private backup.
 
-</details>
+[User guide](docs/guide.md) · [Android setup](docs/android.md) · [Firebase setup](docs/firebase.md)
