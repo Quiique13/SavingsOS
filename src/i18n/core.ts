@@ -11,6 +11,22 @@ Savings & investments|Poupanças e investimentos|Épargne et investissements|Aho
 Insights|Análise|Analyses|Análisis
 Settings|Definições|Paramètres|Configuración
 Appearance|Aparência|Apparence|Apariencia
+App theme|Tema da aplicação|Thème de l’application|Tema de la aplicación
+7 distinct looks. One familiar planner.|7 estilos distintos. O mesmo planeador.|7 styles distincts. Votre agenda habituel.|7 estilos distintos. Tu planificador de siempre.
+Default|Predefinido|Par défaut|Predeterminado
+Aurora|Aurora|Aurore|Aurora
+Paper|Papel|Papier|Papel
+Minimal|Minimalista|Minimaliste|Minimalista
+Neo|Neo|Néo|Neo
+Terminal|Terminal|Terminal|Terminal
+High Contrast|Alto contraste|Contraste élevé|Alto contraste
+Your familiar space, in six colours.|O espaço habitual, em seis cores.|Votre espace habituel, en six couleurs.|Tu espacio de siempre, en seis colores.
+Dreamy gradients, glass & soft curves.|Degradês suaves, vidro e curvas delicadas.|Dégradés oniriques, verre et courbes douces.|Degradados suaves, cristal y curvas delicadas.
+An editorial ledger with a warm paper feel.|Um registo editorial com o toque acolhedor do papel.|Un registre éditorial au charme du papier.|Un registro editorial con la calidez del papel.
+Clean lines, open space & quiet details.|Linhas simples, espaço e detalhes discretos.|Lignes épurées, espace et détails discrets.|Líneas limpias, espacio y detalles discretos.
+Bold outlines, punchy colour & playful shadows.|Contornos marcados, cores vivas e sombras divertidas.|Contours affirmés, couleurs vives et ombres ludiques.|Contornos marcados, colores vivos y sombras divertidas.
+Monospace type & a retro green glow.|Tipografia monoespaçada e um brilho verde retro.|Police à chasse fixe et lueur verte rétro.|Tipografía monoespaciada y un brillo verde retro.
+Strong borders, clear focus & maximum clarity.|Contornos fortes, foco visível e máxima clareza.|Bordures marquées, focus visible et clarté maximale.|Bordes marcados, foco visible y máxima claridad.
 Display mode|Modo de apresentação|Mode d’affichage|Modo de visualización
 Light mode|Modo claro|Mode clair|Modo claro
 Dark mode|Modo escuro|Mode sombre|Modo oscuro
@@ -75,6 +91,9 @@ Get to know your planner|Conheça o seu planeador|Découvrez votre outil de gest
 Using your planner|Utilizar o seu planeador|Utiliser votre outil de gestion|Usar tu planificador
 Your changes need attention|As suas alterações precisam de atenção|Vos modifications nécessitent une vérification|Tus cambios requieren atención
 Previous month|Mês anterior|Mois précédent|Mes anterior
+Previous year|Ano anterior|Année précédente|Año anterior
+Next year|Ano seguinte|Année suivante|Año siguiente
+This month|Este mês|Ce mois-ci|Este mes
 Select month|Selecionar mês|Sélectionner le mois|Seleccionar mes
 Next month|Mês seguinte|Mois suivant|Mes siguiente
 Month|Mês|Mois|Mes

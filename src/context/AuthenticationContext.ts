@@ -13,5 +13,7 @@ export type AuthenticationState = {
   verifyEmail: () => Promise<void>;
   leave: () => Promise<void>;
 };
-export const AuthenticationContext = createContext<AuthenticationState | null>(null);
+export const AuthenticationContext = createContext<AuthenticationState | null>(
+  null,
+);
 export const useAuthentication = () => useContext(AuthenticationContext);

@@ -10,6 +10,9 @@
 @import "./styles/motion.css";
 @import "./styles/redesign.css";
 @import "./styles/appearance.css";
+@import "./styles/ui-themes.css";
+@import "./styles/budget.css";
+@import "./styles/month-picker.css";
 
 /* Tailwind scans the active app; use complete utility names in JSX. */
 @source "./";

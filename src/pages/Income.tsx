@@ -9,8 +9,10 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Dialog } from "../components/common/Dialog";
 import { MonthPicker } from "../components/common/MonthPicker";
 import { PageHeading } from "../components/common/PageHeading";
+import { MonthlySimulator } from "../components/income/MonthlySimulator";
 import { useFinance } from "../hooks/useFinance";
 import { type Income } from "../types/finance";
+import { getMonthlyBudget, incomeBudgetMonth } from "../utils/budget";
 import { dateLabel, money, monthLabel, today } from "../utils/finance";
 
 export function IncomePage() {
@@ -24,13 +26,14 @@ export function IncomePage() {
   const [saveError, setSaveError] = useState("");
   const [message, setMessage] = useState("");
   const [draftId, setDraftId] = useState(() => parameters.get("add") === "1" ? crypto.randomUUID() : "");
-  const latestIncomeMonth = data.income.reduce((latest, entry) => entry.date.slice(0, 7) > latest ? entry.date.slice(0, 7) : latest, "");
+  const budget = getMonthlyBudget(data, month);
+  const latestIncomeMonth = data.income.reduce((latest, entry) => incomeBudgetMonth(entry.date) > latest ? incomeBudgetMonth(entry.date) : latest, "");
+  const lastReceiptDate = budget.incomeMonth + "-" + new Date(Number(budget.incomeMonth.slice(0, 4)), Number(budget.incomeMonth.slice(5, 7)), 0).getDate();
   function openIncome(entry: Income | "new") {
     setDraftId(entry === "new" ? crypto.randomUUID() : entry.id);
     setSaveError(""); setMessage(""); setEditing(entry);
   }
-  const rows = data.income
-    .filter((i) => i.date.startsWith(month))
+  const rows = [...budget.incomeEntries]
     .sort((a, b) => b.date.localeCompare(a.date));
   async function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,8 +53,8 @@ export function IncomePage() {
     setSavingIncome(true);
     try {
       await saveData(d => ({ ...d, income: d.income.some(entry => entry.id === item.id) ? d.income.map(entry => entry.id === item.id ? item : entry) : [...d.income, item] }));
-      setMonth(item.date.slice(0, 7));
-      setMessage(translate("{{name}} saved for {{month}}.", { name: item.name, month: monthLabel(item.date.slice(0, 7)) }));
+      setMonth(incomeBudgetMonth(item.date));
+      setMessage(translate("{{name}} saved for {{month}}.", { name: item.name, month: monthLabel(incomeBudgetMonth(item.date)) }));
       setEditing(null);
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "This income could not be saved. Your form is still here; try again.");
@@ -72,7 +75,7 @@ export function IncomePage() {
     <section className="income-page min-w-0">
       <PageHeading
         title={translate("Income")}
-        description={translate("Track what you receive and where it goes.")}
+        description={translate("Income received in {{receivedMonth}} funds {{budgetMonth}}.", { receivedMonth: monthLabel(budget.incomeMonth), budgetMonth: monthLabel(month) })}
       >
         <div className="expense-heading-actions">
           <MonthPicker month={month} setMonth={setMonth} />
@@ -82,20 +85,21 @@ export function IncomePage() {
       </PageHeading>
       {message && <p className="status-message" role="status">{translate(message)}</p>}
       <div className="stat-card income-stat">
-        <div className="stat-label">{translate("Total received")}<TrendingUp size={18} />
+        <div className="stat-label">{translate("Income available")}<TrendingUp size={18} />
         </div>
         <div className="stat-value">
-          {money(rows.reduce((s, i) => s + i.amount, 0))}
+          {money(budget.income)}
         </div>
         <p>
-          {translate("{{count}} income entries in {{month}}", { count: rows.length, month: monthLabel(month) })}
+          {translate("{{count}} entries received in {{month}}", { count: rows.length, month: monthLabel(budget.incomeMonth) })}
         </p>
       </div>
+      <MonthlySimulator key={month} month={month} />
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h2>{translate("Income history")}</h2>
-            <p>{translate("A record of every income source")}</p>
+            <h2>{translate("Income funding this month")}</h2>
+            <p>{translate("Received in {{month}}", { month: monthLabel(budget.incomeMonth) })}</p>
           </div>
         </div>
         {rows.map((i) => (
@@ -123,9 +127,9 @@ export function IncomePage() {
         {!rows.length && (
           <div className="empty-state">
             <TrendingUp size={28} />
-            <h3>{translate("No income this month")}</h3>
-            <p>{translate("Add income to complete your monthly picture.")}</p>
-            {latestIncomeMonth && latestIncomeMonth !== month && <div className="mt-4"><p>{translate("Your latest saved income is in") + " "}{monthLabel(latestIncomeMonth)}.</p><button type="button" className="button secondary small" onClick={() => setMonth(latestIncomeMonth)}>{translate("View") + " "}{monthLabel(latestIncomeMonth)}</button></div>}
+            <h3>{translate("No income funding this month")}</h3>
+            <p>{translate("Record income received last month to fund this plan.")}</p>
+            {latestIncomeMonth && latestIncomeMonth !== month && <div className="mt-4"><p>{translate("Your latest funded month is") + " "}{monthLabel(latestIncomeMonth)}.</p><button type="button" className="button secondary small" onClick={() => setMonth(latestIncomeMonth)}>{translate("View") + " "}{monthLabel(latestIncomeMonth)}</button></div>}
             <button
               className="button secondary small"
               onClick={() => openIncome("new")}
@@ -146,6 +150,7 @@ export function IncomePage() {
             </div>
           ) : <form className="planner-form" onSubmit={save}>
             <fieldset className="contents" disabled={savingIncome}>
+              <p className="form-intro">{translate("This income funds the month after its received date.")}</p>
               <label>{translate("Source")}<input
                   autoFocus
                   name="name"
@@ -168,7 +173,7 @@ export function IncomePage() {
                 <label>{translate("Received on")}<input
                     name="date"
                     type="date"
-                    defaultValue={item?.date || today()}
+                    defaultValue={item?.date || (lastReceiptDate > today() ? today() : lastReceiptDate)}
                     max={today()}
                     required
                   />

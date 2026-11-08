@@ -3,10 +3,11 @@ import { help } from "./help";
 import { errors } from "./errors";
 import { dynamic } from "./dynamic";
 import { auth } from "./auth";
+import { budget } from "./budget";
 
 // Keep English source keys separate from stored category IDs, names, and records.
 export const messages = Object.fromEntries(
-  [core, help, errors, dynamic, auth].flatMap(catalog => catalog.trim().split("\n").map(line => {
+  [core, help, errors, dynamic, auth, budget].flatMap(catalog => catalog.trim().split("\n").map(line => {
     const [source, pt, fr, es] = line.split("|");
     if (!source || !pt || !fr || !es) throw new Error("Incomplete translation: " + source);
     return [source, [pt, fr, es] as const];

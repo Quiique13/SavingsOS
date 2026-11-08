@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AccountActivity } from "../components/accounts/AccountActivity";
+import { MonthlySimulator } from "../components/income/MonthlySimulator";
 import { MonthPicker } from "../components/common/MonthPicker";
 import { CategoryIcon } from "../components/expenses/CategoryIcon";
 import { ExpenseForm } from "../components/expenses/ExpenseForm";
@@ -15,7 +16,8 @@ import { TransferForm } from "../components/transfers/TransferForm";
 import { useFinance } from "../hooks/useFinance";
 import { useUsers } from "../hooks/useUsers";
 import { type Row, type Transfer } from "../types/finance";
-import { categoryColors, compactMoney, dateLabel, getRows, money, monthLabel, shiftMonth, today } from "../utils/finance";
+import { getMonthlyBudget } from "../utils/budget";
+import { categoryColors, compactMoney, dateLabel, money, monthLabel, shiftMonth, today } from "../utils/finance";
 
 export function Overview() {
   useLanguage();
@@ -26,13 +28,14 @@ export function Overview() {
   const [moving, setMoving] = useState<Transfer | "new" | null>(null);
   const [transferMessage, setTransferMessage] = useState("");
   const [paying, setPaying] = useState<Row | null>(null);
-  const rows = getRows(data, month);
-  const total = rows.reduce((sum, row) => sum + row.amount, 0);
+  const budget = getMonthlyBudget(data, month);
+  const rows = budget.expenses;
+  const total = budget.planned;
   const paidRows = rows.filter(row => row.paidDate);
-  const paid = paidRows.reduce((sum, row) => sum + row.amount, 0);
+  const paid = budget.paid;
   const unpaid = rows.filter(row => !row.paidDate);
   const overdue = unpaid.filter(row => row.status === "Overdue");
-  const income = data.income.filter(entry => entry.date.startsWith(month)).reduce((sum, entry) => sum + entry.amount, 0);
+  const income = budget.income;
   const balance = data.accounts.reduce((sum, account) => sum + Math.round(account.balance * 100), 0) / 100;
   const savings = data.accounts.filter(account => account.kind === "Savings").reduce((sum, account) => sum + account.balance, 0);
   const paidPercent = total ? Math.round(paid / total * 100) : 0;
@@ -42,10 +45,11 @@ export function Overview() {
   })).sort((a, b) => b.value - a.value);
   const cashflow = Array.from({ length: 6 }, (_, index) => {
     const value = shiftMonth(month, index - 5);
+    const monthlyBudget = getMonthlyBudget(data, value);
     return {
       month: dateLabel(value + "-01", { month: "short" }), period: monthLabel(value),
-      income: data.income.filter(entry => entry.date.startsWith(value)).reduce((sum, entry) => sum + entry.amount, 0),
-      expenses: getRows(data, value).reduce((sum, row) => sum + row.amount, 0),
+      income: monthlyBudget.income,
+      expenses: monthlyBudget.planned,
     };
   });
   const hasCashflow = cashflow.some(entry => entry.income || entry.expenses);
@@ -53,7 +57,7 @@ export function Overview() {
   const activity = [
     ...data.income.filter(entry => entry.date.startsWith(month)).map(entry => ({
       id: "income-" + entry.id, name: entry.name, date: entry.date,
-      detail: accountName(entry.accountId), amount: entry.amount, kind: "income", to: "/income?month=" + month,
+      detail: accountName(entry.accountId), amount: entry.amount, kind: "income", to: "/income?month=" + shiftMonth(month, 1),
     })),
     ...Object.entries(data.payments).filter(([, date]) => date.startsWith(month)).flatMap(([key, date]) => {
       const expense = data.expenses.find(entry => entry.id === key.slice(0, key.lastIndexOf(":")));
@@ -84,9 +88,9 @@ export function Overview() {
           <div className="summary-foot"><span>{translate(data.accounts.length === 1 ? "{{count}} tracked account" : "{{count}} tracked accounts", { count: data.accounts.length })}</span><Link to="/accounts" aria-label={translate("Manage account balances")}><ArrowUpRight size={17} /></Link></div>
         </article>
         <article className="summary-card">
-          <div className="summary-label">{translate("Income") + " "}<span className="summary-icon"><ArrowDownLeft size={18} /></span></div>
+          <div className="summary-label">{translate("Income available") + " "}<span className="summary-icon"><ArrowDownLeft size={18} /></span></div>
           <strong className="summary-value">{money(income)}</strong>
-          <div className="summary-foot"><span>{translate("Recorded this month")}</span><Link to={"/income?month=" + month} aria-label={translate("Manage income")}><ArrowUpRight size={17} /></Link></div>
+          <div className="summary-foot"><span>{translate("Received in {{month}}", { month: monthLabel(budget.incomeMonth) })}</span><Link to={"/income?month=" + month} aria-label={translate("Manage income")}><ArrowUpRight size={17} /></Link></div>
         </article>
         <article className="summary-card">
           <div className="summary-label">{translate("Planned expenses") + " "}<span className="summary-icon"><ReceiptText size={18} /></span></div>
@@ -95,8 +99,8 @@ export function Overview() {
         </article>
         <article className="summary-card remaining-summary">
           <div className="summary-label">{translate("Left after expenses") + " "}<span className="summary-icon"><Sprout size={18} /></span></div>
-          <strong className="summary-value">{money(income - total)}</strong>
-          <div className="summary-foot"><span>{translate("Income minus your monthly plan")}</span></div>
+          <strong className="summary-value">{money(budget.leftAfterExpenses)}</strong>
+          <div className="summary-foot"><span>{translate("Last month's income minus this month's plan")}</span></div>
         </article>
       </div>
       <div className="quick-actions" aria-label={translate("Quick actions")}>
@@ -109,22 +113,23 @@ export function Overview() {
       {!data.accounts.length && <Link className="getting-started" to="/accounts"><span className="quick-icon blue"><CirclePlus size={23} /></span><span><strong>{translate("Start with your first account")}</strong><small>{translate("Add a balance, then record income and plan your expenses.")}</small></span><ArrowRight size={20} /></Link>}
       <div className="dashboard-columns">
         <div className="dashboard-main">
+          <MonthlySimulator key={month} month={month} />
           <section className="panel cashflow-panel">
-            <div className="panel-heading"><div><h2>{translate("Money in, money out")}</h2><p>{translate("Your income and planned expenses over six months")}</p></div><Link className="text-button" to="/insights">{translate("Insights") + " "}<ArrowUpRight size={15} /></Link></div>
-            <div className="cashflow-key"><span><i />{translate("Income")}</span><span><i />{translate("Planned expenses")}</span></div>
+            <div className="panel-heading"><div><h2>{translate("Money in, money out")}</h2><p>{translate("Each month's plan uses income received in the previous month.")}</p></div><Link className="text-button" to="/insights">{translate("Insights") + " "}<ArrowUpRight size={15} /></Link></div>
+            <div className="cashflow-key"><span><i />{translate("Income available")}</span><span><i />{translate("Planned expenses")}</span></div>
             {hasCashflow ? <div className="cashflow-chart" role="img" aria-label={translate("Six month income and planned expenses bar chart. Exact values are available in View chart data below.")}>
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart data={cashflow} barGap={6} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 5" />
                   <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "var(--color-text-secondary)", fontSize: 11 }} dy={8} />
                   <YAxis width={54} axisLine={false} tickLine={false} tick={{ fill: "var(--color-text-secondary)", fontSize: 10 }} tickFormatter={value => compactMoney(Number(value))} />
-                  <Tooltip cursor={{ fill: "var(--color-surface-alt)" }} formatter={(value, name) => [money(Number(value)), translate(name === "income" ? "Income" : "Planned expenses")]} labelFormatter={(_, entries) => entries[0]?.payload.period ?? ""} contentStyle={{ background: "var(--color-surface-raised)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12, color: "var(--color-text)" }} />
+                  <Tooltip cursor={{ fill: "var(--color-surface-alt)" }} formatter={(value, name) => [money(Number(value)), translate(name === "income" ? "Income available" : "Planned expenses")]} labelFormatter={(_, entries) => entries[0]?.payload.period ?? ""} contentStyle={{ background: "var(--color-surface-raised)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12, color: "var(--color-text)" }} />
                   <Bar dataKey="income" fill="var(--dashboard-chart-income)" radius={[6, 6, 6, 6]} maxBarSize={15} />
                   <Bar dataKey="expenses" fill="var(--dashboard-chart-expenses)" radius={[6, 6, 6, 6]} maxBarSize={15} />
                 </BarChart>
               </ResponsiveContainer>
             </div> : <div className="empty-state cashflow-empty"><ChartEmpty /><h3>{translate("Your bigger picture starts here")}</h3><p>{translate("Record income and expenses to see your monthly patterns.")}</p><button className="text-button" onClick={() => setAdding(true)}>{translate("Add your first expense") + " "}<ArrowRight size={15} /></button></div>}
-            <details className="chart-data"><summary>{translate("View chart data") + " "}<ChevronDown size={12} /></summary><table><caption>{translate("Income and planned expenses for the six months ending") + " "}{monthLabel(month)}</caption><thead><tr><th scope="col">{translate("Month")}</th><th scope="col">{translate("Income")}</th><th scope="col">{translate("Planned expenses")}</th></tr></thead><tbody>{cashflow.map(entry => <tr key={entry.period}><th scope="row">{entry.period}</th><td>{money(entry.income)}</td><td>{money(entry.expenses)}</td></tr>)}</tbody></table></details>
+            <details className="chart-data"><summary>{translate("View chart data") + " "}<ChevronDown size={12} /></summary><table><caption>{translate("Income and planned expenses for the six months ending") + " "}{monthLabel(month)}</caption><thead><tr><th scope="col">{translate("Month")}</th><th scope="col">{translate("Income available")}</th><th scope="col">{translate("Planned expenses")}</th></tr></thead><tbody>{cashflow.map(entry => <tr key={entry.period}><th scope="row">{entry.period}</th><td>{money(entry.income)}</td><td>{money(entry.expenses)}</td></tr>)}</tbody></table></details>
           </section>
           <section className="panel recent-panel">
             <div className="panel-heading"><div><h2>{translate("Recent activity")}</h2><p>{translate("Income, payments, and transfers in") + " "}{monthLabel(month)}</p></div><span className="activity-period"><span className="live-dot" />{translate("This period")}</span></div>

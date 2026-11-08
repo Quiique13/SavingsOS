@@ -1,0 +1,20 @@
+@layer components {
+  .month-picker > .month-picker-trigger { display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; padding: 0 10px; color: var(--color-text); font-size: 12px; cursor: pointer; }
+  .month-picker-trigger > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .month-picker-trigger > svg { flex-shrink: 0; }
+  .month-menu { z-index: 80; width: min(290px, calc(100vw - 24px)); max-height: var(--radix-popover-content-available-height); overflow-y: auto; padding: 14px; border: 1px solid var(--color-border); border-radius: var(--radius-panel); background: var(--color-surface-raised); color: var(--color-text); box-shadow: 0 12px 38px var(--color-shadow); }
+  .month-menu-year { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .month-menu-year > select { flex: 1; min-width: 0; min-height: 40px; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); font: inherit; font-size: 16px; font-weight: 600; text-align: center; }
+  .month-menu-year > button { min-height: 40px; min-width: 40px; border: 1px solid var(--color-border); border-radius: var(--radius-control); }
+  .month-menu-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .month-menu-grid > button { min-height: 44px; padding: 9px 6px; border: 1px solid transparent; border-radius: var(--radius-control); background: var(--color-surface-alt); color: var(--color-text); font-size: 12px; font-weight: 500; }
+  .month-menu-grid > button:hover { border-color: var(--color-focus); }
+  .month-menu-grid > button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); font-weight: 650; }
+  .month-menu-today { display: block; width: 100%; min-height: 44px; margin-top: 12px; padding: 10px; border-top: 1px solid var(--color-border); color: var(--color-accent); font-size: 12px; font-weight: 550; }
+  .month-menu :is(button, select):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  :root[data-ui-theme="high-contrast"] .month-menu,
+  :root[data-ui-theme="high-contrast"] .month-menu-grid > button { border: 2px solid var(--color-border); }
+  @media (max-width: 767px) {
+    .month-picker > .month-picker-trigger { flex: 1; width: auto; font-size: 13px; }
+  }
+}

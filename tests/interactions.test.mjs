@@ -9,7 +9,7 @@ import { createServer } from "vite";
 test("profile selection and settings navigation", async t => {
   const dom = new JSDOM('<!doctype html><html><head><meta name="theme-color"></head><body><div id="root"></div></body></html>', { url: "http://localhost/" });
   const previous = new Map();
-  for (const name of ["window", "document", "navigator", "HTMLElement", "HTMLInputElement", "HTMLFormElement", "FormData", "Event", "MouseEvent", "localStorage"]) {
+  for (const name of ["window", "document", "navigator", "Node", "NodeFilter", "Element", "HTMLElement", "HTMLInputElement", "HTMLFormElement", "MutationObserver", "CustomEvent", "getComputedStyle", "FormData", "Event", "MouseEvent", "localStorage"]) {
     previous.set(name, Object.getOwnPropertyDescriptor(globalThis, name));
     Object.defineProperty(globalThis, name, { configurable: true, writable: true, value: name === "window" ? dom.window : name === "document" ? dom.window.document : dom.window[name] });
   }
@@ -48,6 +48,16 @@ test("profile selection and settings navigation", async t => {
         Object.getOwnPropertyDescriptor(prototype, "value").set.call(element, value);
         element.dispatchEvent(new dom.window.Event(element.tagName === "SELECT" ? "change" : "input", { bubbles: true }));
       });
+    };
+    const selectMonth = async value => {
+      await click(container.querySelector('button[aria-label="Select month"]'));
+      const year = document.querySelector('.month-menu select[aria-label="Select year"]');
+      assert.ok(year);
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(dom.window.HTMLSelectElement.prototype, "value").set.call(year, String(Number(value.slice(0, 4))));
+        year.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+      });
+      await click(document.querySelector('.month-menu button[data-month="' + value + '"]'));
     };
     const waitFor = async predicate => {
       const deadline = Date.now() + 5000;
@@ -302,6 +312,34 @@ test("profile selection and settings navigation", async t => {
         assert.ok(container.querySelector(".finance-app.sidebar-collapsed"));
       } finally { window.matchMedia = previousMatchMedia; }
     });
+    await t.test("Overview opens a month and year menu, supports cancelling, and returns to this month", async () => {
+      await mount("/dashboard");
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".overview-page"));
+      const { today, shiftMonth } = await server.ssrLoadModule("/src/utils/finance.ts");
+      const current = today().slice(0, 7);
+      const trigger = () => container.querySelector('button[aria-label="Select month"]');
+      await click(trigger());
+      assert.equal(trigger().getAttribute("aria-expanded"), "true");
+      assert.equal(document.querySelectorAll(".month-menu-grid button").length, 12);
+      assert.equal(document.querySelector('.month-menu-grid button[aria-pressed="true"]').dataset.month, current);
+      await click(document.querySelector('.month-menu button[aria-label="Next year"]'));
+      assert.equal(document.querySelector('.month-menu select').value, String(Number(current.slice(0, 4)) + 1));
+      await act(async () => document.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+      assert.equal(document.querySelector(".month-menu"), null);
+      assert.equal(trigger().dataset.month, current);
+      await selectMonth(shiftMonth(current, 14));
+      assert.equal(trigger().dataset.month, shiftMonth(current, 14));
+      assert.equal(trigger().getAttribute("aria-expanded"), "false");
+      assert.equal(document.querySelector(".month-menu"), null);
+      await click(trigger());
+      await click([...document.querySelectorAll(".month-menu button")].find(button => button.textContent === "This month"));
+      assert.equal(trigger().dataset.month, current);
+      await click(container.querySelector('button[aria-label="Previous month"]'));
+      assert.equal(trigger().dataset.month, shiftMonth(current, -1));
+      await click(container.querySelector('button[aria-label="Next month"]'));
+      assert.equal(trigger().dataset.month, current);
+    });
     await t.test("expense calendar and filters remain accessible in the simplified layout", async () => {
       const { vault, regular } = await mount("/expenses");
       const profile = await vault.open(regular.user.id);
@@ -392,7 +430,7 @@ test("profile selection and settings navigation", async t => {
       await waitFor(() => container.querySelector(".settings-page"));
       assert.ok(container.textContent.includes("Appearance"));
     });
-    await t.test("September income into moey is confirmed on disk and shown in its received month", async () => {
+    await t.test("September income into moey is confirmed on disk and funds October", async () => {
       const { vault, regular } = await mount("/income");
       await click(find(".user-choice", "Miguel"));
       await waitFor(() => container.querySelector(".income-page"));
@@ -416,18 +454,76 @@ test("profile selection and settings navigation", async t => {
         assert.equal((await vault.open(regular.user.id)).data.income.length, 0);
       } finally { release(); globalThis.fetch = request; }
       await waitFor(() => !container.querySelector("dialog"));
-      assert.equal(container.querySelector('input[aria-label="Select month"]').value, "2026-09");
+      assert.equal(container.querySelector('button[aria-label="Select month"]').dataset.month, "2026-10");
       const row = find(".income-row", "Sogenave");
       assert.ok(row); assert.ok(row.textContent.includes("€1,367.29")); assert.ok(row.textContent.includes("moey!"));
-      assert.ok(container.textContent.includes("Sogenave saved for September 2026"));
+      assert.ok(container.textContent.includes("Sogenave saved for October 2026"));
       const income = (await vault.open(regular.user.id)).data.income;
       assert.equal(income.length, 1);
       assert.deepEqual({ ...income[0], id: "saved-id" }, { id: "saved-id", name: "Sogenave", amount: 1367.29, date: "2026-09-30", accountId: "moey" });
       await act(async () => root.unmount()); root = createRoot(container);
       await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/income"] }, e(AppRoutes))))));
-      await waitFor(() => find("button", "View September 2026"));
-      await click(find("button", "View September 2026"));
+      await waitFor(() => find("button", "View October 2026"));
+      await click(find("button", "View October 2026"));
       assert.ok(find(".income-row", "Sogenave"));
+    });
+    await t.test("Overview budgets from last month's income and the simulator never saves scenarios", async () => {
+      const { vault, regular } = await mount("/dashboard");
+      const { today, shiftMonth } = await server.ssrLoadModule("/src/utils/finance.ts");
+      const month = today().slice(0, 7);
+      const session = await vault.open(regular.user.id);
+      const records = {
+        ...session.data,
+        income: [
+          { id: "last-salary", name: "Previous salary", amount: 1500, date: shiftMonth(month, -1) + "-28", accountId: "moey" },
+          { id: "next-salary", name: "Next salary", amount: 9000, date: month + "-01", accountId: "moey" },
+        ],
+        expenses: [
+          { id: "rent", name: "Rent", amount: 650, category: "Housing", accountId: "moey", due: month + "-01", frequency: "monthly", notes: "" },
+          { id: "purchase", name: "Purchase", amount: 50.01, category: "Shopping", accountId: "moey", due: month + "-01", frequency: "once", notes: "" },
+          { id: "insurance", name: "Insurance", amount: 120, category: "Other", accountId: "moey", due: month + "-01", frequency: "yearly", notes: "" },
+        ],
+        payments: { ["rent:" + month + "-01"]: month + "-01" },
+      };
+      await vault.save(session, records);
+      const request = globalThis.fetch;
+      let writes = 0;
+      globalThis.fetch = (path, init) => { if (path === "/api/save") writes++; return request(path, init); };
+      try {
+        await click(find(".user-choice", "Miguel"));
+        await waitFor(() => container.querySelector(".monthly-simulator"));
+        const incomeValue = () => container.querySelector(".dashboard-stats .summary-card:nth-child(2) .summary-value").textContent;
+        const estimate = () => container.querySelector(".simulator-total").textContent;
+        assert.equal(incomeValue(), "€1,500.00");
+        assert.equal(container.querySelector(".remaining-summary .summary-value").textContent, "€679.99");
+        assert.equal(estimate(), "€679.99");
+        const chartRow = [...container.querySelectorAll(".chart-data tbody tr")].at(-1);
+        assert.equal(chartRow.querySelector("td").textContent, "€1,500.00");
+        await fill('.monthly-simulator input[name="income"]', "2000");
+        await fill('.monthly-simulator input[name="extraIncome"]', "100");
+        await fill('.monthly-simulator input[name="extraSpending"]', "200.25");
+        await fill('.monthly-simulator input[name="carryover"]', "50");
+        assert.equal(estimate(), "€1,129.74");
+        assert.equal(incomeValue(), "€1,500.00");
+        await fill('.monthly-simulator input[name="income"]', "0");
+        await fill('.monthly-simulator input[name="extraIncome"]', "0");
+        await fill('.monthly-simulator input[name="carryover"]', "0");
+        assert.equal(estimate(), "-€1,020.26");
+        assert.ok(container.querySelector(".simulator-outcome").textContent.includes("Shortfall"));
+        await fill('.monthly-simulator input[name="income"]', "");
+        assert.equal(estimate(), "—");
+        assert.ok(container.querySelector('.monthly-simulator [role="alert"]'));
+        await click(find(".monthly-simulator button", "Reset to saved income"));
+        assert.equal(estimate(), "€679.99");
+        await fill('.monthly-simulator input[name="income"]', "2000");
+        await selectMonth(shiftMonth(month, 1));
+        assert.equal(incomeValue(), "€9,000.00");
+        assert.equal(container.querySelector('.monthly-simulator input[name="income"]').value, "9000");
+        await selectMonth(month);
+        assert.equal(estimate(), "€679.99");
+        assert.equal(writes, 0);
+        assert.deepEqual((await vault.open(regular.user.id)).data, records);
+      } finally { globalThis.fetch = request; }
     });
     await t.test("failed income saves preserve the form and retry without adding duplicates", async () => {
       const { vault, regular } = await mount("/income");
@@ -462,8 +558,8 @@ test("profile selection and settings navigation", async t => {
       const entries = [1, 2, 3].map(id => ({ id: "saved-" + id, name: "Sogenave", amount: 1367.29, date: "2026-09-30", accountId: "moey" }));
       await vault.save(session, { ...session.data, income: entries });
       await click(find(".user-choice", "Miguel"));
-      await waitFor(() => find("button", "View September 2026"));
-      await click(find("button", "View September 2026"));
+      await waitFor(() => find("button", "View October 2026"));
+      await click(find("button", "View October 2026"));
       assert.equal(container.querySelectorAll(".income-row").length, 3);
       assert.deepEqual((await vault.open(regular.user.id)).data.income, entries);
     });
@@ -489,8 +585,11 @@ test("profile selection and settings navigation", async t => {
       assert.equal(saved.accounts.find(account => account.id === "moey").balance, 700);
       assert.equal(saved.accounts.find(account => account.id === "bleap").balance, 400);
       assert.deepEqual(saved.income, income); assert.deepEqual(saved.expenses, []);
-      assert.equal(container.querySelector('input[aria-label="Select month"]').value, "2026-09");
+      assert.equal(container.querySelector('button[aria-label="Select month"]').dataset.month, "2026-09");
+      assert.equal(container.querySelector(".dashboard-stats .summary-card:nth-child(2) .summary-value").textContent, "€0.00");
+      await selectMonth("2026-10");
       assert.equal(container.querySelector(".dashboard-stats .summary-card:nth-child(2) .summary-value").textContent, "€1,367.29");
+      await selectMonth("2026-09");
       assert.equal(container.querySelector(".balance-summary .summary-value").textContent, "€1,100.00");
       const cardValues = name => Object.fromEntries([...container.querySelector('[aria-label="' + name + ' account activity"]').querySelectorAll("dl > div")].map(row => [row.querySelector("dt").textContent, row.querySelector("dd").textContent]));
       assert.equal(cardValues("moey!")["Transfers out"], "−€300.00");
@@ -501,7 +600,7 @@ test("profile selection and settings navigation", async t => {
       await click(container.querySelector('.recent-activity a[href^="/transfers"]'));
       await waitFor(() => container.querySelector(".transfers-page"));
       assert.equal(container.querySelectorAll(".transfer-row").length, 1);
-      assert.equal(container.querySelector('input[aria-label="Select month"]').value, "2026-09");
+      assert.equal(container.querySelector('button[aria-label="Select month"]').dataset.month, "2026-09");
       await act(async () => root.unmount()); root = createRoot(container);
       await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/transfers?month=2026-09"] }, e(AppRoutes))))));
       await waitFor(() => container.querySelector(".transfer-row"));

@@ -10,12 +10,32 @@
     <meta name="theme-color" content="#f8faf6" />
     <script>
       (() => {
-        let saved;
-        try { saved = localStorage.getItem("savings-os-theme"); } catch {}
+        let saved, savedUI, savedScheme;
+        try {
+          saved = localStorage.getItem("savings-os-theme");
+          savedUI = localStorage.getItem("savings-os-ui-theme");
+          savedScheme = localStorage.getItem("savings-os-color-scheme");
+        } catch {}
         const theme = saved === "light" || saved === "dark" ? saved : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        const families = {
+          default: ["#f3f4f6", "#191b20"], aurora: ["#edf0ff", "#12152e"],
+          paper: ["#f4efe5", "#24211c"], minimal: ["#f8fafb", "#171c20"],
+          neo: ["#f5f0ff", "#211b30"], terminal: ["#eef5ed", "#0c1710"],
+          "high-contrast": ["#ffffff", "#000000"]
+        };
+        const schemes = {
+          ocean: families.default, sage: ["#f1f5f1", "#19211d"],
+          lavender: ["#f5f2f8", "#201c28"], rose: ["#f8f2f3", "#271d22"],
+          amber: ["#f8f4ed", "#27221b"], graphite: ["#f3f3f3", "#1c1c1e"]
+        };
+        const uiTheme = Object.hasOwn(families, savedUI) ? savedUI : "default";
+        const scheme = Object.hasOwn(schemes, savedScheme) ? savedScheme : "ocean";
         document.documentElement.dataset.theme = theme;
+        document.documentElement.dataset.uiTheme = uiTheme;
+        document.documentElement.dataset.colorScheme = scheme;
         document.documentElement.style.colorScheme = theme;
-        document.querySelector('meta[name="theme-color"]').content = theme === "dark" ? "#111813" : "#f8faf6";
+        const palette = uiTheme === "default" ? schemes[scheme] : families[uiTheme];
+        document.querySelector('meta[name="theme-color"]').content = palette[theme === "dark" ? 1 : 0];
       })();
     </script>
     <title>savingsOS — A calmer place for your money</title>

@@ -124,7 +124,9 @@ export function AppLayout() {
   const demo = data.expenses.some((e) => e.demo);
   return (
     <div className={"finance-app" + (collapsed ? " sidebar-collapsed" : "")}>
-      <a className="skip-link" href="#main-content">{translate("Skip to content")}</a>
+      <a className="skip-link" href="#main-content">
+        {translate("Skip to content")}
+      </a>
       <aside
         ref={sidebarRef}
         id="sidebar-navigation"
@@ -167,7 +169,8 @@ export function AppLayout() {
         </nav>
         <details className="sidebar-accounts">
           <summary>{translate("Account shortcuts")}</summary>
-          <span className="nav-section-label">{translate("YOUR ACCOUNTS")}{" "}
+          <span className="nav-section-label">
+            {translate("YOUR ACCOUNTS")}{" "}
             <Link to="/accounts" aria-label={translate("Manage accounts")}>
               <ArrowUpRight size={13} />
             </Link>
@@ -196,7 +199,9 @@ export function AppLayout() {
               <CircleHelp size={19} />
             </span>
             <strong>{translate("A little guidance?")}</strong>
-            <span>{translate("Get to know your planner") + " "}<ArrowUpRight size={13} />
+            <span>
+              {translate("Get to know your planner") + " "}
+              <ArrowUpRight size={13} />
             </span>
           </button>
           <NavLink
@@ -218,9 +223,11 @@ export function AppLayout() {
             <div>
               <strong>{currentUser!.name}</strong>
               <small>
-                {currentUser!.authProvider === "firebase" ? translate("Online account") : currentUser!.hasPassword
-                  ? translate("Password protected")
-                  : translate("Local user profile")}
+                {currentUser!.authProvider === "firebase"
+                  ? translate("Online account")
+                  : currentUser!.hasPassword
+                    ? translate("Password protected")
+                    : translate("Local user profile")}
               </small>
             </div>
             <button
@@ -255,9 +262,15 @@ export function AppLayout() {
               className="sidebar-toggle icon-button"
               onClick={toggleSidebar}
               aria-label={
-                collapsed ? translate("Expand navigation") : translate("Collapse navigation")
+                collapsed
+                  ? translate("Expand navigation")
+                  : translate("Collapse navigation")
               }
-              title={collapsed ? translate("Expand navigation") : translate("Collapse navigation")}
+              title={
+                collapsed
+                  ? translate("Expand navigation")
+                  : translate("Collapse navigation")
+              }
               aria-controls="sidebar-navigation"
               aria-expanded={!collapsed}
             >
@@ -290,7 +303,9 @@ export function AppLayout() {
                 : saving
                   ? translate("Saving…")
                   : ready
-                    ? currentUser!.authProvider === "firebase" ? translate("Saved to your account") : translate("Saved in the app")
+                    ? currentUser!.authProvider === "firebase"
+                      ? translate("Saved to your account")
+                      : translate("Saved in the app")
                     : translate("Loading your records")}
             </span>
             <ThemeToggle />
@@ -326,8 +341,14 @@ export function AppLayout() {
               {demo && (
                 <div className="demo-banner">
                   <span>
-                    <span className="demo-badge">{translate("Sample data")}</span>{translate("Explore the planner with example expenses.")}</span>
-                  <button onClick={() => setClear(true)}>{translate("Start fresh")}<ArrowRight size={14} />
+                    <span className="demo-badge">
+                      {translate("Sample data")}
+                    </span>
+                    {translate("Explore the planner with example expenses.")}
+                  </span>
+                  <button onClick={() => setClear(true)}>
+                    {translate("Start fresh")}
+                    <ArrowRight size={14} />
                   </button>
                 </div>
               )}
@@ -347,7 +368,7 @@ export function AppLayout() {
           )}
         </main>
       </div>
-      <MobileNav menuOpen={mobile} onOpenMenu={() => setMobile(true)} />
+      <MobileNav menuOpen={mobile} />
       {userError && (
         <Dialog
           title={translate("Your changes need attention")}
@@ -357,42 +378,80 @@ export function AppLayout() {
             <p className="user-error" role="alert">
               {translate(userError)}
             </p>
-            <p className="form-intro">{translate("Your current planner remains open. Export a finance backup from Settings before reloading.")}</p>
+            <p className="form-intro">
+              {translate(
+                "Your current planner remains open. Export a finance backup from Settings before reloading.",
+              )}
+            </p>
             <Link
               className="button primary"
               to="/settings"
               onClick={() => setUserError("")}
-            >{translate("Open settings")}</Link>
+            >
+              {translate("Open settings")}
+            </Link>
           </div>
         </Dialog>
       )}
       {help && (
-        <Dialog title={translate("Using your planner")} onClose={() => setHelp(false)}>
+        <Dialog
+          title={translate("Using your planner")}
+          onClose={() => setHelp(false)}
+        >
           <div className="planner-form">
-            <p>{translate("Add everyday, monthly, or yearly expenses. Pick a due date and account, then click a payment status to record when you paid it.")}</p>
-            <p>{translate("Recurring bills get their own payment record each month. Use the calendar to see what's due, and Insights for the annual picture.")}</p>
-            <p className="form-intro">{currentUser!.authProvider === "firebase" ? translate("Accounts are manually tracked. Online records are saved in Firebase; export a backup from Settings to keep a separate copy.") : translate("Accounts are manually tracked. Data is saved in the app; export a backup from Settings to keep a separate copy.")}</p>
-            <button className="button primary" onClick={() => setHelp(false)}>{translate("Got it")}<ShieldCheck size={16} />
+            <p>
+              {translate(
+                "Add everyday, monthly, or yearly expenses. Pick a due date and account, then click a payment status to record when you paid it.",
+              )}
+            </p>
+            <p>
+              {translate(
+                "Recurring bills get their own payment record each month. Use the calendar to see what's due, and Insights for the annual picture.",
+              )}
+            </p>
+            <p className="form-intro">
+              {currentUser!.authProvider === "firebase"
+                ? translate(
+                    "Accounts are manually tracked. Online records are saved in Firebase; export a backup from Settings to keep a separate copy.",
+                  )
+                : translate(
+                    "Accounts are manually tracked. Data is saved in the app; export a backup from Settings to keep a separate copy.",
+                  )}
+            </p>
+            <button className="button primary" onClick={() => setHelp(false)}>
+              {translate("Got it")}
+              <ShieldCheck size={16} />
             </button>
           </div>
         </Dialog>
       )}
       {clear && (
-        <Dialog title={translate("Remove sample expenses?")} onClose={() => setClear(false)}>
+        <Dialog
+          title={translate("Remove sample expenses?")}
+          onClose={() => setClear(false)}
+        >
           <div className="planner-form">
-            <p>{translate("Remove the sample expenses and their payment records? Your own entries and accounts will be kept.")}</p>
+            <p>
+              {translate(
+                "Remove the sample expenses and their payment records? Your own entries and accounts will be kept.",
+              )}
+            </p>
             <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
                 className="button secondary"
                 onClick={() => setClear(false)}
-              >{translate("Keep exploring")}</button>
+              >
+                {translate("Keep exploring")}
+              </button>
               <button
                 className="button primary"
                 onClick={() => {
                   clearDemo();
                   setClear(false);
                 }}
-              >{translate("Remove samples")}<ArrowRight size={16} />
+              >
+                {translate("Remove samples")}
+                <ArrowRight size={16} />
               </button>
             </div>
           </div>

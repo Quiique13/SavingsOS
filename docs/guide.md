@@ -59,6 +59,14 @@ Private app data, exports, local recovery archives, and generated output are exc
 - **Insights:** annual expense totals, monthly charts, and annual-bill set-asides.
 - **Settings:** appearance, profile name/password, profile exports, finance backup/restore, and storage details.
 
+Monthly plans use income received in the previous calendar month: October income funds November. The Income page groups receipts by the month they fund while preserving their actual received dates. Account activity keeps receipts in their actual month.
+
+The Monthly simulator on Overview and Income lets you vary income, extra income, extra spending, and carryover to estimate the money left at month-end. It counts every scheduled bill once, including paid bills. Scenarios stay on the current page and never change saved records or account balance snapshots.
+
+Press the month heading to choose a month and year or return to **This month**. On phones, the bottom navigation opens Overview, Expenses, and Settings; use the top menu for the other pages.
+
+Settings includes seven app themes: Default, Aurora, Paper, Minimal, Neo, Terminal, and High Contrast. Each supports light and dark mode. Default retains the six original colour schemes.
+
 Recurring bills have separate payment records for each due date. Month-end bills clamp to the final valid day and return to their original day afterward. Annual leap-day bills fall on 28 February in non-leap years. Income and bill payments do not automatically update manual account balance snapshots. There is no bank connection, payment execution, or automatic sync between profile copies.
 
 The separate admin portal is `/admin` on the local web server or `/#/admin` under the hosted app's base path. The first visit creates one password-protected administrator. Admins can manage regular users and encrypted placeholder settings. Regular users can manage their own name and password. The admin password cannot be removed.

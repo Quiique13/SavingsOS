@@ -31,7 +31,7 @@ test("finance pages render with the shared context and coherent monthly totals",
     const { IncomePage } = await server.ssrLoadModule("/src/pages/Income.tsx");
     const { Insights } = await server.ssrLoadModule("/src/pages/Insights.tsx");
     const { Settings } = await server.ssrLoadModule("/src/pages/Settings.tsx");
-    const { today, getRows } = await server.ssrLoadModule("/src/utils/finance.ts");
+    const { today, getRows, shiftMonth } = await server.ssrLoadModule("/src/utils/finance.ts");
     const month = today().slice(0, 7);
     const data = {
       initialized: true,
@@ -45,13 +45,13 @@ test("finance pages render with the shared context and coherent monthly totals",
         { id: "spotify", name: "Spotify Premium", amount: 7.99, category: "Subscriptions", accountId: "moey", due: month + "-03", frequency: "monthly", notes: "" },
       ],
       payments: { ["rent:" + month + "-01"]: today() },
-      income: [{ id: "salary", name: "Monthly salary", amount: 1500, date: today(), accountId: "bleap" }],
+      income: [{ id: "salary", name: "Monthly salary", amount: 1500, date: shiftMonth(month, -1) + "-28", accountId: "bleap" }],
     };
     const state = { data, ready: true, error: "", update() {}, async save() {}, clearDemo() {} };
     const user = { id: "personal", name: "Personal", hasPassword: false, createdAt: "2026-10-01" };
     const protectedUser = { id: "ana", name: "Ana", hasPassword: true, createdAt: "2026-10-01" };
     const userState = { users: [user, protectedUser], currentUser: user, busy: false, saving: false, error: "", async signIn() {}, async createUser() {}, async signOut() {}, async configureUser() {}, async createAdmin() {}, async saveAdminSettings() {}, async renameUser() {}, async deleteUser() {}, async refreshUsers() {}, async exportProfiles() {} };
-    const render = (component, props = {}, overrides = {}, theme = "light", path = "/") => renderToStaticMarkup(createElement(ThemeContext.Provider, { value: { theme, setTheme() {}, colorScheme: "ocean", setColorScheme() {} } }, createElement(UsersContext.Provider, { value: { ...userState, ...overrides } }, createElement(FinanceContext.Provider, { value: state }, createElement(MemoryRouter, { initialEntries: [path] }, createElement(component, props))))));
+    const render = (component, props = {}, overrides = {}, theme = "light", path = "/") => renderToStaticMarkup(createElement(ThemeContext.Provider, { value: { theme, setTheme() {}, colorScheme: "ocean", setColorScheme() {}, uiTheme: "default", setUITheme() {} } }, createElement(UsersContext.Provider, { value: { ...userState, ...overrides } }, createElement(FinanceContext.Provider, { value: state }, createElement(MemoryRouter, { initialEntries: [path] }, createElement(component, props))))));
     await t.test("expenses show correct paid, unpaid and total amounts", () => {
       const html = render(Expenses);
       for (const text of ["Apartment rent", "Spotify Premium", "€657.99", "€650.00", "€7.99"]) assert.ok(html.includes(text), text);
@@ -91,10 +91,10 @@ test("finance pages render with the shared context and coherent monthly totals",
       assert.ok(render(AppearanceSettings, {}, {}, "dark").includes('aria-pressed="true"'));
       assert.ok(render(Brand).includes(renderToStaticMarkup(createElement("img", { src: appIcon })).match(/src="[^"]*"/)[0]));
       assert.ok(render(Brand).includes("savingsOS overview"));
-      const nav = render(MobileNav, { menuOpen: false, onOpenMenu() {} });
+      const nav = render(MobileNav, { menuOpen: false });
       assert.ok(nav.includes('aria-label="Mobile navigation"'));
-      for (const route of ["/dashboard", "/expenses", "/accounts"]) assert.ok(nav.includes('href="' + route + '"'));
-      assert.ok(nav.includes("More pages and user options"));
+      for (const route of ["/dashboard", "/expenses", "/settings"]) assert.ok(nav.includes('href="' + route + '"'));
+      assert.ok(!nav.includes("More pages and user options"));
     });
     await t.test("expense and payment forms have named dialogs and payment dates", () => {
       assert.ok(render(ExpenseForm, { month, onClose() {} }).includes('aria-label="Add an expense"'));
