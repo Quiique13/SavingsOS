@@ -4,6 +4,8 @@ savingsOS supports Google and email/password sign-in using the `savingsos` Fireb
 
 The [Android app](android.md) uses the same Firebase session and cloud planner, with Android Credential Manager for Google sign-in. Its separate Android registration and signing fingerprints are described in that guide.
 
+The [Windows executable](windows.md) opens the bundled app in the system browser at `http://localhost` on a loopback-only port. Google sign-in uses the regular browser popup. The hostname `localhost` must be authorized; no `file://` domain is needed.
+
 ## Required Firebase console setup
 
 Complete these steps **before using online accounts with real finance records**:

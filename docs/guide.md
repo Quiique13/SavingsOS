@@ -4,6 +4,8 @@ A web app for planning everyday purchases, monthly bills, annual expenses, incom
 
 An Android version is available through Capacitor, using the same interface and Firebase accounts. See the [Android build and installation guide](android.md).
 
+A [Windows portable executable and installer](windows.md) bundle the app and its local server. Double-click to open savingsOS in your browser without installing Node.js. Portable local records stay in `data/` beside the executable; the installed edition uses `%APPDATA%\savingsOS\data`.
+
 ## Open the web app
 
 [Open savingsOS](https://quiique13.github.io/SavingsOS/) · [Deployment status](https://github.com/Quiique13/SavingsOS/actions/workflows/webapp-pages.yml)

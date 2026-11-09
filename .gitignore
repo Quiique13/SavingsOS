@@ -34,6 +34,7 @@ ui-debug.log
 
 # Generated output and private legacy profile folders
 /output/
+/data/
 **/savingsOS-data/
 /.android-tools/
 *.jks
