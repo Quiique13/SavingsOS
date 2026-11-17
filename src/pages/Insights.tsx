@@ -1,10 +1,8 @@
+import { studioMoney } from "../utils/studio";
+import { useTheme } from "../hooks/useTheme";
+import { isDesignTheme } from "../utils/appearance";
 import { translate, useLanguage } from "../i18n";
-import {
-  ArrowUpRight,
-  Check,
-  ReceiptText,
-  TrendingUp
-} from "lucide-react";
+import { ArrowUpRight, Check, ReceiptText, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -14,15 +12,23 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis
+  YAxis,
 } from "recharts";
 import { PageHeading } from "../components/common/PageHeading";
 import { CategoryIcon } from "../components/expenses/CategoryIcon";
 import { useFinance } from "../hooks/useFinance";
-import { compactMoney, dateLabel, getRows, money, today } from "../utils/finance";
+import {
+  compactMoney,
+  dateLabel,
+  getRows,
+  money,
+  today,
+} from "../utils/finance";
 
 export function Insights() {
   useLanguage();
+  const { uiTheme } = useTheme();
+  const formatMoney = isDesignTheme(uiTheme) ? studioMoney : money;
   const { data } = useFinance();
   const [year, setYear] = useState(today().slice(0, 4));
   const points = Array.from({ length: 12 }, (_, i) => {
@@ -48,10 +54,16 @@ export function Insights() {
   return (
     <section className="insights-page min-w-0">
       <PageHeading
+        designTitle="See the bigger picture."
+        eyebrow="INSIGHTS / YOUR YEAR"
         title={translate("Insights")}
-        description={translate("Review spending trends and plan for annual bills.")}
+        description={translate(
+          "Review spending trends and plan for annual bills.",
+        )}
       >
-        <label className="year-select">{translate("Year")}<select
+        <label className="year-select">
+          {translate("Year")}
+          <select
             aria-label={translate("Select year")}
             value={year}
             onChange={(e) => setYear(e.target.value)}
@@ -73,21 +85,34 @@ export function Insights() {
       </PageHeading>
       <div className="stats-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         <div className="stat-card min-w-0 first:col-span-2 sm:first:col-span-1">
-          <div className="stat-label">{translate("Yearly planned expenses")}<ReceiptText size={17} />
+          <div className="stat-label">
+            {translate("Yearly planned expenses")}
+            <ReceiptText size={17} />
           </div>
-          <div className="stat-value">{money(total)}</div>
-          <p>{translate("All scheduled expenses in") + " "}{year}</p>
+          <div className="stat-value">{formatMoney(total)}</div>
+          <p>
+            {translate("All scheduled expenses in") + " "}
+            {year}
+          </p>
         </div>
         <div className="stat-card min-w-0 first:col-span-2 sm:first:col-span-1">
-          <div className="stat-label">{translate("Paid so far")}<Check size={17} />
+          <div className="stat-label">
+            {translate("Paid so far")}
+            <Check size={17} />
           </div>
-          <div className="stat-value">{money(paid)}</div>
-          <p>{translate("Recorded payments for") + " "}{year}{" " + translate("bills")}</p>
+          <div className="stat-value">{formatMoney(paid)}</div>
+          <p>
+            {translate("Recorded payments for") + " "}
+            {year}
+            {" " + translate("bills")}
+          </p>
         </div>
         <div className="stat-card soft-green">
-          <div className="stat-label">{translate("Recurring monthly equivalent")}<TrendingUp size={17} />
+          <div className="stat-label">
+            {translate("Recurring monthly equivalent")}
+            <TrendingUp size={17} />
           </div>
-          <div className="stat-value">{money(recurring)}</div>
+          <div className="stat-value">{formatMoney(recurring)}</div>
           <p>{translate("Current recurring bills · annual costs ÷ 12")}</p>
         </div>
       </div>
@@ -95,13 +120,21 @@ export function Insights() {
         <div className="panel-heading">
           <div>
             <h2>{translate("The year in review")}</h2>
-            <p>{translate("Your scheduled expenses and recorded payments, month by month")}</p>
+            <p>
+              {translate(
+                "Your scheduled expenses and recorded payments, month by month",
+              )}
+            </p>
           </div>
           <div className="chart-legend">
             <span>
-              <i />{translate("Planned")}</span>
+              <i />
+              {translate("Planned")}
+            </span>
             <span>
-              <i />{translate("Paid")}</span>
+              <i />
+              {translate("Paid")}
+            </span>
           </div>
         </div>
         <div className="annual-chart">
@@ -121,7 +154,7 @@ export function Insights() {
                 tickFormatter={(v) => compactMoney(Number(v))}
               />
               <Tooltip
-                formatter={(v) => money(Number(v))}
+                formatter={(v) => formatMoney(Number(v))}
                 contentStyle={{
                   borderRadius: 12,
                   border: "1px solid var(--color-border)",
@@ -149,7 +182,11 @@ export function Insights() {
         <div className="panel-heading">
           <div>
             <h2>{translate("Annual bills")}</h2>
-            <p>{translate("Annual bills, with a monthly amount you can set aside")}</p>
+            <p>
+              {translate(
+                "Annual bills, with a monthly amount you can set aside",
+              )}
+            </p>
           </div>
         </div>
         {annual.map((e) => (
@@ -157,18 +194,35 @@ export function Insights() {
             <CategoryIcon category={e.category} />
             <div>
               <strong>{e.name}</strong>
-              <small>{translate("Due") + " "}{dateLabel(e.due)}{" " + translate("each year")}</small>
+              <small>
+                {translate("Due") + " "}
+                {dateLabel(e.due)}
+                {" " + translate("each year")}
+              </small>
             </div>
             <div className="annual-amount">
-              <strong>{money(e.amount)}{" " + translate("/ year")}</strong>
-              <small>{translate("Set aside") + " "}{money(e.amount / 12)}{" " + translate("/ month")}</small>
+              <strong>
+                {formatMoney(e.amount)}
+                {" " + translate("/ year")}
+              </strong>
+              <small>
+                {translate("Set aside") + " "}
+                {formatMoney(e.amount / 12)}
+                {" " + translate("/ month")}
+              </small>
             </div>
           </div>
         ))}
         {!annual.length && (
           <div className="empty-state">
-            <p>{translate("No annual expenses yet. Add a yearly bill on the Expenses page.")}</p>
-            <Link to="/expenses" className="button secondary small">{translate("Manage expenses")}<ArrowUpRight size={14} />
+            <p>
+              {translate(
+                "No annual expenses yet. Add a yearly bill on the Expenses page.",
+              )}
+            </p>
+            <Link to="/expenses" className="button secondary small">
+              {translate("Manage expenses")}
+              <ArrowUpRight size={14} />
             </Link>
           </div>
         )}

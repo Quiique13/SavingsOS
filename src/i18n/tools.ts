@@ -1,0 +1,29 @@
+export const tools = `
+Demo · not saved|Demonstração · não guardado|Démo · non enregistré|Demostración · sin guardar
+This is fictional demo data held in memory. Financial changes are discarded on refresh.|Estes dados fictícios estão apenas na memória. As alterações financeiras são limpas ao atualizar.|Ces données fictives restent en mémoire. Les modifications financières sont effacées au rechargement.|Estos datos ficticios están en memoria. Los cambios financieros se borran al actualizar.
+Currency|Moeda|Devise|Moneda
+Display currency|Moeda de apresentação|Devise d'affichage|Moneda de visualización
+Choose the currency shown throughout the app. This changes formatting only; amounts are not converted.|Escolha a moeda apresentada na aplicação. Só altera a apresentação; os valores não são convertidos.|Choisissez la devise affichée. Seul le format change ; les montants ne sont pas convertis.|Elige la moneda de la aplicación. Solo cambia el formato; los importes no se convierten.
+Saved for this browser or app installation.|Guardado neste navegador ou instalação da aplicação.|Enregistré pour ce navigateur ou cette installation.|Guardado en este navegador o instalación.
+Currency: {{currency}} · Payment timezone: Europe/Lisbon|Moeda: {{currency}} · Fuso horário: Europa/Lisboa|Devise : {{currency}} · Fuseau horaire : Europe/Lisbonne|Moneda: {{currency}} · Zona horaria: Europa/Lisboa
+Start the month fresh|Recomeçar o mês|Repartir à zéro pour le mois|Empezar el mes de nuevo
+Clear a month's payment marks and reverse its transfers. Keep all income, expense definitions, and other months.|Limpe os pagamentos de um mês e reverta as transferências. Mantenha os rendimentos, as despesas definidas e os outros meses.|Effacez les marques de paiement du mois et annulez ses virements. Conservez les revenus, les dépenses définies et les autres mois.|Borra los pagos de un mes y revierte sus transferencias. Conserva los ingresos, los gastos definidos y los demás meses.
+Reset month|Reiniciar mês|Réinitialiser le mois|Reiniciar mes
+Reset {{month}}?|Reiniciar {{month}}?|Réinitialiser {{month}} ?|¿Reiniciar {{month}}?
+This clears {{payments}} payment marks for expenses due in this month and removes {{transfers}} transfers dated in this month. Those transfers will be reversed in the recorded account balances.|Serão limpos {{payments}} pagamentos de despesas com vencimento neste mês e removidas {{transfers}} transferências deste mês. Essas transferências serão revertidas nos saldos registados.|Cela efface {{payments}} paiements des dépenses dues ce mois et supprime {{transfers}} virements datés de ce mois. Ces virements seront annulés dans les soldes enregistrés.|Se borrarán {{payments}} pagos de gastos con vencimiento este mes y {{transfers}} transferencias de este mes. Esas transferencias se revertirán en los saldos registrados.
+All income, including last month's funding income, and all saved expense definitions will be kept. Other months are unchanged.|Todos os rendimentos, incluindo os do mês anterior, e todas as despesas definidas serão mantidos. Os outros meses não mudam.|Tous les revenus, y compris ceux du mois précédent, et les dépenses définies sont conservés. Les autres mois restent inchangés.|Se conservan todos los ingresos, incluidos los del mes anterior, y los gastos definidos. Los demás meses no cambian.
+This cannot be undone here. Export a backup first if you want to keep a copy.|Não pode anular esta ação aqui. Exporte uma cópia de segurança primeiro se quiser guardar os dados.|Cette action ne peut pas être annulée ici. Exportez d'abord une sauvegarde si vous souhaitez garder une copie.|Esta acción no se puede deshacer aquí. Exporta primero una copia de seguridad si quieres conservarla.
+Confirm reset|Confirmar reinício|Confirmer la réinitialisation|Confirmar reinicio
+Resetting month...|A reiniciar o mês...|Réinitialisation du mois...|Reiniciando mes...
+{{month}} has been reset. Income and expense definitions were kept.|{{month}} foi reiniciado. Os rendimentos e as despesas definidas foram mantidos.|{{month}} a été réinitialisé. Les revenus et les dépenses définies sont conservés.|Se ha reiniciado {{month}}. Se conservaron los ingresos y los gastos definidos.
+The month could not be reset. Try again.|Não foi possível reiniciar o mês. Tente novamente.|Impossible de réinitialiser le mois. Réessayez.|No se pudo reiniciar el mes. Inténtalo de nuevo.
+Choose a valid month.|Escolha um mês válido.|Choisissez un mois valide.|Elige un mes válido.
+Demo mode|Modo de demonstração|Mode démo|Modo de demostración
+Fictional data. Changes reset on refresh.|Dados fictícios. As alterações são limpas ao atualizar.|Données fictives. Les modifications sont effacées au rechargement.|Datos ficticios. Los cambios se borran al actualizar.
+Reset demo|Reiniciar demonstração|Réinitialiser la démo|Reiniciar demostración
+Exit demo|Sair da demonstração|Quitter la démo|Salir de la demostración
+Demo profile|Perfil de demonstração|Profil de démonstration|Perfil de demostración
+Alex Morgan is fictional. Real profiles and account security are not loaded in demo mode.|Alex Morgan é fictício. Os perfis reais e a segurança das contas não são carregados na demonstração.|Alex Morgan est fictif. Les profils réels et la sécurité des comptes ne sont pas chargés en mode démo.|Alex Morgan es ficticio. Los perfiles reales y la seguridad de las cuentas no se cargan en la demostración.
+Profile changes are unavailable in the demo.|As alterações ao perfil não estão disponíveis na demonstração.|Les modifications du profil ne sont pas disponibles en démo.|Los cambios de perfil no están disponibles en la demostración.
+The demo change is not valid.|A alteração da demonstração não é válida.|La modification de la démo n'est pas valide.|El cambio de la demostración no es válido.
+`;

@@ -16,15 +16,16 @@ export function isColorScheme(value: unknown): value is ColorScheme {
 // UI themes are independent from display mode. Default retains the original palettes.
 export const uiThemes = [
   { id: "default", name: "Default", description: "Your familiar space, in six colours.", lightCanvas: "#f3f4f6", darkCanvas: "#191b20" },
-  { id: "aurora", name: "Aurora", description: "Dreamy gradients, glass & soft curves.", lightCanvas: "#edf0ff", darkCanvas: "#12152e" },
-  { id: "paper", name: "Paper", description: "An editorial ledger with a warm paper feel.", lightCanvas: "#f4efe5", darkCanvas: "#24211c" },
-  { id: "minimal", name: "Minimal", description: "Clean lines, open space & quiet details.", lightCanvas: "#f8fafb", darkCanvas: "#171c20" },
-  { id: "neo", name: "Neo", description: "Bold outlines, punchy colour & playful shadows.", lightCanvas: "#f5f0ff", darkCanvas: "#211b30" },
-  { id: "terminal", name: "Terminal", description: "Monospace type & a retro green glow.", lightCanvas: "#eef5ed", darkCanvas: "#0c1710" },
-  { id: "high-contrast", name: "High Contrast", description: "Strong borders, clear focus & maximum clarity.", lightCanvas: "#ffffff", darkCanvas: "#000000" },
+  { id: "flow", name: "Flow", description: "A personal money studio in forest, ivory & lime.", lightCanvas: "#f4f2eb", darkCanvas: "#101e1a" },
+  { id: "paper-ledger", name: "Paper Ledger", description: "An editorial journal with warm paper & fine rules.", lightCanvas: "#f4f0e5", darkCanvas: "#24211c" },
+  { id: "signal-studio", name: "Signal Studio", description: "A bold instrument panel with a bright lime signal.", lightCanvas: "#eef2e9", darkCanvas: "#0a1013" },
 ] as const;
 
 export type UITheme = typeof uiThemes[number]["id"];
+
+export function isDesignTheme(value: string): boolean {
+  return value === "flow" || value === "paper-ledger" || value === "signal-studio";
+}
 
 export function isUITheme(value: unknown): value is UITheme {
   return uiThemes.some(theme => theme.id === value);

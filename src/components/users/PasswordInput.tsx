@@ -1,8 +1,5 @@
 import { translate, useLanguage } from "../../i18n";
-import {
-  Eye,
-  EyeOff
-} from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 export function PasswordInput({

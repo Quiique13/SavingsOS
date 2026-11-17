@@ -1,0 +1,139 @@
+/* The supplied design pack is opt-in. No Default or existing-family selectors
+   are changed here; all three new directions share the working finance UI. */
+@layer base {
+  :root[data-ui-theme="flow"] {
+    --ui-canvas: #f4f2eb;
+    --ui-surface: #fffcf6;
+    --ui-soft: #edf1e5;
+    --ui-ink: #17342f;
+    --ui-muted: #58695f;
+    --ui-border: #dce4d8;
+    --ui-accent: #0f6956;
+    --ui-on-accent: #ffffff;
+    --ui-feature: #103f37;
+    --ui-shadow: 0 4px 20px #16392f0d;
+    --studio-highlight: #ddeb98;
+    --studio-highlight-ink: #17342f;
+    --studio-nav: #103f37;
+    --studio-nav-ink: #d5eae1;
+    --studio-nav-active: #d6e974;
+    --studio-nav-active-ink: #17342f;
+    --radius-panel: 18px;
+    --radius-control: 11px;
+  }
+  :root[data-ui-theme="flow"][data-theme="dark"] {
+    --ui-canvas: #101e1a;
+    --ui-surface: #1b2c25;
+    --ui-soft: #293d32;
+    --ui-ink: #f0f5e9;
+    --ui-muted: #b1c2b4;
+    --ui-border: #425747;
+    --ui-accent: #c4df85;
+    --ui-on-accent: #17342f;
+    --studio-highlight: #c4d983;
+    --studio-nav: #0c231c;
+  }
+  :root[data-ui-theme="paper-ledger"] {
+    --ui-canvas: #f4f0e5;
+    --ui-surface: #faf6ec;
+    --ui-soft: #e4d8c5;
+    --ui-ink: #36382f;
+    --ui-muted: #615c4f;
+    --ui-border: #c8c0b0;
+    --ui-accent: #a45433;
+    --ui-on-accent: #ffffff;
+    --ui-feature: #484b39;
+    --ui-shadow: none;
+    --studio-highlight: #e4d8c5;
+    --studio-highlight-ink: #36382f;
+    --studio-nav: #f4f0e5;
+    --studio-nav-ink: #36382f;
+    --studio-nav-active: #eadcc9;
+    --studio-nav-active-ink: #36382f;
+    --radius-panel: 2px;
+    --radius-control: 4px;
+  }
+  :root[data-ui-theme="paper-ledger"][data-theme="dark"] {
+    --ui-canvas: #24211c;
+    --ui-surface: #302b24;
+    --ui-soft: #45392b;
+    --ui-ink: #f6eddf;
+    --ui-muted: #c6b7a1;
+    --ui-border: #74634f;
+    --ui-accent: #ebc69f;
+    --ui-on-accent: #30241a;
+    --studio-highlight: #45392b;
+    --studio-highlight-ink: #f6eddf;
+    --studio-nav: #24211c;
+    --studio-nav-ink: #f6eddf;
+    --studio-nav-active: #45392b;
+    --studio-nav-active-ink: #f6eddf;
+  }
+  :root[data-ui-theme="signal-studio"] {
+    --ui-canvas: #eef2e9;
+    --ui-surface: #fcfef8;
+    --ui-soft: #e0e8d8;
+    --ui-ink: #182b25;
+    --ui-muted: #50655c;
+    --ui-border: #b4c4b5;
+    --ui-accent: #315d22;
+    --ui-on-accent: #ffffff;
+    --ui-feature: #183229;
+    --ui-shadow: none;
+    --studio-highlight: #c7f268;
+    --studio-highlight-ink: #182b25;
+    --studio-nav: #eef2e9;
+    --studio-nav-ink: #182b25;
+    --studio-nav-active: #c7f268;
+    --studio-nav-active-ink: #182b25;
+    --radius-panel: 18px;
+    --radius-control: 10px;
+  }
+  :root[data-ui-theme="signal-studio"][data-theme="dark"] {
+    --ui-canvas: #0a1013;
+    --ui-surface: #172528;
+    --ui-soft: #243638;
+    --ui-ink: #e9f2ec;
+    --ui-muted: #acbfba;
+    --ui-border: #3a5054;
+    --ui-accent: #c7f268;
+    --ui-on-accent: #182b25;
+    --studio-nav: #0a1013;
+    --studio-nav-ink: #acbfba;
+    --studio-nav-active: #c7f268;
+  }
+  :root[data-ui-theme]:is(
+      [data-ui-theme="flow"],
+      [data-ui-theme="paper-ledger"],
+      [data-ui-theme="signal-studio"]
+    ) {
+    --dashboard-chart-income: var(--ui-accent);
+    --dashboard-chart-expenses: var(
+      --studio-chart-secondary,
+      var(--studio-highlight)
+    );
+    --color-chart-paid: var(--ui-accent);
+    --color-chart-planned: var(
+      --studio-chart-secondary,
+      var(--studio-highlight)
+    );
+    --color-success: #267252;
+    --color-success-bg: #e0f0e5;
+    --color-warning: #92502d;
+    --color-warning-bg: #fbebdf;
+    --color-danger: #a13e30;
+    --color-danger-bg: #fae8e4;
+  }
+  :root[data-theme="dark"][data-ui-theme]:is(
+      [data-ui-theme="flow"],
+      [data-ui-theme="paper-ledger"],
+      [data-ui-theme="signal-studio"]
+    ) {
+    --color-success: #bce3bd;
+    --color-success-bg: #214b39;
+    --color-warning: #ffd2aa;
+    --color-warning-bg: #503727;
+    --color-danger: #ffb7a7;
+    --color-danger-bg: #4c2b29;
+  }
+}

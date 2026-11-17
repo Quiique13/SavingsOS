@@ -29,11 +29,16 @@ export function PaymentDialog({
           <CategoryIcon category={row.category} name={row.name} />
           <div>
             <strong>{row.name}</strong>
-            <p>{translate("Due") + " "}{dateLabel(row.date)}</p>
+            <p>
+              {translate("Due") + " "}
+              {dateLabel(row.date)}
+            </p>
           </div>
           <strong>{money(row.amount)}</strong>
         </div>
-        <label>{translate("Payment date")}<input
+        <label>
+          {translate("Payment date")}
+          <input
             autoFocus
             name="paidDate"
             type="date"
@@ -42,11 +47,19 @@ export function PaymentDialog({
             required
           />
         </label>
-        <p className="form-intro">{translate("This marks only the payment due on {{date}} as paid.", { date: dateLabel(row.date) })}</p>
+        <p className="form-intro">
+          {translate("This marks only the payment due on {{date}} as paid.", {
+            date: dateLabel(row.date),
+          })}
+        </p>
         <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" className="button secondary" onClick={onClose}>{translate("Cancel")}</button>
+          <button type="button" className="button secondary" onClick={onClose}>
+            {translate("Cancel")}
+          </button>
           <button className="button primary">
-            <Check size={16} />{translate("Confirm payment")}</button>
+            <Check size={16} />
+            {translate("Confirm payment")}
+          </button>
         </div>
       </form>
     </Dialog>

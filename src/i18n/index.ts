@@ -58,17 +58,33 @@ export function translate(
 ): string {
   const migrationPrefix = "Browser migration needs attention:";
   if (currentLanguage !== "en" && source.startsWith(migrationPrefix + " ")) {
-    return translate(migrationPrefix) + " " + translate(source.slice(migrationPrefix.length + 1), values);
+    return (
+      translate(migrationPrefix) +
+      " " +
+      translate(source.slice(migrationPrefix.length + 1), values)
+    );
   }
   const index = currentLanguage === "pt" ? 0 : currentLanguage === "fr" ? 1 : 2;
-  const text = currentLanguage === "en" ? source : (messages[source]?.[index] ?? source);
+  const text =
+    currentLanguage === "en" ? source : (messages[source]?.[index] ?? source);
   return text.replace(/\{\{(\w+)\}\}/g, (match, key: string) =>
     Object.hasOwn(values, key) ? String(values[key]) : match,
   );
 }
 
-const builtInCategories = new Set(["Housing", "Groceries", "Subscriptions", "Utilities", "Transport", "Health", "Shopping", "Eating out", "Other"]);
-export const categoryLabel = (category: string) => builtInCategories.has(category) ? translate(category) : category;
+const builtInCategories = new Set([
+  "Housing",
+  "Groceries",
+  "Subscriptions",
+  "Utilities",
+  "Transport",
+  "Health",
+  "Shopping",
+  "Eating out",
+  "Other",
+]);
+export const categoryLabel = (category: string) =>
+  builtInCategories.has(category) ? translate(category) : category;
 
 export function weekdayLabels() {
   return Array.from({ length: 7 }, (_, index) =>

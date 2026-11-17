@@ -11,7 +11,7 @@
     --line: var(--dark-border, #e6ebe1);
     --green: var(--dark-accent, #365b44);
     --canvas: var(--dark-canvas, #f8faf6);
-    font-family: "Geist Variable", sans-serif;
+    font-family: var(--font-body);
     background: var(--canvas);
     color: var(--ink);
     min-height: 100vh;
@@ -974,7 +974,7 @@
     max-height: 90dvh;
     color: var(--dark-text, #48613d);
     background: var(--dark-surface, #fff);
-    font-family: "Geist Variable", sans-serif;
+    font-family: var(--font-body);
     letter-spacing: -0.2px;
     font-size: 12px;
     line-height: 1.6;
@@ -3017,7 +3017,7 @@
       ),
       var(--dark-surface-raised, #f8faf6);
     color: var(--dark-text, #304734);
-    font-family: "Geist Variable", sans-serif;
+    font-family: var(--font-body);
     padding: 40px 24px;
     display: flex;
     align-items: center;
@@ -3067,7 +3067,9 @@
     min-width: 0;
     text-align: left;
   }
-  .install-app-welcome:empty { display: none; }
+  .install-app-welcome:empty {
+    display: none;
+  }
 
   .user-welcome-icon {
     display: grid;

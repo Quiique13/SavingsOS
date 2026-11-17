@@ -53,25 +53,40 @@ Private app data, exports, local recovery archives, and generated output are exc
 
 ## Pages and behavior
 
+After the first sign-in for each profile in a browser or app installation, a short
+sketch-style tutorial introduces accounts, starting balances, transfers, expenses,
+and the monthly overview. Use **Next** and **Back** to move between tips. **Skip
+tutorial**, **Finish tutorial**, or Escape returns to Overview and remembers the
+dismissal for that profile on this device. Open **About your planner → Replay
+tutorial** to see it again. The tour never creates or changes financial records.
+
 - **Overview:** monthly income, spending, payment progress, category totals, next payments, and account activity.
 - **Expenses:** one-time, monthly, and annual bills, account/category assignments, due dates, payment dates, search, filters, calendar, and CSV export.
 - **Income:** sources, receiving accounts, amounts, and received dates. Forms wait for confirmed saves and retain values on failure.
 - **Accounts and savings:** manage your own accounts and manual balance snapshots. New users start with empty planners.
+- **Reset month:** on Accounts, choose a month under **Start the month fresh**, then review the confirmation. This clears payment marks for expenses due in that month and removes transfers dated in that month, reversing their effects on recorded account balances. It keeps all income, including the previous month's funding income, all saved expense definitions, and other months. Export a backup before confirming if you want an undo copy.
 - **Transfers:** record movements between your accounts, review history, edit, or confirm a reversal. These records adjust both balance snapshots without creating income or expense entries.
 - **Insights:** annual expense totals, monthly charts, and annual-bill set-asides.
 - **Settings:** appearance, profile name/password, profile exports, finance backup/restore, and storage details.
+- **Currency:** Settings includes a display-currency selector with 19 currencies. Symbols, totals, charts, entry labels, and CSV headings follow the choice. Numeric amounts are never converted. The choice is saved for this browser/app installation, separately from the financial records.
 
 Monthly plans use income received in the previous calendar month: October income funds November. The Income page groups receipts by the month they fund while preserving their actual received dates. Account activity keeps receipts in their actual month.
 
-The Monthly simulator on Overview and Income lets you vary income, extra income, extra spending, and carryover to estimate the money left at month-end. It counts every scheduled bill once, including paid bills. Scenarios stay on the current page and never change saved records or account balance snapshots.
+The Monthly simulator lets you vary income, extra income, extra spending, and carryover to estimate the money left at month-end. Default includes it on Overview and Income; the new themes open a dedicated simulator page. It counts every scheduled bill once, including paid bills. Scenarios stay on the current page and never change saved records or account balance snapshots.
 
-Press the month heading to choose a month and year or return to **This month**. On phones, the bottom navigation opens Overview, Expenses, and Settings; use the top menu for the other pages.
+Press the month heading to choose a month and year or return to **This month**. On phones, Default's bottom navigation opens Overview, Expenses, and Settings. The new themes show Overview, Expenses, Income, Accounts, and More; More opens the remaining destinations.
 
-Settings includes seven app themes: Default, Aurora, Paper, Minimal, Neo, Terminal, and High Contrast. Each supports light and dark mode. Default retains the six original colour schemes.
+Settings includes four themes: **Default**, **Flow**, **Paper Ledger**, and **Signal Studio**. All four support light and dark mode. Default retains its initial layout and six colour schemes; retired theme selections fall back to Default. The new themes follow the supplied screen previews, including responsive page grids, a header month selector, and five-item mobile navigation. Choose **Settings → Appearance → App theme** to switch designs. The original savingsOS logo is used throughout.
 
 Recurring bills have separate payment records for each due date. Month-end bills clamp to the final valid day and return to their original day afterward. Annual leap-day bills fall on 28 February in non-leap years. Income and bill payments do not automatically update manual account balance snapshots. There is no bank connection, payment execution, or automatic sync between profile copies.
 
-The separate admin portal is `/admin` on the local web server or `/#/admin` under the hosted app's base path. The first visit creates one password-protected administrator. Admins can manage regular users and encrypted placeholder settings. Regular users can manage their own name and password. The admin password cannot be removed.
+The separate admin portal is available only by typing `/admin` after the app URL; there are no admin links in the application UI. Hosted deep links such as `/SavingsOS/admin` resolve to `/#/admin` under the app's base path. The first visit creates one password-protected administrator. Admins can manage regular users and encrypted placeholder settings. Regular users can manage their own name and password. The admin password cannot be removed. Hiding navigation does not replace authentication; existing server-side password and role checks remain in place.
+
+## Public showcase
+
+Open `/demo` after the app URL (for GitHub Pages, `/SavingsOS/demo` or `/SavingsOS/#/demo`). The fictional Alex Morgan profile has four invented accounts, realistic balances, six months of income and bills, payment history, savings, and transfers. Demo navigation stays under `/demo`.
+
+The demo mounts its own providers, without loading the real authentication/profile provider. Financial edits are kept only in memory and disappear on refresh; **Reset demo** restores the starting fixture immediately. It never reads or writes real profiles. Profile security and portable-profile actions are unavailable in demo mode. Appearance and display-currency preferences still follow this browser's settings. **Exit demo** returns to the regular app.
 
 ## Project structure
 

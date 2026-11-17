@@ -9,18 +9,24 @@ export function AccountActivity({ month }: { month: string }) {
   const { data } = useFinance();
   const activity = getAccountActivity(data, month);
   return (
-    <section className="account-activity-section" aria-label={translate("Account activity")}>
+    <section
+      className="account-activity-section"
+      aria-label={translate("Account activity")}
+    >
       <div className="section-heading">
         <div>
           <h2>{translate("Money in and out by account")}</h2>
-          <p>{translate("Income, actual payments, and internal transfers in")}{" "}
+          <p>
+            {translate("Income, actual payments, and internal transfers in")}{" "}
             {monthLabel(month)}.
           </p>
         </div>
         <div className="account-activity-links flex flex-wrap gap-3">
           <Link to="/accounts">{translate("Manage accounts")}</Link>
           <Link to={"/transfers?month=" + month}>
-            <ArrowLeftRight size={15} />{translate("Transfer history")}</Link>
+            <ArrowLeftRight size={15} />
+            {translate("Transfer history")}
+          </Link>
         </div>
       </div>
       <div className="account-activity-grid grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">

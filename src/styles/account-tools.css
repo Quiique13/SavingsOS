@@ -1,0 +1,99 @@
+.account-month-reset {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
+  margin-top: 20px;
+}
+.account-month-reset > div:first-child {
+  flex: 1;
+  min-width: 200px;
+}
+.account-month-reset h2 {
+  font-size: 16px;
+  font-weight: 650;
+  margin-bottom: 6px;
+}
+.account-month-reset p {
+  max-width: 640px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+.account-month-reset > p {
+  flex-basis: 100%;
+}
+.account-reset-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.account-reset-controls .month-picker {
+  width: auto;
+  min-height: 40px;
+}
+.currency-settings .language-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 7px;
+  max-width: 390px;
+  margin-top: 16px;
+}
+.currency-settings select {
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  padding: 10px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-radius: 9px;
+}
+.studio-preferences .currency-settings {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0;
+  overflow: visible;
+}
+.studio-preferences .currency-settings h2,
+.studio-preferences .currency-settings p,
+.studio-preferences .currency-settings .language-picker > span {
+  display: block;
+}
+.demo-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  font: 12px/1.5 var(--font-sans, sans-serif);
+}
+.demo-banner > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.demo-banner button,
+.demo-banner a {
+  color: inherit;
+  min-height: 36px;
+  padding: 5px 8px;
+  text-decoration: underline;
+  font-weight: 650;
+}
+@media (max-width: 767px) {
+  .demo-banner {
+    padding: 8px 18px;
+    font-size: 11px;
+  }
+  .account-month-reset {
+    padding: 18px;
+  }
+}

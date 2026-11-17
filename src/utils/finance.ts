@@ -16,8 +16,9 @@ function formattingLocale(currency = false) {
   const language = typeof document === "undefined" ? "en" : document.documentElement.lang;
   return ({ pt: "pt-PT", fr: "fr-FR", es: "es-ES" } as Record<string, string>)[language] ?? (currency ? "en-IE" : "en-GB");
 }
-export const money = (n: number) => new Intl.NumberFormat(formattingLocale(true), { style: "currency", currency: "EUR" }).format(n);
-export const compactMoney = (n: number) => new Intl.NumberFormat(formattingLocale(true), { style: "currency", currency: "EUR", notation: "compact", maximumFractionDigits: 1 }).format(n);
+function formattingCurrency() { return typeof document === "undefined" ? "EUR" : document.documentElement.dataset?.currency || "EUR"; }
+export const money = (n: number) => new Intl.NumberFormat(formattingLocale(true), { style: "currency", currency: formattingCurrency(), maximumFractionDigits: 2 }).format(n);
+export const compactMoney = (n: number) => new Intl.NumberFormat(formattingLocale(true), { style: "currency", currency: formattingCurrency(), notation: "compact", maximumFractionDigits: 1 }).format(n);
 export const dateLabel = (d: string, options?: Intl.DateTimeFormatOptions) => new Date(d + "T12:00:00").toLocaleDateString(formattingLocale(), options ?? { day: "numeric", month: "short" });
 export const monthLabel = (m: string) => dateLabel(m + "-01", { month: "long", year: "numeric" });
 export const shiftMonth = (m: string, n: number) => { const d = new Date(m + "-01T12:00:00"); d.setMonth(d.getMonth() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; };

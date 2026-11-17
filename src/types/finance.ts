@@ -36,7 +36,14 @@ export type Transfer = {
   notes: string;
 };
 
-export type AccountActivity = { accountId: string; income: number; expenses: number; transfersIn: number; transfersOut: number; net: number };
+export type AccountActivity = {
+  accountId: string;
+  income: number;
+  expenses: number;
+  transfersIn: number;
+  transfersOut: number;
+  net: number;
+};
 
 export type AdminSettings = {
   workspaceName: string;

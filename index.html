@@ -5,7 +5,10 @@
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%SOSLogo-v2.svg" />
     <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
     <link rel="apple-touch-icon" href="%BASE_URL%app-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f8faf6" />
     <script>
@@ -16,30 +19,45 @@
           savedUI = localStorage.getItem("savings-os-ui-theme");
           savedScheme = localStorage.getItem("savings-os-color-scheme");
         } catch {}
-        const theme = saved === "light" || saved === "dark" ? saved : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        const theme =
+          saved === "light" || saved === "dark"
+            ? saved
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
         const families = {
-          default: ["#f3f4f6", "#191b20"], aurora: ["#edf0ff", "#12152e"],
-          paper: ["#f4efe5", "#24211c"], minimal: ["#f8fafb", "#171c20"],
-          neo: ["#f5f0ff", "#211b30"], terminal: ["#eef5ed", "#0c1710"],
-          "high-contrast": ["#ffffff", "#000000"]
+          default: ["#f3f4f6", "#191b20"],
+          flow: ["#f4f2eb", "#101e1a"],
+          "paper-ledger": ["#f4f0e5", "#24211c"],
+          "signal-studio": ["#eef2e9", "#0a1013"],
         };
         const schemes = {
-          ocean: families.default, sage: ["#f1f5f1", "#19211d"],
-          lavender: ["#f5f2f8", "#201c28"], rose: ["#f8f2f3", "#271d22"],
-          amber: ["#f8f4ed", "#27221b"], graphite: ["#f3f3f3", "#1c1c1e"]
+          ocean: families.default,
+          sage: ["#f1f5f1", "#19211d"],
+          lavender: ["#f5f2f8", "#201c28"],
+          rose: ["#f8f2f3", "#271d22"],
+          amber: ["#f8f4ed", "#27221b"],
+          graphite: ["#f3f3f3", "#1c1c1e"],
         };
         const uiTheme = Object.hasOwn(families, savedUI) ? savedUI : "default";
-        const scheme = Object.hasOwn(schemes, savedScheme) ? savedScheme : "ocean";
+        const scheme = Object.hasOwn(schemes, savedScheme)
+          ? savedScheme
+          : "ocean";
         document.documentElement.dataset.theme = theme;
         document.documentElement.dataset.uiTheme = uiTheme;
         document.documentElement.dataset.colorScheme = scheme;
         document.documentElement.style.colorScheme = theme;
-        const palette = uiTheme === "default" ? schemes[scheme] : families[uiTheme];
-        document.querySelector('meta[name="theme-color"]').content = palette[theme === "dark" ? 1 : 0];
+        const palette =
+          uiTheme === "default" ? schemes[scheme] : families[uiTheme];
+        document.querySelector('meta[name="theme-color"]').content =
+          palette[theme === "dark" ? 1 : 0];
       })();
     </script>
     <title>savingsOS — A calmer place for your money</title>
-    <meta name="description" content="Plan everyday, monthly, and annual expenses, track paid bills, and organize your accounts." />
+    <meta
+      name="description"
+      content="Plan everyday, monthly, and annual expenses, track paid bills, and organize your accounts."
+    />
   </head>
   <body>
     <div id="root"></div>

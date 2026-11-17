@@ -1,3 +1,4 @@
+import { studioMoney } from "../utils/studio";
 import { categoryLabel, translate, useLanguage } from "../i18n";
 import {
   ArrowDownToLine,
@@ -9,7 +10,7 @@ import {
   Repeat2,
   Search,
   SlidersHorizontal,
-  X
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -20,17 +21,26 @@ import { ExpenseForm } from "../components/expenses/ExpenseForm";
 import { Calendar } from "../components/expenses/PaymentCalendar";
 import { PaymentDialog } from "../components/expenses/PaymentDialog";
 import { useFinance } from "../hooks/useFinance";
+import { useTheme } from "../hooks/useTheme";
+import { isDesignTheme } from "../utils/appearance";
 import { type Expense, type Row } from "../types/finance";
 import { exportCSV } from "../utils/exportExpenses";
 import { dateLabel, getRows, money, monthLabel, today } from "../utils/finance";
 
 export function Expenses() {
   useLanguage();
+  const { uiTheme } = useTheme();
+  const studio = isDesignTheme(uiTheme);
+  const formatMoney = studio ? studioMoney : money;
   const { data, update } = useFinance();
   const [parameters] = useSearchParams();
   const requestedMonth = parameters.get("month");
   const [exportError, setExportError] = useState("");
-  const [month, setMonth] = useState(requestedMonth && /^\d{4}-(0[1-9]|1[0-2])$/.test(requestedMonth) ? requestedMonth : today().slice(0, 7));
+  const [month, setMonth] = useState(
+    requestedMonth && /^\d{4}-(0[1-9]|1[0-2])$/.test(requestedMonth)
+      ? requestedMonth
+      : today().slice(0, 7),
+  );
   const [editing, setEditing] = useState<Expense | "new" | null>(null);
   const [paying, setPaying] = useState<Row | null>(null);
   const [tab, setTab] = useState("All expenses");
@@ -39,7 +49,8 @@ export function Expenses() {
   const [account, setAccount] = useState("");
   const [filters, setFilters] = useState(false);
   const [view, setView] = useState("list");
-  const activeFilters = Number(Boolean(account)) + Number(status !== "All statuses");
+  const activeFilters =
+    Number(Boolean(account)) + Number(status !== "All statuses");
   const rows = getRows(data, month);
   const total = rows.reduce((s, r) => s + r.amount, 0);
   const paid = rows.filter((r) => r.paidDate);
@@ -53,7 +64,9 @@ export function Expenses() {
       (status === "All statuses" ||
         (status === "Unpaid" ? !r.paidDate : r.status === status)) &&
       (!account || r.accountId === account) &&
-      (r.name + " " + r.category + " " + categoryLabel(r.category)).toLowerCase().includes(search.toLowerCase()),
+      (r.name + " " + r.category + " " + categoryLabel(r.category))
+        .toLowerCase()
+        .includes(search.toLowerCase()),
   );
   function togglePaid(row: Row) {
     if (row.paidDate)
@@ -65,70 +78,7 @@ export function Expenses() {
     else setPaying(row);
   }
   const upcoming = rows.filter((r) => !r.paidDate).slice(0, 3);
-  return (
-    <section className="expenses-page min-w-0">
-      {exportError && <p className="user-error" role="alert">{translate(exportError)}</p>}
-      <div className="page-heading">
-        <div>
-          <h1>{translate("Expenses")}</h1>
-          <p>{translate("Track your bills and see what’s left to pay.")}</p>
-        </div>
-        <div className="expense-heading-actions">
-          <MonthPicker month={month} setMonth={setMonth} />
-          <button className="button primary" onClick={() => setEditing("new")}>
-            <Plus size={17} />{translate("Add expense")}</button>
-        </div>
-      </div>
-      <div className="stats-grid expense-summary">
-        <div className="stat-card min-w-0">
-          <div className="stat-label">{translate("Planned this month")}</div>
-          <div className="stat-value">{money(total)}</div>
-          <p>
-            {translate("{{count}} expenses planned this month", { count: rows.length })}</p>
-        </div>
-        <div className="stat-card min-w-0">
-          <div className="stat-label">{translate("Paid")}</div>
-          <div className="stat-value">
-            {money(paidTotal)}
-            <span className="stat-tag">
-              {total ? Math.round((paidTotal / total) * 100) : 0}%
-            </span>
-          </div>
-          <p>
-            {translate("{{paid}} of {{total}} expenses paid", { paid: paid.length, total: rows.length })}</p>
-          <div className="progress-track">
-            <i
-              style={{ width: (total ? (paidTotal / total) * 100 : 0) + "%" }}
-            />
-          </div>
-        </div>
-        <div className="stat-card min-w-0">
-          <div className="stat-label">{translate("Still to pay")}</div>
-          <div className="stat-value">{money(total - paidTotal)}</div>
-          <p>
-            {translate("{{count}} expenses unpaid", { count: rows.length - paid.length })}</p>
-          <div className="stat-bottom">
-            <span className="tiny-dot amber-dot" />
-            {rows.some((r) => r.status === "Overdue")
-              ? rows.filter((r) => r.status === "Overdue").length +
-              " " + translate("overdue · review your payments")
-              : translate("No overdue payments")}
-          </div>
-        </div>
-      </div>
-      <div className="expense-columns grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_16rem]">
-        <section className="panel expense-panel">
-          <div className="panel-heading">
-            <div>
-              <h2>{translate("Your expenses") + " "}<span className="count-badge">{rows.length}</span>
-              </h2>
-            </div>
-            <button
-              className="button small secondary"
-              onClick={() => { setExportError(""); void exportCSV(filtered, data.accounts).catch(error => setExportError(error instanceof Error ? error.message : "Export failed. Try again.")); }}
-            >
-              <ArrowDownToLine size={14} />{translate("Export")}</button>
-          </div>
+  const toolbar = <>
           <div className="expense-tabs">
             {["All expenses", "Recurring", "One-time"].map((t) => (
               <button
@@ -172,7 +122,10 @@ export function Expenses() {
                 onChange={(e) => setSearch(e.target.value)}
               />
               {search && (
-                <button aria-label={translate("Clear search")} onClick={() => setSearch("")}>
+                <button
+                  aria-label={translate("Clear search")}
+                  onClick={() => setSearch("")}
+                >
                   <X size={13} />
                 </button>
               )}
@@ -184,7 +137,9 @@ export function Expenses() {
             >
               {["All statuses", "Paid", "Unpaid", "Upcoming", "Overdue"].map(
                 (s) => (
-                  <option key={s} value={s}>{translate(s)}</option>
+                  <option key={s} value={s}>
+                    {translate(s)}
+                  </option>
                 ),
               )}
             </select>
@@ -195,12 +150,17 @@ export function Expenses() {
               onClick={() => setFilters(!filters)}
             >
               <SlidersHorizontal size={14} />
-              <span>{translate("Filters")}{activeFilters ? ` (${activeFilters})` : ""}</span>
+              <span>
+                {translate("Filters")}
+                {activeFilters ? ` (${activeFilters})` : ""}
+              </span>
             </button>
           </div>
           {filters && (
             <div id="expense-filters" className="filter-row">
-              <label>{translate("Account")}<select
+              <label>
+                {translate("Account")}
+                <select
                   value={account}
                   onChange={(e) => setAccount(e.target.value)}
                 >
@@ -219,9 +179,110 @@ export function Expenses() {
                   setStatus("All statuses");
                   setSearch("");
                 }}
-              >{translate("Reset filters")}</button>
+              >
+                {translate("Reset filters")}
+              </button>
             </div>
           )}
+  </>;
+  return (
+    <section className="expenses-page min-w-0">
+      {exportError && (
+        <p className="user-error" role="alert">
+          {translate(exportError)}
+        </p>
+      )}
+      <div className="page-heading">
+        <div>
+          {studio && <span className="studio-eyebrow">{translate("PAYMENTS")} / {monthLabel(month)}</span>}
+          <h1>{translate(studio ? "Every bill, accounted for." : "Expenses")}</h1>
+          <p>{translate("Track your bills and see what’s left to pay.")}</p>
+        </div>
+        <div className="expense-heading-actions">
+          <MonthPicker month={month} setMonth={setMonth} />
+          <button className="button primary" onClick={() => setEditing("new")}>
+            <Plus size={17} />
+            {translate("Add expense")}
+          </button>
+        </div>
+      </div>
+      <div className="stats-grid expense-summary">
+        <div className="stat-card min-w-0">
+          <div className="stat-label">{translate("Planned this month")}</div>
+          <div className="stat-value">{formatMoney(total)}</div>
+          <p>
+            {translate("{{count}} expenses planned this month", {
+              count: rows.length,
+            })}
+          </p>
+        </div>
+        <div className="stat-card min-w-0">
+          <div className="stat-label">{translate("Paid")}</div>
+          <div className="stat-value">
+            {formatMoney(paidTotal)}
+            <span className="stat-tag">
+              {total ? Math.round((paidTotal / total) * 100) : 0}%
+            </span>
+          </div>
+          <p>
+            {translate("{{paid}} of {{total}} expenses paid", {
+              paid: paid.length,
+              total: rows.length,
+            })}
+          </p>
+          <div className="progress-track">
+            <i
+              style={{ width: (total ? (paidTotal / total) * 100 : 0) + "%" }}
+            />
+          </div>
+        </div>
+        <div className="stat-card min-w-0">
+          <div className="stat-label">{translate("Still to pay")}</div>
+          <div className="stat-value">{formatMoney(total - paidTotal)}</div>
+          <p>
+            {translate("{{count}} expenses unpaid", {
+              count: rows.length - paid.length,
+            })}
+          </p>
+          <div className="stat-bottom">
+            <span className="tiny-dot amber-dot" />
+            {rows.some((r) => r.status === "Overdue")
+              ? rows.filter((r) => r.status === "Overdue").length +
+                " " +
+                translate("overdue · review your payments")
+              : translate("No overdue payments")}
+          </div>
+        </div>
+      {studio && <article className="stat-card studio-overdue-stat"><div className="stat-label">{translate("Overdue")}</div><strong className="stat-value">{formatMoney(rows.filter(row => row.status === "Overdue").reduce((sum, row) => sum + row.amount, 0))}</strong><p>{translate("As of {{date}}", { date: dateLabel(today()) })}</p></article>}
+      </div>
+      {studio && <div className="studio-expense-toolbar">{toolbar}</div>}
+      <div className="expense-columns grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_16rem]">
+        <section className="panel expense-panel">
+          <div className="panel-heading">
+            <div>
+              <h2>
+                {translate("Your expenses") + " "}
+                <span className="count-badge">{rows.length}</span>
+              </h2>
+            </div>
+            <button
+              className="button small secondary"
+              onClick={() => {
+                setExportError("");
+                void exportCSV(filtered, data.accounts).catch((error) =>
+                  setExportError(
+                    error instanceof Error
+                      ? error.message
+                      : "Export failed. Try again.",
+                  ),
+                );
+              }}
+            >
+              <ArrowDownToLine size={14} />
+              {translate("Export")}
+            </button>
+          </div>
+          {!studio && toolbar}
           {view === "list" ? (
             <>
               <div className="table-scroll hidden md:block">
@@ -282,7 +343,7 @@ export function Expenses() {
                                 : ""}
                           </small>
                         </td>
-                        <td className="amount-cell">{money(r.amount)}</td>
+                        <td className="amount-cell">{formatMoney(r.amount)}</td>
                         <td>
                           <button
                             className={"status-badge " + r.status.toLowerCase()}
@@ -340,7 +401,9 @@ export function Expenses() {
                   <p>
                     {rows.length
                       ? translate("Try another search or change your filters.")
-                      : translate("Add an expense to start tracking this month.")}
+                      : translate(
+                          "Add an expense to start tracking this month.",
+                        )}
                   </p>
                   <button
                     className="button secondary small"
@@ -353,7 +416,9 @@ export function Expenses() {
                         : setEditing("new")
                     }
                   >
-                    {rows.length ? translate("Clear filters") : translate("Add an expense")}
+                    {rows.length
+                      ? translate("Clear filters")
+                      : translate("Add an expense")}
                   </button>
                 </div>
               )}
@@ -368,12 +433,18 @@ export function Expenses() {
           )}
           <div className="table-footer">
             <span>
-              {translate(filtered.length === 1 ? "{{count}} expense" : "{{count}} expenses", { count: filtered.length })} ·{" "}
-              {monthLabel(month)}
+              {translate(
+                filtered.length === 1
+                  ? "{{count}} expense"
+                  : "{{count}} expenses",
+                { count: filtered.length },
+              )}{" "}
+              · {monthLabel(month)}
             </span>
-            <span>{translate("Total")}{" "}
+            <span>
+              {translate("Total")}{" "}
               <strong>
-                {money(filtered.reduce((s, r) => s + r.amount, 0))}
+                {formatMoney(filtered.reduce((s, r) => s + r.amount, 0))}
               </strong>
             </span>
           </div>
@@ -401,12 +472,14 @@ export function Expenses() {
                       {data.accounts.find((a) => a.id === r.accountId)?.name}
                     </small>
                   </div>
-                  <b>{money(r.amount)}</b>
+                  <b>{formatMoney(r.amount)}</b>
                 </button>
               ))
             ) : (
               <p className="all-clear">
-                <Check size={16} />{translate("All taken care of for this month.")}</p>
+                <Check size={16} />
+                {translate("All taken care of for this month.")}
+              </p>
             )}
           </section>
         </aside>

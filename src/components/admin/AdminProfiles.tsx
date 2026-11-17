@@ -49,7 +49,9 @@ export function AdminProfiles() {
         }
         await deleteUser(pending.user.id, pending.user.revision);
         setMessage(
-          translate("{{name}} and their finance records have been deleted.", { name: pending.user.name }),
+          translate("{{name}} and their finance records have been deleted.", {
+            name: pending.user.name,
+          }),
         );
       } else {
         await renameUser(
@@ -100,14 +102,18 @@ export function AdminProfiles() {
             disabled={busy}
             onClick={() => void backup()}
           >
-            <Download size={15} />{translate("Export all profiles")}</button>
+            <Download size={15} />
+            {translate("Export all profiles")}
+          </button>
           <button
             type="button"
             className="button secondary small"
             disabled={busy}
             onClick={() => void refresh()}
           >
-            <RefreshCw size={15} />{translate("Refresh")}</button>
+            <RefreshCw size={15} />
+            {translate("Refresh")}
+          </button>
           <button
             type="button"
             className="button primary small"
@@ -117,12 +123,20 @@ export function AdminProfiles() {
               setCreating(true);
             }}
           >
-            <Plus size={15} />{translate("Create user")}</button>
+            <Plus size={15} />
+            {translate("Create user")}
+          </button>
         </div>
       </div>
-      <p>{translate("Create, rename, or delete regular profiles. Each profile has its own planner.")}</p>
+      <p>
+        {translate(
+          "Create, rename, or delete regular profiles. Each profile has its own planner.",
+        )}
+      </p>
       {!profiles.length ? (
-        <p>{translate("No regular profiles yet. Create a user to get started.")}</p>
+        <p>
+          {translate("No regular profiles yet. Create a user to get started.")}
+        </p>
       ) : (
         <ul>
           {profiles.map((user) => (
@@ -130,7 +144,9 @@ export function AdminProfiles() {
               <div className="admin-profile-details">
                 <strong>{user.name}</strong>
                 <span>
-                  {user.hasPassword ? translate("Password protected") : translate("No password")}
+                  {user.hasPassword
+                    ? translate("Password protected")
+                    : translate("No password")}
                 </span>
               </div>
               <div className="admin-profile-actions">
@@ -141,7 +157,9 @@ export function AdminProfiles() {
                   aria-label={translate("Rename profile") + " " + user.name}
                   onClick={() => open(user, "rename")}
                 >
-                  <Pencil size={14} />{translate("Rename")}</button>
+                  <Pencil size={14} />
+                  {translate("Rename")}
+                </button>
                 <button
                   type="button"
                   className="button secondary small admin-delete-button"
@@ -149,7 +167,9 @@ export function AdminProfiles() {
                   aria-label={translate("Delete profile") + " " + user.name}
                   onClick={() => open(user, "delete")}
                 >
-                  <Trash2 size={14} />{translate("Delete")}</button>
+                  <Trash2 size={14} />
+                  {translate("Delete")}
+                </button>
               </div>
             </li>
           ))}
@@ -169,7 +189,9 @@ export function AdminProfiles() {
       {pending && (
         <Dialog
           title={
-            pending.action === "delete" ? translate("Delete profile?") : translate("Rename profile")
+            pending.action === "delete"
+              ? translate("Delete profile?")
+              : translate("Rename profile")
           }
           onClose={() => setPending(null)}
           canClose={!busy}
@@ -177,9 +199,22 @@ export function AdminProfiles() {
           <form className="planner-form" onSubmit={submit}>
             {pending.action === "delete" ? (
               <>
-                <p>{translate("Delete {{name}} and all their saved accounts, expenses, income, and payment history? This cannot be undone.", { name: pending.user.name })}</p>
-                <p className="form-intro">{translate("Keep an exported finance backup first if these records are needed.")}</p>
-                <label>{translate("Type {{name}} to confirm", { name: pending.user.name })}<input
+                <p>
+                  {translate(
+                    "Delete {{name}} and all their saved accounts, expenses, income, and payment history? This cannot be undone.",
+                    { name: pending.user.name },
+                  )}
+                </p>
+                <p className="form-intro">
+                  {translate(
+                    "Keep an exported finance backup first if these records are needed.",
+                  )}
+                </p>
+                <label>
+                  {translate("Type {{name}} to confirm", {
+                    name: pending.user.name,
+                  })}
+                  <input
                     autoFocus
                     required
                     autoComplete="off"
@@ -190,7 +225,9 @@ export function AdminProfiles() {
                 </label>
               </>
             ) : (
-              <label>{translate("Profile name")}<input
+              <label>
+                {translate("Profile name")}
+                <input
                   autoFocus
                   name="name"
                   required
@@ -211,7 +248,9 @@ export function AdminProfiles() {
                 className="button secondary"
                 disabled={busy}
                 onClick={() => setPending(null)}
-              >{translate("Cancel")}</button>
+              >
+                {translate("Cancel")}
+              </button>
               <button
                 className={
                   "button primary " +

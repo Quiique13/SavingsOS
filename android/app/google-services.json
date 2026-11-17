@@ -19,13 +19,19 @@
             "certificate_hash": "8664b355a40f883dc42f7662c3585cbc7a52f996"
           }
         },
-        { "client_id": "303880340930-48hdl04pob5mrabfqia2tv14pv9c07kk.apps.googleusercontent.com", "client_type": 3 }
+        {
+          "client_id": "303880340930-48hdl04pob5mrabfqia2tv14pv9c07kk.apps.googleusercontent.com",
+          "client_type": 3
+        }
       ],
-      "api_key": [ { "current_key": "AIzaSyDZ16VvlyVCl5jTvxYSjrRW2gAdYTw_cC0" } ],
+      "api_key": [{ "current_key": "AIzaSyDZ16VvlyVCl5jTvxYSjrRW2gAdYTw_cC0" }],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
-            { "client_id": "303880340930-48hdl04pob5mrabfqia2tv14pv9c07kk.apps.googleusercontent.com", "client_type": 3 }
+            {
+              "client_id": "303880340930-48hdl04pob5mrabfqia2tv14pv9c07kk.apps.googleusercontent.com",
+              "client_type": 3
+            }
           ]
         }
       }

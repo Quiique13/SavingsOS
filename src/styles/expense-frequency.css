@@ -1,0 +1,35 @@
+/* Keep recurrence selection distinct from the shared segmented-control surface. */
+.planner-dialog .expense-frequency {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.planner-dialog .expense-frequency legend {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+.planner-dialog .frequency-picker {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border);
+}
+
+.planner-dialog .frequency-picker button {
+  color: var(--color-text-secondary);
+  background: transparent;
+}
+
+.planner-dialog .frequency-picker button[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 700;
+  box-shadow: 0 1px 3px var(--color-shadow);
+}
+
+.planner-dialog .frequency-picker button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

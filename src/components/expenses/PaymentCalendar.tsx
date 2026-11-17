@@ -51,7 +51,13 @@ export function Calendar({
           const bills = rows.filter((r) => r.date === date);
           return (
             <button
-              aria-label={dateLabel(date) + " · " + bills.length + " " + translate("expenses")}
+              aria-label={
+                dateLabel(date) +
+                " · " +
+                bills.length +
+                " " +
+                translate("expenses")
+              }
               key={date}
               className={
                 (date === today() ? "today " : "") +
@@ -80,11 +86,17 @@ export function Calendar({
       </div>
       <div className="calendar-legend">
         <span>
-          <i style={{ background: "#458269" }} />{translate("Paid")}</span>
+          <i style={{ background: "#458269" }} />
+          {translate("Paid")}
+        </span>
         <span>
-          <i style={{ background: "#caa66e" }} />{translate("Upcoming")}</span>
+          <i style={{ background: "#caa66e" }} />
+          {translate("Upcoming")}
+        </span>
         <span>
-          <i style={{ background: "#c67563" }} />{translate("Overdue")}</span>
+          <i style={{ background: "#c67563" }} />
+          {translate("Overdue")}
+        </span>
       </div>
       {selected && (
         <div className="calendar-selection">

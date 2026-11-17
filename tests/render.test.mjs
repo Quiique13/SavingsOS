@@ -11,7 +11,8 @@ test("finance pages render with the shared context and coherent monthly totals",
   try {
     const { ThemeContext } = await server.ssrLoadModule("/src/context/ThemeContext.ts");
     const { ThemeToggle, AppearanceSettings } = await server.ssrLoadModule("/src/components/theme/ThemeControls.tsx");
-    const { default: appIcon } = await server.ssrLoadModule("/src/assets/savingsOS-v2.svg");
+    const { default: appIcon } = await server.ssrLoadModule("/src/assets/savingsOS-light.svg");
+    const { default: darkIcon } = await server.ssrLoadModule("/src/assets/savingsOS-dark.svg");
     const { Brand } = await server.ssrLoadModule("/src/components/common/Brand.tsx");
     const { AdminPortal } = await server.ssrLoadModule("/src/pages/admin/AdminPortal.tsx");
     const { Admin } = await server.ssrLoadModule("/src/pages/admin/AdminSettings.tsx");
@@ -90,6 +91,7 @@ test("finance pages render with the shared context and coherent monthly totals",
       assert.ok(render(ThemeToggle, {}, {}, "dark").includes("Switch to light mode"));
       assert.ok(render(AppearanceSettings, {}, {}, "dark").includes('aria-pressed="true"'));
       assert.ok(render(Brand).includes(renderToStaticMarkup(createElement("img", { src: appIcon })).match(/src="[^"]*"/)[0]));
+      assert.ok(render(Brand, {}, {}, "dark").includes(renderToStaticMarkup(createElement("img", { src: darkIcon })).match(/src="[^"]*"/)[0]));
       assert.ok(render(Brand).includes("savingsOS overview"));
       const nav = render(MobileNav, { menuOpen: false });
       assert.ok(nav.includes('aria-label="Mobile navigation"'));

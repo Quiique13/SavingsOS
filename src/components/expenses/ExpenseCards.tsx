@@ -71,7 +71,9 @@ export function ExpenseCards({
                 {translate(row.status)}
               </span>
               {row.paidDate && (
-                <span className="text-xs text-finance-muted">{translate("Paid on") + " "}{dateLabel(row.paidDate)}
+                <span className="text-xs text-finance-muted">
+                  {translate("Paid on") + " "}
+                  {dateLabel(row.paidDate)}
                 </span>
               )}
             </div>
@@ -82,7 +84,9 @@ export function ExpenseCards({
                 onClick={() => onEdit(row)}
                 aria-label={translate("Edit") + " " + row.name}
               >
-                <Pencil size={15} />{translate("Edit")}</button>
+                <Pencil size={15} />
+                {translate("Edit")}
+              </button>
               <button
                 type="button"
                 className={
@@ -90,11 +94,15 @@ export function ExpenseCards({
                 }
                 onClick={() => onTogglePayment(row)}
                 aria-label={
-                  (row.paidDate ? translate("Mark unpaid:") + " " : translate("Mark paid:") + " ") + row.name
+                  (row.paidDate
+                    ? translate("Mark unpaid:") + " "
+                    : translate("Mark paid:") + " ") + row.name
                 }
               >
                 {row.paidDate ? <Circle size={15} /> : <Check size={15} />}{" "}
-                {row.paidDate ? translate("Mark unpaid") : translate("Mark as paid")}
+                {row.paidDate
+                  ? translate("Mark unpaid")
+                  : translate("Mark as paid")}
               </button>
             </div>
           </article>

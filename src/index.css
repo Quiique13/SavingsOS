@@ -13,6 +13,11 @@
 @import "./styles/ui-themes.css";
 @import "./styles/budget.css";
 @import "./styles/month-picker.css";
+@import "./styles/flow.css";
+@import "./styles/studio-layout.css";
+@import "./styles/expense-frequency.css";
+@import "./styles/welcome-tour.css";
+@import "./styles/account-tools.css";
 
 /* Tailwind scans the active app; use complete utility names in JSX. */
 @source "./";
@@ -34,6 +39,16 @@
 
 /* Global foundation — layout and page details live in the commented imports above. */
 @layer base {
+  :root {
+    --font-body: "Geist Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: var(--font-body);
+  }
+  :root[data-ui-theme="paper-ledger"] {
+    --font-display: Georgia, "Times New Roman", serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
   html {
     min-width: 320px;
     scroll-padding-top: 80px;
@@ -44,7 +59,7 @@
   }
   body {
     margin: 0;
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     background: var(--color-canvas, #f8faf6);
     color: var(--color-text, #304734);
   }

@@ -12,9 +12,11 @@ import { errorText, initials } from "../../utils/profile";
 import { Dialog } from "../common/Dialog";
 import { PasswordInput } from "./PasswordInput";
 import { OnlineAccountSettings } from "./OnlineAccountSettings";
+import { useDemo } from "../../context/DemoContext";
 
 export function UserSettings({ accountOnly = false }: { accountOnly?: boolean }) {
   useLanguage();
+  const demo = useDemo();
   const { currentUser, busy, configureUser, signOut } = useUsers();
   const [action, setAction] = useState<"name" | "password" | "remove" | null>(
     null,
@@ -22,6 +24,7 @@ export function UserSettings({ accountOnly = false }: { accountOnly?: boolean })
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   if (!currentUser) return null;
+  if (demo) return <section className="panel settings-section"><div><h2>{translate("Demo profile")}</h2><p>{translate("Alex Morgan is fictional. Real profiles and account security are not loaded in demo mode.")}</p></div></section>;
   if (currentUser.authProvider === "firebase") return <OnlineAccountSettings />;
   const user = currentUser;
   async function submit(event: FormEvent<HTMLFormElement>) {

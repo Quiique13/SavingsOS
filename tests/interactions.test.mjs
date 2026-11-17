@@ -66,7 +66,7 @@ test("profile selection and settings navigation", async t => {
         await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
       }
     };
-    async function mount(path = "/settings") {
+    async function mount(path = "/settings", includeTour = false) {
       if (root) { await act(async () => root.unmount()); root = null; }
       if (runningApp) await runningApp.close();
       if (appDirectory) removeTemporaryAppDirectory(appDirectory);
@@ -81,6 +81,9 @@ test("profile selection and settings navigation", async t => {
       const admin = await vault.createAdmin("Hidden admin", seededPlanner(), password);
       const regular = await vault.create(admin, "Miguel", seededPlanner());
       const protectedProfile = await vault.create(admin, "Ana", seededPlanner(), password);
+      if (!includeTour) {
+        for (const profile of [admin, regular, protectedProfile]) localStorage.setItem(`savingsos-tour-v1:${profile.user.id}`, "done");
+      }
       root = createRoot(container);
       await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: [path] }, e(AppRoutes))))));
       await waitFor(() => container.querySelector(path === "/admin" ? ".admin-signin-screen" : ".user-choice"));
@@ -88,6 +91,101 @@ test("profile selection and settings navigation", async t => {
       assert.equal(localStorage.getItem(USERS_KEY), null);
       return { vault: runningApp.app.vault, regular, protectedProfile, admin, store: appStore };
     }
+    await t.test("the first-visit tutorial walks through pages without changing records, remembers completion and can replay", async () => {
+      const { regular, vault } = await mount("/settings", true);
+      const before = (await vault.open(regular.user.id)).data;
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => document.querySelector('.welcome-tour'));
+      assert.equal(container.querySelector('.finance-app').inert, true);
+      assert.equal(document.activeElement, document.querySelector('.tour-next'));
+      await act(async () => document.activeElement.dispatchEvent(new dom.window.KeyboardEvent('keydown', {key:'Tab',bubbles:true,cancelable:true})));
+      assert.equal(document.activeElement, document.querySelector('.tour-skip'));
+      await act(async () => document.activeElement.dispatchEvent(new dom.window.KeyboardEvent('keydown', {key:'Tab',shiftKey:true,bubbles:true,cancelable:true})));
+      assert.equal(document.activeElement, document.querySelector('.tour-next'));
+      const pages = ['.accounts-page', '.accounts-page', '.transfers-page', '.expenses-page', '.overview-page'];
+      for (const page of pages) {
+        await click(document.querySelector('.tour-next'));
+        await waitFor(() => container.querySelector(page));
+      }
+      assert.ok(document.querySelector('.tour-next').textContent.includes('Finish tutorial'));
+      await click(document.querySelector('.tour-back'));
+      await waitFor(() => container.querySelector('.expenses-page'));
+      await click(document.querySelector('.tour-next'));
+      await click(document.querySelector('.tour-next'));
+      assert.equal(document.querySelector('.welcome-tour'), null);
+      assert.equal(container.querySelector('.finance-app').inert, false);
+      assert.equal(localStorage.getItem(`savingsos-tour-v1:${regular.user.id}`), 'done');
+      assert.deepEqual((await vault.open(regular.user.id)).data, before);
+      await click(container.querySelector('button[aria-label="About your planner"]'));
+      await click(find('button', 'Replay tutorial'));
+      assert.ok(document.querySelector('.welcome-tour'));
+      await click(document.querySelector('.tour-skip'));
+      await waitFor(() => container.querySelector('.overview-page'));
+      await click(container.querySelector('.profile-signout'));
+      await waitFor(() => container.querySelector('.user-choice'));
+      await click(find('.user-choice', 'Miguel'));
+      await waitFor(() => container.querySelector('.finance-app'));
+      assert.equal(document.querySelector('.welcome-tour'), null);
+    });
+    await t.test("skipping the tutorial goes to Overview and dismissal is scoped to the profile", async () => {
+      await mount('/expenses', true);
+      await click(find('.user-choice', 'Miguel'));
+      await waitFor(() => document.querySelector('.tour-skip'));
+      await click(document.querySelector('.tour-next'));
+      await waitFor(() => container.querySelector('.accounts-page'));
+      await click(document.querySelector('.tour-skip'));
+      await waitFor(() => container.querySelector('.overview-page'));
+      await click(container.querySelector('.profile-signout'));
+      await waitFor(() => container.querySelector('.user-choice'));
+      await click(find('.user-choice', 'Ana'));
+      await fill('input[type="password"]', password);
+      await act(async () => container.querySelector('.sign-in-form').dispatchEvent(new dom.window.Event('submit', {bubbles:true,cancelable:true})));
+      await waitFor(() => document.querySelector('.welcome-tour'));
+      await act(async () => document.querySelector('.welcome-tour').dispatchEvent(new dom.window.KeyboardEvent('keydown', {key:'Escape',bubbles:true})));
+      await waitFor(() => container.querySelector('.overview-page'));
+      assert.equal(document.querySelector('.welcome-tour'), null);
+    });
+    await t.test("monthly reset confirms, preserves records on failure, then reverses transfers and keeps funding and expense definitions", async () => {
+      const {vault,regular}=await mount('/accounts');
+      const {today,shiftMonth,saveTransfer}=await server.ssrLoadModule('/src/utils/finance.ts');
+      const month=today().slice(0,7), previous=shiftMonth(month,-1);
+      const session=await vault.open(regular.user.id);
+      const base={...session.data,expenses:[{id:'reset-rent',name:'Rent',amount:650,category:'Housing',accountId:'moey',due:month+'-01',frequency:'monthly',notes:'Keep'}],income:[{id:'reset-salary',name:'Salary',amount:2450,date:previous+'-28',accountId:'moey'}],payments:{['reset-rent:'+month+'-01']:month+'-02'}};
+      const original=saveTransfer(base,{id:'reset-transfer',fromAccountId:'moey',toAccountId:'bleap',amount:125.25,date:month+'-01',notes:''});
+      await vault.save(session,original);
+      await click(find('.user-choice','Miguel'));await waitFor(()=>container.querySelector('.accounts-page'));
+      assert.equal(container.querySelector('a[href="/admin"]'),null);
+      await click(find('.account-month-reset button','Reset month'));
+      await click(find('dialog button','Cancel'));
+      assert.deepEqual((await vault.open(regular.user.id)).data,original);
+      await click(find('.account-month-reset button','Reset month'));
+      const request=globalThis.fetch;
+      globalThis.fetch=(path,input)=>path==='/api/save'?Promise.resolve(new Response(JSON.stringify({error:'The app data file could not be saved.'}),{status:503,headers:{'Content-Type':'application/json'}})):request(path,input);
+      try {
+        await click(find('dialog button','Confirm reset'));
+        await waitFor(()=>container.querySelector('dialog [role="alert"]'));
+        assert.deepEqual((await vault.open(regular.user.id)).data,original);
+      } finally {globalThis.fetch=request;}
+      await click(find('dialog button','Confirm reset'));await waitFor(()=>!container.querySelector('dialog'));
+      const saved=(await vault.open(regular.user.id)).data;
+      assert.deepEqual(saved.accounts,base.accounts);assert.deepEqual(saved.income,base.income);assert.deepEqual(saved.expenses,base.expenses);
+      assert.deepEqual(saved.transfers,[]);assert.deepEqual(saved.payments,{});
+    });
+    await t.test("currency settings change labels and amounts across pages without changing stored values",async()=>{
+      const {vault,regular}=await mount('/settings');
+      const before=(await vault.open(regular.user.id)).data;
+      await click(find('.user-choice','Miguel'));await waitFor(()=>container.querySelector('.settings-page'));
+      await fill('.currency-settings select','GBP');
+      assert.equal(localStorage.getItem('savings-os-currency'),'GBP');
+      await click(container.querySelector('.sidebar nav a[href="/accounts"]'));await waitFor(()=>container.querySelector('.accounts-page'));
+      assert.ok(container.querySelector('.account-balance').textContent.includes('£'));
+      await click(find('.page-actions .button','Add account'));
+      assert.ok(container.querySelector('dialog').textContent.includes('Reported balance (£)'));
+      await click(container.querySelector('button[aria-label="Close dialog"]'));
+      assert.deepEqual((await vault.open(regular.user.id)).data,before);
+      await click(container.querySelector('.sidebar a[aria-label="Settings"]'));await waitFor(()=>container.querySelector('.settings-page'));
+      await fill('.currency-settings select','EUR');
+    });
     await t.test("selecting a passwordless profile opens Settings immediately", async () => {
       const { vault, regular } = await mount();
       await click(find(".user-choice", "Miguel"));
@@ -233,6 +331,10 @@ test("profile selection and settings navigation", async t => {
       assert.equal(container.querySelectorAll(".dashboard-stats .summary-card").length, 4);
       await click(find(".quick-actions button", "Add expense"));
       assert.ok(container.querySelector('dialog[open][aria-label="Add an expense"]'));
+      assert.equal(container.querySelector('.frequency-picker [aria-pressed="true"]').textContent, "Every month");
+      await click(find('.frequency-picker button', "Every year"));
+      assert.equal(container.querySelectorAll('.frequency-picker [aria-pressed="true"]').length, 1);
+      assert.equal(container.querySelector('.frequency-picker [aria-pressed="true"]').textContent, "Every year");
       await click(container.querySelector('button[aria-label="Close dialog"]'));
       await click(find(".quick-actions a", "Record income"));
       await waitFor(() => container.querySelector('dialog[open][aria-label="Add income"]'));
@@ -243,6 +345,57 @@ test("profile selection and settings navigation", async t => {
       assert.equal(container.querySelector('select[name="fromAccount"]').value, "moey");
       assert.notEqual(container.querySelector('select[name="toAccount"]').value, "moey");
       await click(container.querySelector('button[aria-label="Close dialog"]'));
+    });
+    await t.test("design-pack themes keep forms, mobile navigation and Default available", async () => {
+      await mount("/settings");
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".settings-page"));
+      for (const theme of ["flow", "paper-ledger", "signal-studio"]) {
+        await click(container.querySelector(`[data-ui-option="${theme}"]`));
+        assert.equal(document.documentElement.dataset.uiTheme, theme);
+        await click(container.querySelector('.sidebar nav a[href="/dashboard"]'));
+        await waitFor(() => container.querySelector(".studio-overview"));
+        assert.ok(container.querySelector(".topbar .workspace-period-slot .month-picker-trigger"));
+        assert.equal(container.querySelector(".page-content .month-picker"), null);
+        assert.ok(container.textContent.includes("Planning estimate, not bank balance"));
+        await click(find(".quick-actions button", "Add expense"));
+        assert.ok(container.querySelector('dialog[open][aria-label="Add an expense"]'));
+        for (const label of ["One-time", "Every year", "Every month"]) {
+          await click(find('.frequency-picker button', label));
+          assert.equal(container.querySelectorAll('.frequency-picker [aria-pressed="true"]').length, 1);
+          assert.equal(container.querySelector('.frequency-picker [aria-pressed="true"]').textContent, label);
+        }
+        await click(container.querySelector('button[aria-label="Close dialog"]'));
+        const tabs = container.querySelectorAll(".mobile-nav a");
+        assert.equal(tabs.length, 4);
+        assert.deepEqual([...tabs].map(a => a.getAttribute("href")), ["/dashboard", "/expenses", "/income", "/accounts"]);
+        const previousMatchMedia = window.matchMedia;
+        window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+        try {
+          await click(container.querySelector(".mobile-nav button"));
+          assert.equal(container.querySelector(".sidebar").getAttribute("aria-modal"), "true");
+          await click(container.querySelector(".mobile-close"));
+        } finally { window.matchMedia = previousMatchMedia; }
+        assert.equal(container.querySelector(".sidebar.is-open"), null);
+        await click(container.querySelector('.sidebar a[href="/profile"]'));
+        await waitFor(() => container.querySelector(".profile-page"));
+        assert.ok(container.querySelector(".users-settings"));
+        await click(container.querySelector('.sidebar a[href="/simulator"]'));
+        await waitFor(() => container.querySelector(".simulator-page"));
+        assert.ok(container.querySelector('.topbar .month-picker-trigger'));
+        await fill('.monthly-simulator input[name="extraSpending"]', "100");
+        assert.ok(container.querySelector('.simulator-outcome').textContent.includes("Shortfall"));
+        await click(container.querySelector('.sidebar a[aria-label="Settings"]'));
+        await waitFor(() => container.querySelector(".settings-page"));
+      }
+      await click(container.querySelector('[data-ui-option="default"]'));
+      await click(container.querySelector('.sidebar nav a[href="/dashboard"]'));
+      await waitFor(() => container.querySelector(".overview-page"));
+      assert.equal(container.querySelector(".studio-overview"), null);
+      assert.ok(container.querySelector(".overview-heading h1").textContent.includes("Miguel"));
+      assert.equal(container.querySelectorAll(".dashboard-stats .summary-card").length, 4);
+      assert.ok(container.querySelector('.mobile-nav a[href="/settings"]'));
+      assert.equal(container.querySelector(".mobile-nav button"), null);
     });
     await t.test("navigation starts expanded, preserves page state, and remembers its preference", async () => {
       await mount("/expenses");

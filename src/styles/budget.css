@@ -1,34 +1,154 @@
 @layer components {
-  .monthly-simulator { min-width: 0; overflow: hidden; }
-  .income-page > .monthly-simulator { margin: 22px 0; }
-  .monthly-simulator .panel-heading { align-items: flex-start; gap: 14px; }
-  .monthly-simulator h2 { display: flex; align-items: center; gap: 9px; }
-  .monthly-simulator h2 > svg { flex-shrink: 0; color: var(--color-accent); }
-  .simulation-badge { padding: 5px 9px; flex-shrink: 0; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-selected); color: var(--color-accent); font-size: 10px; font-weight: 600; }
-  .simulator-body { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; padding: 0 24px 24px; }
-  .simulator-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px 12px; }
-  .simulator-fields label { display: flex; flex-direction: column; gap: 7px; min-width: 0; font-size: 11px; font-weight: 550; color: var(--color-text-secondary); }
-  .simulator-fields input { width: 100%; min-width: 0; min-height: 44px; padding: 10px 11px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-raised); color: var(--color-text); font: inherit; font-size: 14px; font-variant-numeric: tabular-nums; }
-  .simulator-inputs .simulator-note { color: var(--color-text-secondary); font-size: 11px; line-height: 1.7; margin: 15px 0; }
-  .simulator-result { display: flex; flex-direction: column; min-width: 0; padding: 20px; background: var(--color-surface-alt); border: 1px solid var(--color-border); border-radius: var(--radius-panel); }
-  .simulator-result dl { display: grid; gap: 10px; margin: 0 0 20px; }
-  .simulator-result dl > div { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; }
-  .simulator-result dt { color: var(--color-text-secondary); }
-  .simulator-result dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 550; overflow-wrap: anywhere; }
-  .simulator-result-label { font-size: 11px; font-weight: 550; }
-  .simulator-total { display: block; margin: 7px 0; font-size: clamp(24px, 2.5vw, 34px); letter-spacing: -1px; line-height: 1.2; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; color: var(--color-accent); }
-  .simulator-total.is-negative { color: var(--color-danger); }
-  .simulator-outcome { font-size: 11px; color: var(--color-text-secondary); }
-  .simulator-result > p { margin: 15px 0 0; font-size: 10px; line-height: 1.7; color: var(--color-text-secondary); }
-  :root[data-ui-theme="high-contrast"] .simulator-fields input { border-width: 2px; }
+  .monthly-simulator {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .income-page > .monthly-simulator {
+    margin: 22px 0;
+  }
+  .monthly-simulator .panel-heading {
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .monthly-simulator h2 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .monthly-simulator h2 > svg {
+    flex-shrink: 0;
+    color: var(--color-accent);
+  }
+  .simulation-badge {
+    padding: 5px 9px;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-selected);
+    color: var(--color-accent);
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .simulator-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 22px;
+    padding: 0 24px 24px;
+  }
+  .simulator-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px 12px;
+  }
+  .simulator-fields label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    font-size: 11px;
+    font-weight: 550;
+    color: var(--color-text-secondary);
+  }
+  .simulator-fields input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 11px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .simulator-inputs .simulator-note {
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    line-height: 1.7;
+    margin: 15px 0;
+  }
+  .simulator-result {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 20px;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-panel);
+  }
+  .simulator-result dl {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 20px;
+  }
+  .simulator-result dl > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 11px;
+  }
+  .simulator-result dt {
+    color: var(--color-text-secondary);
+  }
+  .simulator-result dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 550;
+    overflow-wrap: anywhere;
+  }
+  .simulator-result-label {
+    font-size: 11px;
+    font-weight: 550;
+  }
+  .simulator-total {
+    display: block;
+    margin: 7px 0;
+    font-size: clamp(24px, 2.5vw, 34px);
+    letter-spacing: -1px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent);
+  }
+  .simulator-total.is-negative {
+    color: var(--color-danger);
+  }
+  .simulator-outcome {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+  }
+  .simulator-result > p {
+    margin: 15px 0 0;
+    font-size: 10px;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+  }
+  :root[data-ui-theme="high-contrast"] .simulator-fields input {
+    border-width: 2px;
+  }
   @media (max-width: 1100px) {
-    .simulator-body { grid-template-columns: minmax(0, 1fr); }
+    .simulator-body {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
   @media (max-width: 767px) {
-    .simulator-body { padding: 0 18px 20px; gap: 18px; }
-    .simulator-fields input { font-size: 16px; }
-    .simulator-result { padding: 18px; }
-    .simulator-total { font-size: 30px; }
-    .simulator-inputs .button { min-height: 44px; }
+    .simulator-body {
+      padding: 0 18px 20px;
+      gap: 18px;
+    }
+    .simulator-fields input {
+      font-size: 16px;
+    }
+    .simulator-result {
+      padding: 18px;
+    }
+    .simulator-total {
+      font-size: 30px;
+    }
+    .simulator-inputs .button {
+      min-height: 44px;
+    }
   }
 }

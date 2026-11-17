@@ -5,7 +5,7 @@ import {
   LockKeyhole,
   Plus,
   ShieldCheck,
-  Users
+  Users,
 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Brand } from "../components/common/Brand";
@@ -23,10 +23,17 @@ import { useAuthentication } from "../context/AuthenticationContext";
 
 export function UserChooser() {
   useLanguage();
-  const { users: allUsers, busy: userBusy, signIn, notice, error: bootError, retryLoad } = useUsers();
+  const {
+    users: allUsers,
+    busy: userBusy,
+    signIn,
+    notice,
+    error: bootError,
+    retryLoad,
+  } = useUsers();
   const authentication = useAuthentication();
   const busy = userBusy || !!authentication?.busy;
-  const users = allUsers.filter(user => user.role !== "admin");
+  const users = allUsers.filter((user) => user.role !== "admin");
   const [creating, setCreating] = useState(false);
   const [importing, setImporting] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
@@ -69,7 +76,9 @@ export function UserChooser() {
             <Users size={25} />
           )}
         </span>
-        <span className="eyebrow">{translate("YOUR PERSONAL FINANCE SPACE")}</span>
+        <span className="eyebrow">
+          {translate("YOUR PERSONAL FINANCE SPACE")}
+        </span>
         <h1>
           {selected
             ? translate("Welcome,") + " " + selected.name + "."
@@ -78,15 +87,42 @@ export function UserChooser() {
         <p>
           {selected
             ? translate("Enter your password to unlock your planner.")
-            : authentication?.enabled ? translate("Your money, organized in one place.") : users.length ? translate("Choose a user to open their planner.") : translate("Add your first user to start your personal finance planner.")}
+            : authentication?.enabled
+              ? translate("Your money, organized in one place.")
+              : users.length
+                ? translate("Choose a user to open their planner.")
+                : translate(
+                    "Add your first user to start your personal finance planner.",
+                  )}
         </p>
-        {notice && <p className="user-error" role="alert">{translate(notice)}</p>}
+        {notice && (
+          <p className="user-error" role="alert">
+            {translate(notice)}
+          </p>
+        )}
         {!selected && <OnlineSignIn disabled={userBusy} />}
         {bootError ? (
           <div className="user-error" role="alert">
             {translate(bootError)}
-            <p>{authentication?.user ? translate("Resolve the cloud storage issue, then try again. Existing records have been kept.") : translate("Reload the app after resolving the storage problem. Existing records have been kept.")}</p>
-            {retryLoad && <button type="button" className="button secondary small" onClick={retryLoad} disabled={busy}>{translate("Try again")}</button>}
+            <p>
+              {authentication?.user
+                ? translate(
+                    "Resolve the cloud storage issue, then try again. Existing records have been kept.",
+                  )
+                : translate(
+                    "Reload the app after resolving the storage problem. Existing records have been kept.",
+                  )}
+            </p>
+            {retryLoad && (
+              <button
+                type="button"
+                className="button secondary small"
+                onClick={retryLoad}
+                disabled={busy}
+              >
+                {translate("Try again")}
+              </button>
+            )}
           </div>
         ) : selected ? (
           <form onSubmit={submit} className="planner-form sign-in-form">
@@ -114,50 +150,90 @@ export function UserChooser() {
                 setError("");
               }}
             >
-              <ArrowLeft size={14} />{translate("Choose another user")}</button>
+              <ArrowLeft size={14} />
+              {translate("Choose another user")}
+            </button>
             {selected.hasPassword && (
-              <p className="password-note">{translate("Passwords can't be recovered. If you forget yours, create a new user and restore a finance backup.")}</p>
+              <p className="password-note">
+                {translate(
+                  "Passwords can't be recovered. If you forget yours, create a new user and restore a finance backup.",
+                )}
+              </p>
             )}
           </form>
         ) : (
           <>
-            {authentication?.enabled && <div className="auth-divider local-profiles-heading"><span>{translate("Continue with a local profile")}</span></div>}
-            {error && <p className="user-error" role="alert">{translate(error)}</p>}
-            {users.length > 0 && <div className="user-list" aria-busy={busy}>
-              {users.map((user) => (
-                <button
-                  key={user.id}
-                  className="user-choice"
-                  disabled={busy}
-                  onClick={() => void choose(user)}
-                >
-                  <span className="user-avatar">{initials(user.name)}</span>
-                  <span>
-                    <strong>{user.name}</strong>
-                    <small>
-                      {user.hasPassword ? translate("Password protected") : translate("No password")}
-                    </small>
-                  </span>
-                  {user.hasPassword ? (
-                    <LockKeyhole size={17} />
-                  ) : (
-                    <ArrowRight size={17} />
-                  )}
-                </button>
-              ))}
-            </div>}
-            <button disabled={busy} className={"button create-user-button " + (users.length ? "secondary" : "primary")} onClick={() => setCreating(true)}><Plus size={16} />{translate("Add user")}</button>
-            <button disabled={busy} className="button secondary create-user-button" onClick={() => setImporting(true)}>{translate("Import profile")}</button>
+            {authentication?.enabled && (
+              <div className="auth-divider local-profiles-heading">
+                <span>{translate("Continue with a local profile")}</span>
+              </div>
+            )}
+            {error && (
+              <p className="user-error" role="alert">
+                {translate(error)}
+              </p>
+            )}
+            {users.length > 0 && (
+              <div className="user-list" aria-busy={busy}>
+                {users.map((user) => (
+                  <button
+                    key={user.id}
+                    className="user-choice"
+                    disabled={busy}
+                    onClick={() => void choose(user)}
+                  >
+                    <span className="user-avatar">{initials(user.name)}</span>
+                    <span>
+                      <strong>{user.name}</strong>
+                      <small>
+                        {user.hasPassword
+                          ? translate("Password protected")
+                          : translate("No password")}
+                      </small>
+                    </span>
+                    {user.hasPassword ? (
+                      <LockKeyhole size={17} />
+                    ) : (
+                      <ArrowRight size={17} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              disabled={busy}
+              className={
+                "button create-user-button " +
+                (users.length ? "secondary" : "primary")
+              }
+              onClick={() => setCreating(true)}
+            >
+              <Plus size={16} />
+              {translate("Add user")}
+            </button>
+            <button
+              disabled={busy}
+              className="button secondary create-user-button"
+              onClick={() => setImporting(true)}
+            >
+              {translate("Import profile")}
+            </button>
           </>
         )}
       </section>
       <p className="user-device-note">
         <ShieldCheck size={14} />
-        {browserStorage ? translate("Profiles saved only in this browser. Export a backup regularly.") : translate("Profiles saved in this app.")}
+        {browserStorage
+          ? translate(
+              "Profiles saved only in this browser. Export a backup regularly.",
+            )
+          : translate("Profiles saved in this app.")}
       </p>
       {creating && <CreateUserDialog onClose={() => setCreating(false)} />}
       {importing && <ImportProfileDialog onClose={() => setImporting(false)} />}
-      <div className="install-app-welcome"><InstallApp /></div>
+      <div className="install-app-welcome">
+        <InstallApp />
+      </div>
     </div>
   );
 }

@@ -1,8 +1,5 @@
 import { translate, useLanguage } from "../../i18n";
-import {
-  LockKeyhole,
-  Plus
-} from "lucide-react";
+import { LockKeyhole, Plus } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUsers } from "../../hooks/useUsers";
@@ -10,7 +7,13 @@ import { errorText } from "../../utils/profile";
 import { Dialog } from "../common/Dialog";
 import { PasswordInput } from "./PasswordInput";
 
-export function CreateUserDialog({ onClose, admin = false }: { onClose: () => void; admin?: boolean }) {
+export function CreateUserDialog({
+  onClose,
+  admin = false,
+}: {
+  onClose: () => void;
+  admin?: boolean;
+}) {
   useLanguage();
   const { createUser, createAdmin, busy, currentUser, users } = useUsers();
   const navigate = useNavigate();
@@ -34,14 +37,33 @@ export function CreateUserDialog({ onClose, admin = false }: { onClose: () => vo
       setError(errorText(e));
     }
   }
-  if (admin ? users.some(user => user.role === "admin") : currentUser !== null && currentUser.role !== "admin") return null;
+  if (
+    admin
+      ? users.some((user) => user.role === "admin")
+      : currentUser !== null && currentUser.role !== "admin"
+  )
+    return null;
   return (
-    <Dialog title={admin ? translate("Set up admin account") : translate("Create a user")} onClose={onClose} canClose={!busy}>
+    <Dialog
+      title={
+        admin ? translate("Set up admin account") : translate("Create a user")
+      }
+      onClose={onClose}
+      canClose={!busy}
+    >
       <form className="planner-form" onSubmit={submit}>
         <p className="form-intro">
-          {admin ? translate("Create the admin for this app. Choose a password to manage app settings. Existing user planners stay separate.") : translate("A separate space for their accounts, expenses, income, and payments. New users start with an empty planner.")}
+          {admin
+            ? translate(
+                "Create the admin for this app. Choose a password to manage app settings. Existing user planners stay separate.",
+              )
+            : translate(
+                "A separate space for their accounts, expenses, income, and payments. New users start with an empty planner.",
+              )}
         </p>
-        <label>{translate("User name")}<input
+        <label>
+          {translate("User name")}
+          <input
             autoFocus
             name="name"
             autoComplete="username"
@@ -60,7 +82,9 @@ export function CreateUserDialog({ onClose, admin = false }: { onClose: () => vo
           />
           <span>
             <strong>{translate("Protect with a password")}</strong>
-            <small>{translate("Require a password to open this user's planner.")}</small>
+            <small>
+              {translate("Require a password to open this user's planner.")}
+            </small>
           </span>
           <LockKeyhole size={18} />
         </label>
@@ -78,11 +102,19 @@ export function CreateUserDialog({ onClose, admin = false }: { onClose: () => vo
               autoComplete="new-password"
               minLength={8}
             />
-            <p className="password-note">{translate("Use at least 8 characters. Passwords cannot be recovered, so keep a finance backup in a safe place.")}</p>
+            <p className="password-note">
+              {translate(
+                "Use at least 8 characters. Passwords cannot be recovered, so keep a finance backup in a safe place.",
+              )}
+            </p>
           </>
         )}
         {!protectedUser && (
-          <p className="password-note">{translate("Without a password, anyone with access to this app can open this profile.")}</p>
+          <p className="password-note">
+            {translate(
+              "Without a password, anyone with access to this app can open this profile.",
+            )}
+          </p>
         )}
         {error && (
           <p className="user-error" role="alert">
@@ -95,9 +127,15 @@ export function CreateUserDialog({ onClose, admin = false }: { onClose: () => vo
             className="button secondary"
             disabled={busy}
             onClick={onClose}
-          >{translate("Cancel")}</button>
+          >
+            {translate("Cancel")}
+          </button>
           <button className="button primary" disabled={busy}>
-            {busy ? translate("Creating user…") : admin ? translate("Create admin account") : translate("Create user")}
+            {busy
+              ? translate("Creating user…")
+              : admin
+                ? translate("Create admin account")
+                : translate("Create user")}
             <Plus size={16} />
           </button>
         </div>

@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>savingsOS</title>
+<script>
+  // GitHub Pages deep links return here. Only known private/demo routes are mapped.
+  const base = "/SavingsOS/";
+  const route = location.pathname.startsWith(base) ? location.pathname.slice(base.length) : "";
+  if (/^(admin|demo)(\/|$)/.test(route)) location.replace(base + "#/" + route + location.search);
+  else location.replace(base);
+</script>
+<p>Opening savingsOS…</p></html>

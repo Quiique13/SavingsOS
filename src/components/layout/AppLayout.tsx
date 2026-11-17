@@ -18,6 +18,8 @@ import {
   Sprout,
   Wallet,
   X,
+  UsersRound,
+  Calculator,
 } from "lucide-react";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
@@ -28,6 +30,12 @@ import { Brand } from "../common/Brand";
 import { Dialog } from "../common/Dialog";
 import { ThemeToggle } from "../theme/ThemeControls";
 import { MobileNav } from "./MobileNav";
+import { useTheme } from "../../hooks/useTheme";
+import { isDesignTheme } from "../../utils/appearance";
+import { WorkspacePeriodContext } from "../../context/WorkspacePeriodContext";
+import { WelcomeTour } from "../common/WelcomeTour";
+import { DemoBanner } from "../common/DemoBanner";
+import { useDemo } from "../../context/DemoContext";
 const nav = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/expenses", label: "Expenses", icon: ReceiptText },
@@ -40,7 +48,11 @@ const nav = [
 const SIDEBAR_PREFERENCE = "savingsos-sidebar-collapsed";
 
 export function AppLayout() {
+  const demoMode = useDemo();
   useLanguage();
+  const { uiTheme } = useTheme();
+  const studio = isDesignTheme(uiTheme);
+  const [periodSlot, setPeriodSlot] = useState<HTMLDivElement | null>(null);
   const { data, ready, error, clearDemo } = useFinance();
   const { currentUser, busy: userBusy, saving, signOut } = useUsers();
   const [userError, setUserError] = useState("");
@@ -118,345 +130,403 @@ export function AppLayout() {
     };
   }, [mobile]);
   const [help, setHelp] = useState(false);
+  const [tourRun, setTourRun] = useState(0);
   const [clear, setClear] = useState(false);
   const location = useLocation();
-  const page = nav.find((n) => n.to === location.pathname)?.label || "Settings";
+  const page =
+    nav.find((n) => n.to === location.pathname)?.label ||
+    (location.pathname === "/profile"
+      ? "Profiles & access"
+      : location.pathname === "/simulator"
+        ? "Monthly simulator"
+        : "Settings");
+  const visibleNav = studio
+    ? [...nav.slice(0, 4), nav[5], nav[4], nav[6]]
+    : nav;
   const demo = data.expenses.some((e) => e.demo);
   return (
-    <div className={"finance-app" + (collapsed ? " sidebar-collapsed" : "")}>
-      <a className="skip-link" href="#main-content">
-        {translate("Skip to content")}
-      </a>
-      <aside
-        ref={sidebarRef}
-        id="sidebar-navigation"
-        aria-label={translate("All pages and user options")}
-        role={mobile ? "dialog" : undefined}
-        aria-modal={mobile ? true : undefined}
-        className={"sidebar " + (mobile ? "is-open" : "")}
-      >
-        <Brand onClick={() => setMobile(false)} />
-        {mobile && (
-          <button
-            type="button"
-            className="mobile-close icon-button md:hidden"
-            onClick={() => setMobile(false)}
-            aria-label={translate("Close navigation")}
-          >
-            <X size={20} />
-          </button>
-        )}
-        <span className="nav-section-label">{translate("WORKSPACE")}</span>
-        <nav aria-label={translate("Main navigation")}>
-          {nav.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              aria-label={translate(n.label)}
-              title={translate(n.label)}
-              onClick={() => setMobile(false)}
-              className={({ isActive }) =>
-                isActive ? "nav-link active" : "nav-link"
-              }
-            >
-              <n.icon size={18} aria-hidden="true" />
-              <span>{translate(n.label)}</span>
-              {n.to === "/expenses" && (
-                <span className="nav-count">{data.expenses.length}</span>
-              )}
-            </NavLink>
-          ))}
-        </nav>
-        <details className="sidebar-accounts">
-          <summary>{translate("Account shortcuts")}</summary>
-          <span className="nav-section-label">
-            {translate("YOUR ACCOUNTS")}{" "}
-            <Link to="/accounts" aria-label={translate("Manage accounts")}>
-              <ArrowUpRight size={13} />
-            </Link>
-          </span>
-          {data.accounts.map((a) => (
-            <Link
-              to={a.kind === "Savings" ? "/savings" : "/accounts"}
-              key={a.id}
-              onClick={() => setMobile(false)}
-            >
-              <i style={{ background: a.color }} />
-              {a.name}
-              <span>
-                {a.kind === "Savings"
-                  ? translate("Savings")
-                  : a.kind === "Subscriptions"
-                    ? translate("Bills")
-                    : translate("Everyday")}
-              </span>
-            </Link>
-          ))}
-        </details>
-        <div className="sidebar-bottom">
-          <button className="sidebar-help" onClick={() => setHelp(true)}>
-            <span className="sidebar-help-icon">
-              <CircleHelp size={19} />
-            </span>
-            <strong>{translate("A little guidance?")}</strong>
-            <span>
-              {translate("Get to know your planner") + " "}
-              <ArrowUpRight size={13} />
-            </span>
-          </button>
-          <NavLink
-            to="/settings"
-            aria-label={translate("Settings")}
-            title={translate("Settings")}
-            className={({ isActive }) =>
-              "nav-link " + (isActive ? "active" : "")
-            }
-            onClick={() => setMobile(false)}
-          >
-            <SettingsIcon size={18} />
-            <span>{translate("Settings")}</span>
-          </NavLink>
-          <div className="profile">
-            <span className="profile-avatar">
-              {initials(currentUser!.name)}
-            </span>
-            <div>
-              <strong>{currentUser!.name}</strong>
-              <small>
-                {currentUser!.authProvider === "firebase"
-                  ? translate("Online account")
-                  : currentUser!.hasPassword
-                    ? translate("Password protected")
-                    : translate("Local user profile")}
-              </small>
-            </div>
+    <WorkspacePeriodContext.Provider value={studio ? periodSlot : null}>
+      <div className={"finance-app" + (collapsed ? " sidebar-collapsed" : "")}>
+        <a className="skip-link" href="#main-content">
+          {translate("Skip to content")}
+        </a>
+        <aside
+          ref={sidebarRef}
+          id="sidebar-navigation"
+          aria-label={translate("All pages and user options")}
+          role={mobile ? "dialog" : undefined}
+          aria-modal={mobile ? true : undefined}
+          className={"sidebar " + (mobile ? "is-open" : "")}
+        >
+          <Brand onClick={() => setMobile(false)} />
+          {mobile && (
             <button
               type="button"
-              className="icon-button profile-signout"
-              aria-label={
-                currentUser!.hasPassword
-                  ? translate("Lock and switch user")
-                  : translate("Sign out and switch user")
-              }
-              title={translate("Switch user")}
-              disabled={userBusy}
-              onClick={switchUser}
+              className="mobile-close icon-button md:hidden"
+              onClick={() => setMobile(false)}
+              aria-label={translate("Close navigation")}
             >
-              <LogOut size={16} />
+              <X size={20} />
             </button>
-          </div>
-        </div>
-      </aside>
-      {mobile && (
-        <button
-          className="nav-scrim"
-          onClick={() => setMobile(false)}
-          aria-label={translate("Close navigation")}
-        />
-      )}
-      <div className="main-shell min-w-0" inert={mobile}>
-        <header className="topbar">
-          <div className="breadcrumbs">
-            <button
-              type="button"
-              className="sidebar-toggle icon-button"
-              onClick={toggleSidebar}
-              aria-label={
-                collapsed
-                  ? translate("Expand navigation")
-                  : translate("Collapse navigation")
-              }
-              title={
-                collapsed
-                  ? translate("Expand navigation")
-                  : translate("Collapse navigation")
-              }
-              aria-controls="sidebar-navigation"
-              aria-expanded={!collapsed}
-            >
-              {collapsed ? (
-                <PanelLeftOpen size={19} />
-              ) : (
-                <PanelLeftClose size={19} />
-              )}
-            </button>
-            <button
-              className="mobile-menu icon-button md:hidden"
-              onClick={() => setMobile(true)}
-              aria-label={translate("Open navigation")}
-              aria-controls="sidebar-navigation"
-              aria-expanded={mobile}
-              aria-haspopup="dialog"
-            >
-              <Menu size={20} />
-            </button>
-            <Brand className="mobile-brand" />
-            <span>{translate("My workspace")}</span>
-            <span className="breadcrumb-slash">/</span>
-            <strong>{translate(page)}</strong>
-          </div>
-          <div className="topbar-right">
-            <span className="local-status">
-              <i />
-              {error
-                ? translate("Review storage notice")
-                : saving
-                  ? translate("Saving…")
-                  : ready
-                    ? currentUser!.authProvider === "firebase"
-                      ? translate("Saved to your account")
-                      : translate("Saved in the app")
-                    : translate("Loading your records")}
-            </span>
-            <ThemeToggle />
-            <button
-              className="icon-button"
-              aria-label={translate("About your planner")}
-              onClick={() => setHelp(true)}
-            >
-              <CircleHelp size={18} />
-            </button>
-            <Link
-              to="/settings"
-              className="topbar-avatar"
-              aria-label={translate("Open personal settings")}
-            >
-              {initials(currentUser!.name)}
-            </Link>
-          </div>
-        </header>
-        <main id="main-content" tabIndex={-1} className="page-content min-w-0">
-          {error && (
-            <div className="error-banner" role="alert">
-              {translate(error)}
-            </div>
           )}
-          {!ready ? (
-            <div className="loading-state">
-              <Leaf size={30} />
-              <p>{translate("Loading your workspace…")}</p>
-            </div>
-          ) : (
-            <>
-              {demo && (
-                <div className="demo-banner">
-                  <span>
-                    <span className="demo-badge">
-                      {translate("Sample data")}
-                    </span>
-                    {translate("Explore the planner with example expenses.")}
-                  </span>
-                  <button onClick={() => setClear(true)}>
-                    {translate("Start fresh")}
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-              )}
-              <Suspense
-                fallback={
-                  <div className="loading-state">
-                    <Leaf size={28} />
-                    <p>{translate("Loading page…")}</p>
-                  </div>
+          <span className="nav-section-label">{translate("WORKSPACE")}</span>
+          <nav aria-label={translate("Main navigation")}>
+            {visibleNav.map((n) => (
+              <NavLink
+                key={n.to}
+                to={n.to}
+                aria-label={translate(n.label)}
+                title={translate(n.label)}
+                onClick={() => setMobile(false)}
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
                 }
               >
-                <div className="route-view" key={location.pathname}>
-                  <Outlet />
-                </div>
-              </Suspense>
-            </>
-          )}
-        </main>
-      </div>
-      <MobileNav menuOpen={mobile} />
-      {userError && (
-        <Dialog
-          title={translate("Your changes need attention")}
-          onClose={() => setUserError("")}
-        >
-          <div className="planner-form">
-            <p className="user-error" role="alert">
-              {translate(userError)}
-            </p>
-            <p className="form-intro">
-              {translate(
-                "Your current planner remains open. Export a finance backup from Settings before reloading.",
-              )}
-            </p>
-            <Link
-              className="button primary"
-              to="/settings"
-              onClick={() => setUserError("")}
-            >
-              {translate("Open settings")}
-            </Link>
-          </div>
-        </Dialog>
-      )}
-      {help && (
-        <Dialog
-          title={translate("Using your planner")}
-          onClose={() => setHelp(false)}
-        >
-          <div className="planner-form">
-            <p>
-              {translate(
-                "Add everyday, monthly, or yearly expenses. Pick a due date and account, then click a payment status to record when you paid it.",
-              )}
-            </p>
-            <p>
-              {translate(
-                "Recurring bills get their own payment record each month. Use the calendar to see what's due, and Insights for the annual picture.",
-              )}
-            </p>
-            <p className="form-intro">
-              {currentUser!.authProvider === "firebase"
-                ? translate(
-                    "Accounts are manually tracked. Online records are saved in Firebase; export a backup from Settings to keep a separate copy.",
-                  )
-                : translate(
-                    "Accounts are manually tracked. Data is saved in the app; export a backup from Settings to keep a separate copy.",
-                  )}
-            </p>
-            <button className="button primary" onClick={() => setHelp(false)}>
-              {translate("Got it")}
-              <ShieldCheck size={16} />
+                <n.icon size={18} aria-hidden="true" />
+                <span>{translate(n.label)}</span>
+                {n.to === "/expenses" && (
+                  <span className="nav-count">{data.expenses.length}</span>
+                )}
+              </NavLink>
+            ))}
+          </nav>
+          <details className="sidebar-accounts">
+            <summary>{translate("Account shortcuts")}</summary>
+            <span className="nav-section-label">
+              {translate("YOUR ACCOUNTS")}{" "}
+              <Link to="/accounts" aria-label={translate("Manage accounts")}>
+                <ArrowUpRight size={13} />
+              </Link>
+            </span>
+            {data.accounts.map((a) => (
+              <Link
+                to={a.kind === "Savings" ? "/savings" : "/accounts"}
+                key={a.id}
+                onClick={() => setMobile(false)}
+              >
+                <i style={{ background: a.color }} />
+                {a.name}
+                <span>
+                  {a.kind === "Savings"
+                    ? translate("Savings")
+                    : a.kind === "Subscriptions"
+                      ? translate("Bills")
+                      : translate("Everyday")}
+                </span>
+              </Link>
+            ))}
+          </details>
+          <div className="sidebar-bottom">
+            <button className="sidebar-help" onClick={() => setHelp(true)}>
+              <span className="sidebar-help-icon">
+                <CircleHelp size={19} />
+              </span>
+              <strong>{translate("A little guidance?")}</strong>
+              <span>
+                {translate("Get to know your planner") + " "}
+                <ArrowUpRight size={13} />
+              </span>
             </button>
-          </div>
-        </Dialog>
-      )}
-      {clear && (
-        <Dialog
-          title={translate("Remove sample expenses?")}
-          onClose={() => setClear(false)}
-        >
-          <div className="planner-form">
-            <p>
-              {translate(
-                "Remove the sample expenses and their payment records? Your own entries and accounts will be kept.",
-              )}
-            </p>
-            <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <NavLink
+              to="/settings"
+              aria-label={translate("Settings")}
+              title={translate("Settings")}
+              className={({ isActive }) =>
+                "nav-link " + (isActive ? "active" : "")
+              }
+              onClick={() => setMobile(false)}
+            >
+              <SettingsIcon size={18} />
+              <span>{translate("Settings")}</span>
+            </NavLink>
+            {studio && (
+              <>
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) =>
+                    "nav-link " + (isActive ? "active" : "")
+                  }
+                  onClick={() => setMobile(false)}
+                >
+                  <UsersRound size={18} />
+                  <span>{translate("Profiles & access")}</span>
+                </NavLink>
+                <NavLink
+                  to="/simulator"
+                  className="nav-link studio-mobile-only"
+                  onClick={() => setMobile(false)}
+                >
+                  <Calculator size={18} />
+                  <span>{translate("Monthly simulator")}</span>
+                </NavLink>
+              </>
+            )}
+            <div className="profile">
+              <span className="profile-avatar">
+                {initials(currentUser!.name)}
+              </span>
+              <div>
+                <strong>{currentUser!.name}</strong>
+                <small>
+                  {currentUser!.authProvider === "firebase"
+                    ? translate("Online account")
+                    : currentUser!.hasPassword
+                      ? translate("Password protected")
+                      : translate("Local user profile")}
+                </small>
+              </div>
               <button
-                className="button secondary"
-                onClick={() => setClear(false)}
+                type="button"
+                className="icon-button profile-signout"
+                aria-label={
+                  currentUser!.hasPassword
+                    ? translate("Lock and switch user")
+                    : translate("Sign out and switch user")
+                }
+                title={translate("Switch user")}
+                disabled={userBusy}
+                onClick={switchUser}
               >
-                {translate("Keep exploring")}
-              </button>
-              <button
-                className="button primary"
-                onClick={() => {
-                  clearDemo();
-                  setClear(false);
-                }}
-              >
-                {translate("Remove samples")}
-                <ArrowRight size={16} />
+                <LogOut size={16} />
               </button>
             </div>
           </div>
-        </Dialog>
+        </aside>
+        {mobile && (
+          <button
+            className="nav-scrim"
+            onClick={() => setMobile(false)}
+            aria-label={translate("Close navigation")}
+          />
+        )}
+        <div className="main-shell min-w-0" inert={mobile}>
+          <DemoBanner />
+          <header className="topbar">
+            <div className="breadcrumbs">
+              <button
+                type="button"
+                className="sidebar-toggle icon-button"
+                onClick={toggleSidebar}
+                aria-label={
+                  collapsed
+                    ? translate("Expand navigation")
+                    : translate("Collapse navigation")
+                }
+                title={
+                  collapsed
+                    ? translate("Expand navigation")
+                    : translate("Collapse navigation")
+                }
+                aria-controls="sidebar-navigation"
+                aria-expanded={!collapsed}
+              >
+                {collapsed ? (
+                  <PanelLeftOpen size={19} />
+                ) : (
+                  <PanelLeftClose size={19} />
+                )}
+              </button>
+              <button
+                className="mobile-menu icon-button md:hidden"
+                onClick={() => setMobile(true)}
+                aria-label={translate("Open navigation")}
+                aria-controls="sidebar-navigation"
+                aria-expanded={mobile}
+                aria-haspopup="dialog"
+              >
+                <Menu size={20} />
+              </button>
+              <Brand className="mobile-brand" />
+              <span>{studio ? "savingsOS" : translate("My workspace")}</span>
+              <span className="breadcrumb-slash">/</span>
+              <strong>{translate(page)}</strong>
+            </div>
+            <div className="topbar-right">
+              {studio && (
+                <div className="workspace-period-slot" ref={setPeriodSlot} />
+              )}
+              <span className="local-status">
+                <i />
+                {demoMode ? translate("Demo · not saved") : error
+                  ? translate("Review storage notice")
+                  : saving
+                    ? translate("Saving…")
+                    : ready
+                      ? currentUser!.authProvider === "firebase"
+                        ? translate("Saved to your account")
+                        : translate("Saved in the app")
+                      : translate("Loading your records")}
+              </span>
+              <ThemeToggle />
+              <button
+                className="icon-button"
+                aria-label={translate("About your planner")}
+                onClick={() => setHelp(true)}
+              >
+                <CircleHelp size={18} />
+              </button>
+              <Link
+                to="/settings"
+                className="topbar-avatar"
+                aria-label={translate("Open personal settings")}
+              >
+                {initials(currentUser!.name)}
+              </Link>
+            </div>
+          </header>
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="page-content min-w-0"
+          >
+            {error && (
+              <div className="error-banner" role="alert">
+                {translate(error)}
+              </div>
+            )}
+            {!ready ? (
+              <div className="loading-state">
+                <Leaf size={30} />
+                <p>{translate("Loading your workspace…")}</p>
+              </div>
+            ) : (
+              <>
+                {demo && (
+                  <div className="demo-banner">
+                    <span>
+                      <span className="demo-badge">
+                        {translate("Sample data")}
+                      </span>
+                      {translate("Explore the planner with example expenses.")}
+                    </span>
+                    <button onClick={() => setClear(true)}>
+                      {translate("Start fresh")}
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                )}
+                <Suspense
+                  fallback={
+                    <div className="loading-state">
+                      <Leaf size={28} />
+                      <p>{translate("Loading page…")}</p>
+                    </div>
+                  }
+                >
+                  <div className="route-view" key={location.pathname}>
+                    <Outlet />
+                  </div>
+                </Suspense>
+              </>
+            )}
+          </main>
+        </div>
+        <MobileNav menuOpen={mobile} onOpenMenu={() => setMobile(true)} />
+        {userError && (
+          <Dialog
+            title={translate("Your changes need attention")}
+            onClose={() => setUserError("")}
+          >
+            <div className="planner-form">
+              <p className="user-error" role="alert">
+                {translate(userError)}
+              </p>
+              <p className="form-intro">
+                {translate(
+                  "Your current planner remains open. Export a finance backup from Settings before reloading.",
+                )}
+              </p>
+              <Link
+                className="button primary"
+                to="/settings"
+                onClick={() => setUserError("")}
+              >
+                {translate("Open settings")}
+              </Link>
+            </div>
+          </Dialog>
+        )}
+        {help && (
+          <Dialog
+            title={translate("Using your planner")}
+            onClose={() => setHelp(false)}
+          >
+            <div className="planner-form">
+              <p>
+                {translate(
+                  "Add everyday, monthly, or yearly expenses. Pick a due date and account, then click a payment status to record when you paid it.",
+                )}
+              </p>
+              <p>
+                {translate(
+                  "Recurring bills get their own payment record each month. Use the calendar to see what's due, and Insights for the annual picture.",
+                )}
+              </p>
+              <p className="form-intro">
+                {currentUser!.authProvider === "firebase"
+                  ? translate(
+                      "Accounts are manually tracked. Online records are saved in Firebase; export a backup from Settings to keep a separate copy.",
+                    )
+                  : translate(
+                      "Accounts are manually tracked. Data is saved in the app; export a backup from Settings to keep a separate copy.",
+                    )}
+              </p>
+              <button className="button primary" onClick={() => setHelp(false)}>
+                {translate("Got it")}
+                <ShieldCheck size={16} />
+              </button>
+              <button
+                className="button secondary"
+                onClick={() => {
+                  setHelp(false);
+                  setTourRun((value) => value + 1);
+                }}
+              >
+                {translate("Replay tutorial")}
+              </button>
+            </div>
+          </Dialog>
+        )}
+        {clear && (
+          <Dialog
+            title={translate("Remove sample expenses?")}
+            onClose={() => setClear(false)}
+          >
+            <div className="planner-form">
+              <p>
+                {translate(
+                  "Remove the sample expenses and their payment records? Your own entries and accounts will be kept.",
+                )}
+              </p>
+              <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button
+                  className="button secondary"
+                  onClick={() => setClear(false)}
+                >
+                  {translate("Keep exploring")}
+                </button>
+                <button
+                  className="button primary"
+                  onClick={() => {
+                    clearDemo();
+                    setClear(false);
+                  }}
+                >
+                  {translate("Remove samples")}
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          </Dialog>
+        )}
+      </div>
+      {currentUser && ready && !error && (!demoMode || tourRun > 0) && (
+        <WelcomeTour
+          key={`${currentUser.id}:${tourRun}`}
+          userId={currentUser.id}
+          replay={tourRun > 0}
+        />
       )}
-    </div>
+    </WorkspacePeriodContext.Provider>
   );
 }

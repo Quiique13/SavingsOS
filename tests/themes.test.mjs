@@ -5,34 +5,26 @@ import { JSDOM } from "jsdom";
 import { createServer } from "vite";
 import postcss from "postcss";
 
-test("High Contrast palettes keep text at least 7:1 against their surfaces", () => {
-  const css = postcss.parse(readFileSync("src/styles/ui-themes.css", "utf8"));
-  const palette = {};
+test("preview theme text and buttons maintain accessible contrast in both modes", () => {
+  const css = postcss.parse(readFileSync("src/styles/flow.css", "utf8"));
   const luminance = hex => {
-    const channels = hex.replace("#", "").match(/../g).map(value => {
-      const channel = parseInt(value, 16) / 255;
-      return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    const c = hex.replace("#", "").match(/../g).map(v => {
+      const n = parseInt(v,16)/255;
+      return n <= .04045 ? n/12.92 : ((n+.055)/1.055)**2.4;
     });
-    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+    return c[0]*.2126+c[1]*.7152+c[2]*.0722;
   };
-  const contrast = (a, b) => {
-    const values = [luminance(a), luminance(b)].sort((x, y) => y - x);
-    return (values[0] + 0.05) / (values[1] + 0.05);
-  };
-  for (const mode of ["light", "dark"]) {
-    const selector = ':root[data-ui-theme="high-contrast"]' + (mode === "dark" ? '[data-theme="dark"]' : "");
-    css.walkRules(selector, rule => rule.walkDecls(declaration => { palette[declaration.prop] = declaration.value; }));
-    for (const surface of ["--ui-canvas", "--ui-surface", "--ui-soft"]) {
-      for (const text of ["--ui-ink", "--ui-muted", "--ui-accent"]) {
-        assert.ok(contrast(palette[text], palette[surface]) >= 7, `${mode}: ${text} on ${surface}`);
+  const contrast = (a,b) => {const c=[luminance(a),luminance(b)].sort((x,y)=>y-x);return (c[0]+.05)/(c[1]+.05);};
+  for (const theme of ["flow","paper-ledger","signal-studio"]) {
+    const palette = {};
+    for (const mode of ["light","dark"]) {
+      const selector = ':root[data-ui-theme="'+theme+'"]' + (mode === "dark" ? '[data-theme="dark"]' : "");
+      css.walkRules(selector, rule => rule.walkDecls(d => {palette[d.prop]=d.value;}));
+      for (const surface of ["--ui-canvas","--ui-surface","--ui-soft"]) {
+        for (const text of ["--ui-ink","--ui-muted"]) assert.ok(contrast(palette[text],palette[surface]) >= 4.5, theme+" "+mode+": "+text+" on "+surface);
       }
+      assert.ok(contrast(palette["--ui-on-accent"],palette["--ui-accent"]) >= 4.5, theme+" "+mode+" button");
     }
-    assert.ok(contrast(palette["--ui-on-accent"], palette["--ui-accent"]) >= 7, `${mode}: button labels`);
-    for (const text of ["--color-success", "--color-warning", "--color-danger"]) {
-      assert.ok(contrast(palette[text], palette["--ui-surface"]) >= 7, `${mode}: ${text}`);
-    }
-    assert.ok(contrast(palette["--ui-border"], palette["--ui-surface"]) >= 3, `${mode}: boundaries`);
-    assert.ok(contrast(palette["--color-focus"], palette["--ui-surface"]) >= 3, `${mode}: focus ring`);
   }
 });
 
@@ -75,7 +67,8 @@ test("UI themes preserve existing palettes, persist, and synchronize across tabs
       assert.equal(current().theme, "dark");
       assert.equal(current().colorScheme, "sage");
       assert.equal(canvas(), "#19211d");
-      assert.equal(container.querySelectorAll(".ui-theme-option").length, 7);
+      assert.equal(container.querySelectorAll(".ui-theme-option").length, 4);
+      assert.deepEqual(uiThemes.map(t => t.id), ["default", "flow", "paper-ledger", "signal-studio"]);
       assert.equal(container.querySelectorAll(".scheme-option").length, 6);
     });
     await t.test("every family supports both modes, selected state, and reload persistence", async () => {
@@ -102,11 +95,11 @@ test("UI themes preserve existing palettes, persist, and synchronize across tabs
       assert.equal(container.querySelector('.scheme-option[aria-pressed="true"]').dataset.scheme, "sage");
     });
     await t.test("storage events update all appearance axes, including clearing preferences", async () => {
-      localStorage.setItem("savings-os-ui-theme", "terminal");
-      await act(async () => dom.window.dispatchEvent(new dom.window.StorageEvent("storage", { key: "savings-os-ui-theme", newValue: "terminal" })));
-      assert.equal(current().uiTheme, "terminal");
+      localStorage.setItem("savings-os-ui-theme", "signal-studio");
+      await act(async () => dom.window.dispatchEvent(new dom.window.StorageEvent("storage", { key: "savings-os-ui-theme", newValue: "signal-studio" })));
+      assert.equal(current().uiTheme, "signal-studio");
       assert.equal(current().theme, "dark");
-      assert.equal(canvas(), "#0c1710");
+      assert.equal(canvas(), "#0a1013");
       localStorage.clear();
       await act(async () => dom.window.dispatchEvent(new dom.window.StorageEvent("storage", { key: null })));
       assert.equal(current().uiTheme, "default");
@@ -114,7 +107,7 @@ test("UI themes preserve existing palettes, persist, and synchronize across tabs
       assert.equal(current().theme, "light");
     });
     await t.test("invalid saved values fall back safely", async () => {
-      localStorage.setItem("savings-os-ui-theme", "toString");
+      localStorage.setItem("savings-os-ui-theme", "aurora");
       localStorage.setItem("savings-os-color-scheme", "missing");
       await mount();
       assert.equal(current().uiTheme, "default");
@@ -127,11 +120,11 @@ test("UI themes preserve existing palettes, persist, and synchronize across tabs
       prototype.setItem = () => { throw new Error("Storage unavailable"); };
       try {
         await mount();
-        await click('.ui-theme-option[data-ui-option="high-contrast"]');
+        await click('.ui-theme-option[data-ui-option="paper-ledger"]');
         await click('.theme-option:has(.preview-dark)');
-        assert.equal(current().uiTheme, "high-contrast");
+        assert.equal(current().uiTheme, "paper-ledger");
         assert.equal(current().theme, "dark");
-        assert.equal(canvas(), "#000000");
+        assert.equal(canvas(), "#24211c");
       } finally {
         prototype.getItem = getItem;
         prototype.setItem = setItem;

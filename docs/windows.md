@@ -1,6 +1,6 @@
 # savingsOS for Windows
 
-[Download the portable executable](https://github.com/Quiique13/SavingsOS/releases/download/v1.2.0/savingsOS-1.2.0-windows-x64-portable.exe) · [Download the installer](https://github.com/Quiique13/SavingsOS/releases/download/v1.2.0/savingsOS-1.2.0-windows-x64-setup.exe) · [All releases and SHA-256 checksums](https://github.com/Quiique13/SavingsOS/releases)
+[Download the portable executable](https://github.com/Quiique13/SavingsOS/releases/download/v1.3.0/savingsOS-1.3.0-windows-x64-portable.exe) · [Download the installer](https://github.com/Quiique13/SavingsOS/releases/download/v1.3.0/savingsOS-1.3.0-windows-x64-setup.exe) · [All releases and SHA-256 checksums](https://github.com/Quiique13/SavingsOS/releases)
 
 Requires Windows x64 and a modern browser. Node.js is bundled: users do not need to install development tools. The downloads are unsigned.
 

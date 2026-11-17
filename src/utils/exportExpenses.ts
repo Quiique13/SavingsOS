@@ -1,3 +1,4 @@
+import { currencyLabel } from "./currency";
 import { exportFile } from "../services/exportFile";
 import type { Account } from "../types/finance";
 import { type Row } from "../types/finance";
@@ -17,7 +18,7 @@ export async function exportCSV(
       "Frequency",
       "Status",
       "Paid date",
-    ].map(heading => translate(heading)),
+    ].map(heading => currencyLabel(translate(heading))),
     ...rows.map((r) => [
       r.name,
       r.amount,

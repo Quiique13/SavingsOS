@@ -1,5 +1,7 @@
 import { translate, useLanguage } from "../../i18n";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { createPortal } from "react-dom";
+import { WorkspacePeriodContext } from "../../context/WorkspacePeriodContext";
 import { Popover } from "radix-ui";
 import {
   CalendarDays,
@@ -12,11 +14,14 @@ import { dateLabel, monthLabel, shiftMonth, today } from "../../utils/finance";
 export function MonthPicker({
   month,
   setMonth,
+  inline = false,
 }: {
   month: string;
   setMonth: (m: string) => void;
+  inline?: boolean;
 }) {
   useLanguage();
+  const headerSlot = useContext(WorkspacePeriodContext);
   const [open, setOpen] = useState(false);
   const [year, setYear] = useState(Number(month.slice(0, 4)));
   const currentMonth = today().slice(0, 7);
@@ -25,7 +30,7 @@ export function MonthPicker({
     setMonth(value);
     setOpen(false);
   }
-  return (
+  const picker = (
     <div className="month-picker">
       <button
         type="button"
@@ -71,4 +76,5 @@ export function MonthPicker({
       </button>
     </div>
   );
+  return headerSlot && !inline ? createPortal(picker, headerSlot) : picker;
 }

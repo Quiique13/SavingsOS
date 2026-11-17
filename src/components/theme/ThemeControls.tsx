@@ -42,7 +42,11 @@ export function AppearanceSettings() {
         </p>
         <div className="ui-theme-heading">
           <h3 className="appearance-label">{translate("App theme")}</h3>
-          <span>{translate("7 distinct looks. One familiar planner.")}</span>
+          <span>
+            {translate("{{count}} distinct looks. One familiar planner.", {
+              count: uiThemes.length,
+            })}
+          </span>
         </div>
         <div
           className="ui-theme-options"
