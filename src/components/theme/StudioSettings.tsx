@@ -15,6 +15,7 @@ import { LanguageSettings } from "./LanguageSettings";
 import { CurrencySettings } from "./CurrencySettings";
 import { useCurrency } from "../../utils/currency";
 import { useDemo } from "../../context/DemoContext";
+import { SettingsSaveBar } from "./SettingsSaveBar";
 
 type Props = {
   online: boolean;
@@ -44,6 +45,7 @@ export function StudioSettings(props: Props) {
           {translate("Profile & security")}
         </button>
       </PageHeading>
+      <SettingsSaveBar />
       {props.message && (
         <p className="status-message" role="status">
           {translate(props.message)}

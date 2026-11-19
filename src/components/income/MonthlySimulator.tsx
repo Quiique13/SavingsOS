@@ -1,3 +1,4 @@
+import { NumberPop } from "../common/NumberPop";
 import { currencyLabel } from "../../utils/currency";
 import { studioMoney } from "../../utils/studio";
 import { useTheme } from "../../hooks/useTheme";
@@ -152,7 +153,7 @@ export function MonthlySimulator({ month }: { month: string }) {
               (result && result.left < 0 ? " is-negative" : "")
             }
           >
-            {result ? formatMoney(result.left) : "—"}
+            <NumberPop value={result ? formatMoney(result.left) : "—"} />
           </strong>
           <span className="simulator-outcome">
             {result

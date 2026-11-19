@@ -7,8 +7,8 @@ Plan spending, track bills and income, and manage your accounts.
 | How would you like to use it? | Download or open |
 | --- | --- |
 | Web browser | **[Open savingsOS](https://quiique13.github.io/SavingsOS/)** |
-| Windows x64, no installation | **[Download portable executable](https://github.com/Quiique13/SavingsOS/releases/download/v1.3.0/savingsOS-1.3.0-windows-x64-portable.exe)** |
-| Windows x64, with shortcuts | **[Download installer](https://github.com/Quiique13/SavingsOS/releases/download/v1.3.0/savingsOS-1.3.0-windows-x64-setup.exe)** |
+| Windows x64, no installation | **[Download portable executable](https://github.com/Quiique13/SavingsOS/releases/download/v1.3.1/savingsOS-1.3.1-windows-x64-portable.exe)** |
+| Windows x64, with shortcuts | **[Download installer](https://github.com/Quiique13/SavingsOS/releases/download/v1.3.1/savingsOS-1.3.1-windows-x64-setup.exe)** |
 | Android | **[Download APK](https://github.com/Quiique13/SavingsOS/releases/latest/download/savingsOS.apk)** |
 | All versions and checksums | [GitHub Releases](https://github.com/Quiique13/SavingsOS/releases) |
 

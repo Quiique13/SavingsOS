@@ -1,12 +1,13 @@
 import { currencyLabel } from "../../utils/currency";
 import { categoryLabel, translate, useLanguage } from "../../i18n";
 import { Plus, Trash2 } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useFinance } from "../../hooks/useFinance";
 import { type Expense } from "../../types/finance";
 import { categories, today } from "../../utils/finance";
 import { Dialog } from "../common/Dialog";
+import { useSuccess } from "../../context/SuccessContext";
 
 export function ExpenseForm({
   expense,
@@ -18,16 +19,22 @@ export function ExpenseForm({
   onClose: () => void;
 }) {
   useLanguage();
-  const { data, update } = useFinance();
+  const { data, update, save: saveData } = useFinance();
+  const success = useSuccess();
+  const [draftId] = useState(() => expense?.id ?? crypto.randomUUID());
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const working = useRef(false);
   const [frequency, setFrequency] = useState<Expense["frequency"]>(
     expense?.frequency ?? "monthly",
   );
   const [deleting, setDeleting] = useState(false);
-  function save(e: FormEvent<HTMLFormElement>) {
+  async function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (working.current) return;
     const f = new FormData(e.currentTarget);
     const entry: Expense = {
-      id: expense?.id ?? crypto.randomUUID(),
+      id: draftId,
       name: String(f.get("name")).trim(),
       amount: Number(f.get("amount")),
       category: String(f.get("category")),
@@ -43,13 +50,24 @@ export function ExpenseForm({
       !data.accounts.some((a) => a.id === entry.accountId)
     )
       return;
-    update((d) => ({
-      ...d,
-      expenses: expense
-        ? d.expenses.map((e) => (e.id === expense.id ? entry : e))
-        : [...d.expenses, entry],
-    }));
-    onClose();
+    working.current = true;
+    setSaving(true);
+    setSaveError("");
+    try {
+      await saveData((d) => ({
+        ...d,
+        expenses: d.expenses.some(item => item.id === entry.id)
+          ? d.expenses.map(item => item.id === entry.id ? entry : item)
+          : [...d.expenses, entry],
+      }));
+      onClose();
+      success("Expense saved.");
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "This expense could not be saved. Your form is still here; try again.");
+    } finally {
+      working.current = false;
+      setSaving(false);
+    }
   }
   function remove() {
     update((d) => ({
@@ -79,8 +97,10 @@ export function ExpenseForm({
     <Dialog
       title={expense ? translate("Edit expense") : translate("Add an expense")}
       onClose={onClose}
+      canClose={!saving}
     >
       <form onSubmit={save} className="planner-form">
+        <fieldset className="contents" disabled={saving}>
         <p className="form-intro">
           {expense
             ? translate(
@@ -229,15 +249,17 @@ export function ExpenseForm({
             )}
           </div>
         )}
+        {saveError && <p className="user-error" role="alert">{translate(saveError)}</p>}
         <div className="dialog-actions flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" className="button secondary" onClick={onClose}>
             {translate("Cancel")}
           </button>
-          <button className="button primary">
-            {expense ? translate("Save changes") : translate("Add expense")}
+          <button className="button primary" disabled={saving}>
+            {saving ? translate("Saving…") : expense ? translate("Save changes") : translate("Add expense")}
             <Plus size={16} />
           </button>
         </div>
+        </fieldset>
       </form>
     </Dialog>
   );

@@ -1,3 +1,4 @@
+import { NumberPop } from "../components/common/NumberPop";
 import { studioMoney } from "../utils/studio";
 import { useTheme } from "../hooks/useTheme";
 import { isDesignTheme } from "../utils/appearance";
@@ -89,7 +90,7 @@ export function Insights() {
             {translate("Yearly planned expenses")}
             <ReceiptText size={17} />
           </div>
-          <div className="stat-value">{formatMoney(total)}</div>
+          <div className="stat-value"><NumberPop value={formatMoney(total)} /></div>
           <p>
             {translate("All scheduled expenses in") + " "}
             {year}
@@ -100,7 +101,7 @@ export function Insights() {
             {translate("Paid so far")}
             <Check size={17} />
           </div>
-          <div className="stat-value">{formatMoney(paid)}</div>
+          <div className="stat-value"><NumberPop value={formatMoney(paid)} /></div>
           <p>
             {translate("Recorded payments for") + " "}
             {year}
@@ -112,7 +113,7 @@ export function Insights() {
             {translate("Recurring monthly equivalent")}
             <TrendingUp size={17} />
           </div>
-          <div className="stat-value">{formatMoney(recurring)}</div>
+          <div className="stat-value"><NumberPop value={formatMoney(recurring)} /></div>
           <p>{translate("Current recurring bills · annual costs ÷ 12")}</p>
         </div>
       </div>

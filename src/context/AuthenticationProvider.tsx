@@ -15,7 +15,7 @@ import type { ProfileBackend } from "../services/cloudProfileStore";
 import { firebaseError } from "../services/firebaseErrors";
 import { AuthenticationContext } from "./AuthenticationContext";
 import { UsersProvider } from "./UsersProvider";
-import { translate, useLanguage } from "../i18n";
+import { useLanguage } from "../i18n";
 
 export function AuthenticationProvider({ children }: { children: ReactNode }) {
   useLanguage();
@@ -143,15 +143,9 @@ export function AuthenticationProvider({ children }: { children: ReactNode }) {
   };
   return (
     <AuthenticationContext.Provider value={value}>
-      {ready ? (
-        <UsersProvider key={user?.uid ?? "local"} backend={backend}>
+        <UsersProvider key={user?.uid ?? "local"} backend={backend} enabled={ready}>
           {children}
         </UsersProvider>
-      ) : (
-        <div className="loading-state">
-          <p>{translate("Opening your space...")}</p>
-        </div>
-      )}
     </AuthenticationContext.Provider>
   );
 }

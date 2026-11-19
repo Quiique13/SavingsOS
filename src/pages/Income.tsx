@@ -1,3 +1,4 @@
+import { NumberPop } from "../components/common/NumberPop";
 import { currencyLabel } from "../utils/currency";
 import { translate, useLanguage } from "../i18n";
 import { Pencil, Plus, TrendingUp } from "lucide-react";
@@ -14,9 +15,11 @@ import { dateLabel, money, monthLabel, today } from "../utils/finance";
 import { useTheme } from "../hooks/useTheme";
 import { isDesignTheme } from "../utils/appearance";
 import { studioMoney } from "../utils/studio";
+import { useSuccess } from "../context/SuccessContext";
 
 export function IncomePage() {
   useLanguage();
+  const success = useSuccess();
   const { uiTheme } = useTheme();
   const studio = isDesignTheme(uiTheme);
   const { data, save: saveData } = useFinance();
@@ -93,6 +96,7 @@ export function IncomePage() {
         }),
       );
       setEditing(null);
+      success("Income saved.");
     } catch (error) {
       setSaveError(
         error instanceof Error
@@ -154,17 +158,17 @@ export function IncomePage() {
         </p>
       )}
       {studio && <div className="studio-income-summary">
-        <article className="stat-card studio-highlight"><div className="stat-label">{translate("Income available")}</div><strong className="stat-value">{studioMoney(budget.income)}</strong><p>{translate("Received in {{month}}", { month: monthLabel(budget.incomeMonth) })}</p></article>
-        <article className="stat-card"><div className="stat-label">{translate("Receipts")}</div><strong className="stat-value">{rows.length}</strong><p>{translate("Income funding this month")}</p></article>
+        <article className="stat-card studio-highlight"><div className="stat-label">{translate("Income available")}</div><strong className="stat-value"><NumberPop value={studioMoney(budget.income)} /></strong><p>{translate("Received in {{month}}", { month: monthLabel(budget.incomeMonth) })}</p></article>
+        <article className="stat-card"><div className="stat-label">{translate("Receipts")}</div><strong className="stat-value"><NumberPop value={rows.length} /></strong><p>{translate("Income funding this month")}</p></article>
         <article className="stat-card"><div className="stat-label">{translate("Latest funded month")}</div><button className="stat-value text-button" disabled={!latestIncomeMonth} onClick={() => latestIncomeMonth && setMonth(latestIncomeMonth)}>{latestIncomeMonth ? dateLabel(latestIncomeMonth + "-01", { month: "short", year: "numeric" }) : "—"}</button><p>{translate("Jump to latest")}</p></article>
-        <article className="stat-card"><div className="stat-label">{translate("Planned expenses")}</div><strong className="stat-value">{studioMoney(budget.planned)}</strong><p>{translate("Left after expenses")}: {studioMoney(budget.leftAfterExpenses)}</p></article>
+        <article className="stat-card"><div className="stat-label">{translate("Planned expenses")}</div><strong className="stat-value"><NumberPop value={studioMoney(budget.planned)} /></strong><p>{translate("Left after expenses")}: {studioMoney(budget.leftAfterExpenses)}</p></article>
       </div>}
       {!studio && <div className="stat-card income-stat">
         <div className="stat-label">
           {translate("Income available")}
           <TrendingUp size={18} />
         </div>
-        <div className="stat-value">{money(budget.income)}</div>
+        <div className="stat-value"><NumberPop value={money(budget.income)} /></div>
         <p>
           {translate("{{count}} entries received in {{month}}", {
             count: rows.length,

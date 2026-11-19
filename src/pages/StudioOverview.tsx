@@ -1,3 +1,4 @@
+import { NumberPop } from "../components/common/NumberPop";
 import { categoryLabel, translate, useLanguage } from "../i18n";
 import {
   ArrowDownLeft,
@@ -211,9 +212,7 @@ export function StudioOverview() {
         <div className="concept-overview">
           <section className="concept-statement">
             <span className="eyebrow">{translate("Left after expenses")}</span>
-            <strong className="concept-amount">
-              {money(budget.leftAfterExpenses)}
-            </strong>
+            <strong className="concept-amount"><NumberPop value={money(budget.leftAfterExpenses)} /></strong>
             <p>{translate("Last month's income minus this month's plan")}</p>
             <p>{translate("Planning estimate, not bank balance")}</p>
             {uiTheme === "signal-studio" && (
@@ -324,7 +323,7 @@ export function StudioOverview() {
               <div>
                 <span className="eyebrow">{translate("Paid so far")}</span>
                 <strong>
-                  {money(paid)} <small>/ {money(total)}</small>
+                  <NumberPop value={money(paid)} /> <small>/ {money(total)}</small>
                 </strong>
                 <p>
                   {translate("{{amount}} still to pay", {
@@ -341,7 +340,7 @@ export function StudioOverview() {
                   aria-valuemax={100}
                   aria-valuenow={paidPercent}
                 >
-                  <ResponsiveContainer width="100%" height={160}>
+                  <ResponsiveContainer width="100%" aspect={1}>
                     <PieChart accessibilityLayer={false}>
                       <Pie
                         data={[
@@ -349,8 +348,8 @@ export function StudioOverview() {
                           { value: total ? total - paid : 1 },
                         ]}
                         dataKey="value"
-                        innerRadius={59}
-                        outerRadius={77}
+                        innerRadius="74%"
+                        outerRadius="96%"
                         startAngle={90}
                         endAngle={-270}
                         stroke="none"
@@ -383,7 +382,7 @@ export function StudioOverview() {
                 <Wallet size={18} />
               </span>
             </div>
-            <strong className="summary-value">{money(balance)}</strong>
+            <strong className="summary-value"><NumberPop value={money(balance)} /></strong>
             <div className="summary-foot">
               <span>
                 {translate(
@@ -408,7 +407,7 @@ export function StudioOverview() {
                 <ArrowDownLeft size={18} />
               </span>
             </div>
-            <strong className="summary-value">{money(income)}</strong>
+            <strong className="summary-value"><NumberPop value={money(income)} /></strong>
             <div className="summary-foot">
               <span>
                 {translate("Received in {{month}}", {
@@ -430,7 +429,7 @@ export function StudioOverview() {
                 <ReceiptText size={18} />
               </span>
             </div>
-            <strong className="summary-value">{money(total)}</strong>
+            <strong className="summary-value"><NumberPop value={money(total)} /></strong>
             <div className="summary-foot">
               <span>
                 {translate("{{amount}} still to pay", {
@@ -453,9 +452,7 @@ export function StudioOverview() {
                 <Sprout size={18} />
               </span>
             </div>
-            <strong className="summary-value">
-              {money(budget.leftAfterExpenses)}
-            </strong>
+            <strong className="summary-value"><NumberPop value={money(budget.leftAfterExpenses)} /></strong>
             <div className="summary-foot">
               <span>{translate("Planning estimate, not bank balance")}</span>
             </div>
@@ -732,7 +729,7 @@ export function StudioOverview() {
             </div>
           </div>
           <div className="flow-progress-body">
-            <strong>{money(paid)}</strong>
+            <strong><NumberPop value={money(paid)} /></strong>
             <span>{translate("Paid")}</span>
             <div className="progress-caption">
               <b>{paidPercent}%</b>
@@ -770,14 +767,14 @@ export function StudioOverview() {
                     translate("Planned expenses") + ": " + money(total)
                   }
                 >
-                  <ResponsiveContainer width="100%" height={150}>
+                  <ResponsiveContainer width="100%" aspect={1}>
                     <PieChart>
                       <Pie
                         data={categories}
                         dataKey="value"
                         nameKey="name"
-                        innerRadius={49}
-                        outerRadius={70}
+                        innerRadius="67%"
+                        outerRadius="96%"
                         stroke="none"
                         isAnimationActive={false}
                       >
@@ -788,7 +785,7 @@ export function StudioOverview() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="flow-donut-total">
-                    <strong>{money(total)}</strong>
+                    <strong><NumberPop value={money(total)} /></strong>
                     <small>{translate("Planned")}</small>
                   </div>
                 </div>
@@ -927,7 +924,7 @@ export function StudioOverview() {
             </div>
           </div>
           <div className="flow-scenario-body">
-            <strong>{money(budget.leftAfterExpenses)}</strong>
+            <strong><NumberPop value={money(budget.leftAfterExpenses)} /></strong>
             <p>{translate("Left after planned spending")}</p>
           </div>
           <div className="flow-simulator">
@@ -943,7 +940,7 @@ export function StudioOverview() {
           </span>
           <span>
             <small>{translate("A LITTLE TODAY. MORE TOMORROW.")}</small>
-            <strong>{money(savings)}</strong>
+            <strong><NumberPop value={money(savings)} /></strong>
             <span>{translate("Set aside in savings")}</span>
           </span>
           <ArrowUpRight size={19} />

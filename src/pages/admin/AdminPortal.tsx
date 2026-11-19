@@ -2,6 +2,7 @@ import { translate, useLanguage } from "../../i18n";
 import { ArrowLeft, LockKeyhole, LogOut, ShieldCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { LoadingReveal } from "../../components/common/LoadingSkeleton";
 import { Brand } from "../../components/common/Brand";
 import { ThemeToggle } from "../../components/theme/ThemeControls";
 import { CreateUserDialog } from "../../components/users/CreateUserDialog";
@@ -59,12 +60,7 @@ export function AdminPortal() {
       );
     }
   }
-  if (!ready)
-    return (
-      <div className="loading-state">
-        <p>{translate("Opening admin…")}</p>
-      </div>
-    );
+  if (!ready) return <LoadingReveal loading fullscreen page="/admin">{null}</LoadingReveal>;
   if (currentUser?.authProvider === "firebase")
     return <Navigate to="/dashboard" replace />;
   if (currentUser?.role === "admin" && !bootError)

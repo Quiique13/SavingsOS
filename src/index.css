@@ -18,6 +18,9 @@
 @import "./styles/expense-frequency.css";
 @import "./styles/welcome-tour.css";
 @import "./styles/account-tools.css";
+@import "./styles/skeleton.css";
+@import "./styles/number-pop.css";
+@import "./styles/save-feedback.css";
 
 /* Tailwind scans the active app; use complete utility names in JSX. */
 @source "./";

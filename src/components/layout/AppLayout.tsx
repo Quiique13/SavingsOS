@@ -7,7 +7,6 @@ import {
   ChartNoAxesCombined,
   CircleHelp,
   LayoutDashboard,
-  Leaf,
   LogOut,
   Menu,
   PanelLeftClose,
@@ -21,7 +20,7 @@ import {
   UsersRound,
   Calculator,
 } from "lucide-react";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useFinance } from "../../hooks/useFinance";
 import { useUsers } from "../../hooks/useUsers";
@@ -34,6 +33,7 @@ import { useTheme } from "../../hooks/useTheme";
 import { isDesignTheme } from "../../utils/appearance";
 import { WorkspacePeriodContext } from "../../context/WorkspacePeriodContext";
 import { WelcomeTour } from "../common/WelcomeTour";
+import { SkeletonSuspense } from "../common/LoadingSkeleton";
 import { DemoBanner } from "../common/DemoBanner";
 import { useDemo } from "../../context/DemoContext";
 const nav = [
@@ -135,7 +135,9 @@ export function AppLayout() {
   const location = useLocation();
   const page =
     nav.find((n) => n.to === location.pathname)?.label ||
-    (location.pathname === "/profile"
+    (location.pathname === "/"
+      ? "Overview"
+      : location.pathname === "/profile"
       ? "Profiles & access"
       : location.pathname === "/simulator"
         ? "Monthly simulator"
@@ -263,14 +265,14 @@ export function AppLayout() {
             )}
             <div className="profile">
               <span className="profile-avatar">
-                {initials(currentUser!.name)}
+                {initials((currentUser?.name ?? ""))}
               </span>
               <div>
-                <strong>{currentUser!.name}</strong>
+                <strong>{(currentUser?.name ?? "")}</strong>
                 <small>
-                  {currentUser!.authProvider === "firebase"
+                  {currentUser?.authProvider === "firebase"
                     ? translate("Online account")
-                    : currentUser!.hasPassword
+                    : currentUser?.hasPassword
                       ? translate("Password protected")
                       : translate("Local user profile")}
                 </small>
@@ -279,12 +281,12 @@ export function AppLayout() {
                 type="button"
                 className="icon-button profile-signout"
                 aria-label={
-                  currentUser!.hasPassword
+                  currentUser?.hasPassword
                     ? translate("Lock and switch user")
                     : translate("Sign out and switch user")
                 }
                 title={translate("Switch user")}
-                disabled={userBusy}
+                disabled={userBusy || !ready}
                 onClick={switchUser}
               >
                 <LogOut size={16} />
@@ -352,7 +354,7 @@ export function AppLayout() {
                   : saving
                     ? translate("Saving…")
                     : ready
-                      ? currentUser!.authProvider === "firebase"
+                      ? currentUser?.authProvider === "firebase"
                         ? translate("Saved to your account")
                         : translate("Saved in the app")
                       : translate("Loading your records")}
@@ -370,7 +372,7 @@ export function AppLayout() {
                 className="topbar-avatar"
                 aria-label={translate("Open personal settings")}
               >
-                {initials(currentUser!.name)}
+                {initials((currentUser?.name ?? ""))}
               </Link>
             </div>
           </header>
@@ -384,12 +386,7 @@ export function AppLayout() {
                 {translate(error)}
               </div>
             )}
-            {!ready ? (
-              <div className="loading-state">
-                <Leaf size={30} />
-                <p>{translate("Loading your workspace…")}</p>
-              </div>
-            ) : (
+            <SkeletonSuspense pending={!ready} page={location.pathname} uiTheme={uiTheme}>
               <>
                 {demo && (
                   <div className="demo-banner">
@@ -405,20 +402,11 @@ export function AppLayout() {
                     </button>
                   </div>
                 )}
-                <Suspense
-                  fallback={
-                    <div className="loading-state">
-                      <Leaf size={28} />
-                      <p>{translate("Loading page…")}</p>
-                    </div>
-                  }
-                >
                   <div className="route-view" key={location.pathname}>
                     <Outlet />
                   </div>
-                </Suspense>
               </>
-            )}
+            </SkeletonSuspense>
           </main>
         </div>
         <MobileNav menuOpen={mobile} onOpenMenu={() => setMobile(true)} />
@@ -463,7 +451,7 @@ export function AppLayout() {
                 )}
               </p>
               <p className="form-intro">
-                {currentUser!.authProvider === "firebase"
+                {currentUser?.authProvider === "firebase"
                   ? translate(
                       "Accounts are manually tracked. Online records are saved in Firebase; export a backup from Settings to keep a separate copy.",
                     )

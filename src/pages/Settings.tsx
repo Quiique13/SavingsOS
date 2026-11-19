@@ -28,8 +28,14 @@ import { useTheme } from "../hooks/useTheme";
 import { isDesignTheme } from "../utils/appearance";
 import { StudioSettings } from "../components/theme/StudioSettings";
 import { isValidBackup, today } from "../utils/finance";
+import { SettingsDraftProvider } from "../context/SettingsDraftProvider";
+import { SettingsSaveBar } from "../components/theme/SettingsSaveBar";
 
 export function Settings() {
+  return <SettingsDraftProvider><SettingsContent /></SettingsDraftProvider>;
+}
+
+function SettingsContent() {
   useLanguage();
   const { currency } = useCurrency();
   const demoMode = useDemo();
@@ -213,6 +219,7 @@ export function Settings() {
         description={translate("Manage your appearance, profile, and backups.")}
       />
       <div className="settings-stack flex w-full min-w-0 flex-col gap-4">
+        <SettingsSaveBar />
         <AppearanceSettings />
         <LanguageSettings />
         <CurrencySettings />

@@ -896,6 +896,9 @@
   .studio-preferences > .settings-section {
     padding: 0;
     border: 0;
+    /* These are unboxed sections inside the padded preferences panel. */
+    border-radius: 0;
+    overflow: visible;
     box-shadow: none;
     background: transparent;
   }

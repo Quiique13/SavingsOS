@@ -1,3 +1,4 @@
+import { NumberPop } from "../components/common/NumberPop";
 import { useTheme } from "../hooks/useTheme";
 import { isDesignTheme } from "../utils/appearance";
 import { StudioOverview } from "./StudioOverview";
@@ -183,7 +184,7 @@ function DefaultOverview() {
               <Wallet size={18} />
             </span>
           </div>
-          <strong className="summary-value">{money(balance)}</strong>
+          <strong className="summary-value"><NumberPop value={money(balance)} /></strong>
           <div className="summary-foot">
             <span>
               {translate(
@@ -208,7 +209,7 @@ function DefaultOverview() {
               <ArrowDownLeft size={18} />
             </span>
           </div>
-          <strong className="summary-value">{money(income)}</strong>
+          <strong className="summary-value"><NumberPop value={money(income)} /></strong>
           <div className="summary-foot">
             <span>
               {translate("Received in {{month}}", {
@@ -230,7 +231,7 @@ function DefaultOverview() {
               <ReceiptText size={18} />
             </span>
           </div>
-          <strong className="summary-value">{money(total)}</strong>
+          <strong className="summary-value"><NumberPop value={money(total)} /></strong>
           <div className="summary-foot">
             <span>
               {translate("{{amount}} still to pay", {
@@ -252,9 +253,7 @@ function DefaultOverview() {
               <Sprout size={18} />
             </span>
           </div>
-          <strong className="summary-value">
-            {money(budget.leftAfterExpenses)}
-          </strong>
+          <strong className="summary-value"><NumberPop value={money(budget.leftAfterExpenses)} /></strong>
           <div className="summary-foot">
             <span>
               {translate("Last month's income minus this month's plan")}
@@ -701,7 +700,7 @@ function DefaultOverview() {
             </span>
             <span>
               <small>{translate("A LITTLE TODAY. MORE TOMORROW.")}</small>
-              <strong>{money(savings)}</strong>
+              <strong><NumberPop value={money(savings)} /></strong>
               <span>{translate("Set aside in savings")}</span>
             </span>
             <ArrowUpRight size={19} />

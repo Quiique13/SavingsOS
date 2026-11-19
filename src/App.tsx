@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./components/layout/AppLayout";
 import { UserGate } from "./components/users/UserGate";
@@ -7,17 +7,16 @@ import { Expenses } from "./pages/Expenses";
 import { Settings } from "./pages/Settings";
 import { LanguageSync } from "./components/common/LanguageSync";
 import { NativeControls } from "./components/common/NativeControls";
-import { translate, useLanguage } from "./i18n";
+import { useLanguage } from "./i18n";
 import { CurrencySync } from "./components/common/CurrencySync";
 import { useCurrency } from "./utils/currency";
+import { SuccessProvider } from "./context/SuccessProvider";
+import { AuthenticationProvider } from "./context/AuthenticationProvider";
+import { DemoProvider } from "./context/DemoProvider";
+import { AdminPortal } from "./pages/admin/AdminPortal";
 
 const Overview = lazy(() =>
   import("./pages/Overview").then((module) => ({ default: module.Overview })),
-);
-const AuthenticationProvider = lazy(() =>
-  import("./context/AuthenticationProvider").then((module) => ({
-    default: module.AuthenticationProvider,
-  })),
 );
 const Accounts = lazy(() =>
   import("./pages/Accounts").then((module) => ({ default: module.Accounts })),
@@ -37,13 +36,6 @@ const Simulator = lazy(() =>
 const Profile = lazy(() =>
   import("./pages/Profile").then((module) => ({ default: module.Profile })),
 );
-const AdminPortal = lazy(() =>
-  import("./pages/admin/AdminPortal").then((module) => ({
-    default: module.AdminPortal,
-  })),
-);
-
-const DemoProvider = lazy(() => import("./context/DemoProvider").then(module => ({default:module.DemoProvider})));
 
 export function AppRoutes({demo = false}: {demo?:boolean} = {}) {
   useLanguage();
@@ -53,13 +45,7 @@ export function AppRoutes({demo = false}: {demo?:boolean} = {}) {
       <LanguageSync />
       <CurrencySync />
       <NativeControls />
-      <Suspense
-        fallback={
-          <div className="loading-state">
-            <p>{translate("Opening your space...")}</p>
-          </div>
-        }
-      >
+      <SuccessProvider>
         <Routes>
           <Route path="/admin" element={demo ? <Navigate to="/dashboard" replace /> : <AdminPortal />} />
           <Route
@@ -87,22 +73,14 @@ export function AppRoutes({demo = false}: {demo?:boolean} = {}) {
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>
-      </Suspense>
+      </SuccessProvider>
     </>
   );
 }
 export default function App({demo=false}: {demo?:boolean}) {
   return (
     <ThemeProvider>
-      <Suspense
-        fallback={
-          <div className="loading-state">
-            <p>{translate("Opening your space...")}</p>
-          </div>
-        }
-      >
         {demo ? <DemoProvider><AppRoutes demo /></DemoProvider> : <AuthenticationProvider><AppRoutes /></AuthenticationProvider>}
-      </Suspense>
     </ThemeProvider>
   );
 }

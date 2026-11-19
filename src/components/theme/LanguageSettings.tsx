@@ -1,8 +1,12 @@
 import { Languages } from "lucide-react";
 import { languages, isLanguage, translate, useLanguage } from "../../i18n";
+import { useSettingsDraft } from "../../context/SettingsDraftContext";
 
 export function LanguageSettings() {
-  const { language, setLanguage } = useLanguage();
+  const current = useLanguage();
+  const settings = useSettingsDraft();
+  const language = settings?.draft.language ?? current.language;
+  const setLanguage = (value: typeof language) => settings ? settings.change("language", value) : current.setLanguage(value);
   return (
     <section className="panel settings-section language-settings">
       <span className="settings-icon">
@@ -33,7 +37,7 @@ export function LanguageSettings() {
         </label>
         <p className="language-note">
           {translate(
-            "Your choice is saved in this browser. Your records keep their original names and notes.",
+            settings ? "Save changes to apply your language. Your records keep their original names and notes." : "Your choice is saved in this browser. Your records keep their original names and notes.",
           )}
         </p>
       </div>

@@ -1,9 +1,13 @@
 import { translate, useLanguage, getLocale } from "../../i18n";
 import { currencies, isCurrency, useCurrency } from "../../utils/currency";
+import { useSettingsDraft } from "../../context/SettingsDraftContext";
 
 export function CurrencySettings() {
   useLanguage();
-  const { currency, setCurrency } = useCurrency();
+  const current = useCurrency();
+  const settings = useSettingsDraft();
+  const currency = settings?.draft.currency ?? current.currency;
+  const setCurrency = (value: typeof currency) => settings ? settings.change("currency", value) : current.setCurrency(value);
   const names = new Intl.DisplayNames([getLocale().locale], {type:"currency"});
   return <section className="panel settings-section currency-settings">
     <div>
@@ -14,7 +18,7 @@ export function CurrencySettings() {
           {currencies.map(code => <option key={code} value={code}>{code} — {names.of(code)}</option>)}
         </select>
       </label>
-      <p>{translate("Saved for this browser or app installation.")}</p>
+      <p>{translate(settings ? "Save changes to apply your display currency." : "Saved for this browser or app installation.")}</p>
     </div>
   </section>;
 }

@@ -1,3 +1,4 @@
+import { NumberPop } from "../components/common/NumberPop";
 import { translate, useLanguage } from "../i18n";
 import {
   ArrowLeftRight,
@@ -90,7 +91,7 @@ export function Transfers() {
             {translate("Moved this month")}
             <ArrowLeftRight size={18} />
           </div>
-          <div className="stat-value">{formatMoney(moved)}</div>
+          <div className="stat-value"><NumberPop value={formatMoney(moved)} /></div>
           <p>
             {translate(
               transfers.length === 1
@@ -105,9 +106,7 @@ export function Transfers() {
             {translate("Transfers recorded")}
             <Check size={18} />
           </div>
-          <div className="stat-value">
-            {transfers.length.toString().padStart(2, "0")}
-          </div>
+          <div className="stat-value"><NumberPop value={transfers.length.toString().padStart(2, "0")} /></div>
           <p>
             {translate("Completed moves in") + " "}
             {monthLabel(month)}
@@ -118,14 +117,12 @@ export function Transfers() {
             {translate("Combined recorded balance")}
             <Wallet size={18} />
           </div>
-          <div className="stat-value">
-            {formatMoney(
+          <div className="stat-value"><NumberPop value={formatMoney(
               data.accounts.reduce(
                 (sum, account) => sum + Math.round(account.balance * 100),
                 0,
               ) / 100,
-            )}
-          </div>
+            )} /></div>
           <p>{translate("Transfers keep your combined balance unchanged.")}</p>
         </div>
         {studio && (

@@ -3,6 +3,7 @@ import { Check, Moon, Paintbrush, Sun } from "lucide-react";
 import { type Theme } from "../../context/ThemeContext";
 import { useTheme } from "../../hooks/useTheme";
 import { colorSchemes, uiThemes } from "../../utils/appearance";
+import { useSettingsDraft } from "../../context/SettingsDraftContext";
 
 export function ThemeToggle() {
   useLanguage();
@@ -26,8 +27,12 @@ export function ThemeToggle() {
 }
 export function AppearanceSettings() {
   useLanguage();
-  const { theme, setTheme, colorScheme, setColorScheme, uiTheme, setUITheme } =
-    useTheme();
+  const current = useTheme();
+  const settings = useSettingsDraft();
+  const { theme, colorScheme, uiTheme } = settings?.draft ?? current;
+  const setTheme = (value: Theme) => settings ? settings.change("theme", value) : current.setTheme(value);
+  const setColorScheme = (value: typeof colorScheme) => settings ? settings.change("colorScheme", value) : current.setColorScheme(value);
+  const setUITheme = (value: typeof uiTheme) => settings ? settings.change("uiTheme", value) : current.setUITheme(value);
   return (
     <section className="panel settings-section appearance-settings">
       <span className="settings-icon">
@@ -37,7 +42,7 @@ export function AppearanceSettings() {
         <h2>{translate("Appearance")}</h2>
         <p>
           {translate(
-            "Make this space feel like yours. Your choices are saved in this browser.",
+            settings ? "Make this space feel like yours. Save changes to apply your choices." : "Make this space feel like yours. Your choices are saved in this browser.",
           )}
         </p>
         <div className="ui-theme-heading">

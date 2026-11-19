@@ -176,6 +176,7 @@ test("profile selection and settings navigation", async t => {
       const before=(await vault.open(regular.user.id)).data;
       await click(find('.user-choice','Miguel'));await waitFor(()=>container.querySelector('.settings-page'));
       await fill('.currency-settings select','GBP');
+      await click(container.querySelector(".settings-save-actions .primary"));
       assert.equal(localStorage.getItem('savings-os-currency'),'GBP');
       await click(container.querySelector('.sidebar nav a[href="/accounts"]'));await waitFor(()=>container.querySelector('.accounts-page'));
       assert.ok(container.querySelector('.account-balance').textContent.includes('£'));
@@ -185,6 +186,55 @@ test("profile selection and settings navigation", async t => {
       assert.deepEqual((await vault.open(regular.user.id)).data,before);
       await click(container.querySelector('.sidebar a[aria-label="Settings"]'));await waitFor(()=>container.querySelector('.settings-page'));
       await fill('.currency-settings select','EUR');
+      await click(container.querySelector(".settings-save-actions .primary"));
+    });
+    await t.test("settings stay pending until Save, and leaving or discarding restores saved choices", async () => {
+      await mount("/settings");
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".settings-page"));
+      const original = { ...document.documentElement.dataset };
+      const savedPreferences = () => ["theme", "color-scheme", "ui-theme", "language", "currency"].map(key => localStorage.getItem("savings-os-" + key));
+      const before = savedPreferences();
+      const stage = async () => {
+        await click(find("button", "Dark mode"));
+        await click(find(".scheme-option", "Sage"));
+        await fill(".language-settings select", "fr");
+        await fill(".currency-settings select", "GBP");
+        await click(container.querySelector('[data-ui-option="flow"]'));
+      };
+      await stage();
+      for (const key of ["theme", "colorScheme", "uiTheme", "currency"]) assert.equal(document.documentElement.dataset[key], original[key]);
+      assert.equal(document.documentElement.lang, "en");
+      assert.deepEqual(savedPreferences(), before);
+      assert.equal(container.querySelector(".settings-save-actions .primary").disabled, false);
+      await click(container.querySelector('.sidebar nav a[href="/expenses"]'));
+      await waitFor(() => container.querySelector(".expenses-page"));
+      await click(container.querySelector('.sidebar a[href="/settings"]'));
+      await waitFor(() => container.querySelector(".settings-page"));
+      assert.equal(container.querySelector('[data-ui-option="default"]').getAttribute("aria-pressed"), "true");
+      assert.equal(container.querySelector(".language-settings select").value, "en");
+      assert.equal(container.querySelector(".currency-settings select").value, "EUR");
+      assert.equal(container.querySelector(".settings-save-actions .primary").disabled, true);
+      await stage();
+      await click(container.querySelector(".settings-save-actions .secondary"));
+      assert.deepEqual(savedPreferences(), before);
+      assert.equal(container.querySelector('[data-ui-option="default"]').getAttribute("aria-pressed"), "true");
+      await stage();
+      await click(container.querySelector(".settings-save-actions .primary"));
+      assert.equal(document.documentElement.dataset.theme, "dark");
+      assert.equal(document.documentElement.dataset.colorScheme, "sage");
+      assert.equal(document.documentElement.dataset.uiTheme, "flow");
+      assert.equal(document.documentElement.dataset.currency, "GBP");
+      assert.equal(document.documentElement.lang, "fr");
+      assert.deepEqual(savedPreferences(), ["dark", "sage", "flow", "fr", "GBP"]);
+      assert.equal(container.querySelector(".settings-save-actions .primary").disabled, true);
+      await click(container.querySelector('[data-ui-option="signal-studio"]'));
+      assert.equal(document.documentElement.dataset.uiTheme, "flow");
+      await act(async () => root.unmount()); root = createRoot(container);
+      await act(async () => root.render(e(ThemeProvider, null, e(UsersProvider, null, e(MemoryRouter, { initialEntries: ["/settings"] }, e(AppRoutes))))));
+      await waitFor(() => container.querySelector(".settings-page"));
+      assert.equal(document.documentElement.dataset.uiTheme, "flow");
+      assert.equal(container.querySelector('[data-ui-option="flow"]').getAttribute("aria-pressed"), "true");
     });
     await t.test("selecting a passwordless profile opens Settings immediately", async () => {
       const { vault, regular } = await mount();
@@ -196,16 +246,20 @@ test("profile selection and settings navigation", async t => {
       assert.ok(!find("button", "Delete profile"));
       assert.equal((await vault.open(regular.user.id)).user.name, "Miguel");
       await click(find("button", "Dark mode"));
+      await click(container.querySelector(".settings-save-actions .primary"));
       assert.equal(document.documentElement.dataset.theme, "dark");
       await click(find(".scheme-option", "Sage"));
+      await click(container.querySelector(".settings-save-actions .primary"));
       assert.equal(document.documentElement.dataset.colorScheme, "sage");
       assert.equal(document.documentElement.dataset.theme, "dark");
       assert.equal(document.querySelector('meta[name="theme-color"]').content, "#19211d");
       await click(find("button", "Light mode"));
+      await click(container.querySelector(".settings-save-actions .primary"));
       assert.equal(document.documentElement.dataset.theme, "light");
       assert.equal(document.documentElement.dataset.colorScheme, "sage");
       for (const [name, id] of [["Ocean", "ocean"], ["Lavender", "lavender"], ["Rose", "rose"], ["Amber", "amber"], ["Graphite", "graphite"]]) {
         await click(find(".scheme-option", name));
+        await click(container.querySelector(".settings-save-actions .primary"));
         assert.equal(document.documentElement.dataset.colorScheme, id);
         assert.equal(localStorage.getItem("savings-os-color-scheme"), id);
         assert.equal(container.querySelectorAll('.scheme-option[aria-pressed="true"]').length, 1);
@@ -244,6 +298,7 @@ test("profile selection and settings navigation", async t => {
         ["en", "Settings", "Overview", "Housing", "Expenses"],
       ]) {
         await fill(".language-picker select", code);
+        await click(container.querySelector(".settings-save-actions .primary"));
         assert.equal(document.documentElement.lang, code);
         assert.equal(container.querySelector(".settings-page h1").textContent, settings);
         assert.equal(container.querySelector('.sidebar nav a[href="/dashboard"] span').textContent, overview);
@@ -264,6 +319,7 @@ test("profile selection and settings navigation", async t => {
       }
       assert.deepEqual((await vault.open(regular.user.id)).data.expenses, original.expenses);
       await fill(".language-picker select", "fr");
+      await click(container.querySelector(".settings-save-actions .primary"));
       await click(container.querySelector('.sidebar nav a[href="/expenses"]'));
       await waitFor(() => container.querySelector(".expenses-page"));
       await click(container.querySelector(".expense-heading-actions > button.primary"));
@@ -328,7 +384,7 @@ test("profile selection and settings navigation", async t => {
       await waitFor(() => container.querySelector(".overview-page"));
       assert.equal(container.querySelector(".sidebar-collapsed"), null);
       assert.ok(container.querySelector(".overview-heading h1").textContent.includes("Miguel"));
-      assert.equal(container.querySelectorAll(".dashboard-stats .summary-card").length, 4);
+      assert.equal(container.querySelectorAll(".route-view .dashboard-stats .summary-card").length, 4);
       await click(find(".quick-actions button", "Add expense"));
       assert.ok(container.querySelector('dialog[open][aria-label="Add an expense"]'));
       assert.equal(container.querySelector('.frequency-picker [aria-pressed="true"]').textContent, "Every month");
@@ -352,6 +408,7 @@ test("profile selection and settings navigation", async t => {
       await waitFor(() => container.querySelector(".settings-page"));
       for (const theme of ["flow", "paper-ledger", "signal-studio"]) {
         await click(container.querySelector(`[data-ui-option="${theme}"]`));
+        await click(container.querySelector(".settings-save-actions .primary"));
         assert.equal(document.documentElement.dataset.uiTheme, theme);
         await click(container.querySelector('.sidebar nav a[href="/dashboard"]'));
         await waitFor(() => container.querySelector(".studio-overview"));
@@ -389,11 +446,12 @@ test("profile selection and settings navigation", async t => {
         await waitFor(() => container.querySelector(".settings-page"));
       }
       await click(container.querySelector('[data-ui-option="default"]'));
+      await click(container.querySelector(".settings-save-actions .primary"));
       await click(container.querySelector('.sidebar nav a[href="/dashboard"]'));
       await waitFor(() => container.querySelector(".overview-page"));
       assert.equal(container.querySelector(".studio-overview"), null);
       assert.ok(container.querySelector(".overview-heading h1").textContent.includes("Miguel"));
-      assert.equal(container.querySelectorAll(".dashboard-stats .summary-card").length, 4);
+      assert.equal(container.querySelectorAll(".route-view .dashboard-stats .summary-card").length, 4);
       assert.ok(container.querySelector('.mobile-nav a[href="/settings"]'));
       assert.equal(container.querySelector(".mobile-nav button"), null);
     });
@@ -678,6 +736,43 @@ test("profile selection and settings navigation", async t => {
         assert.deepEqual((await vault.open(regular.user.id)).data, records);
       } finally { globalThis.fetch = request; }
     });
+    await t.test("expense success waits for storage confirmation and failed saves keep the form for retry", async () => {
+      const { vault, regular } = await mount("/expenses");
+      await click(find(".user-choice", "Miguel"));
+      await waitFor(() => container.querySelector(".expenses-page"));
+      await click(container.querySelector(".expense-heading-actions > button.primary"));
+      await fill('input[name="name"]', "Confirmed expense");
+      await fill('input[name="amount"]', "12.34");
+      const form = container.querySelector("dialog form");
+      const request = globalThis.fetch;
+      let release;
+      let writes = 0;
+      globalThis.fetch = (path, input) => path === "/api/save" ? new Promise(resolve => {
+        writes++;
+        release = () => resolve(new Response(JSON.stringify({ error: "Expense storage unavailable." }), { status: 503, headers: { "Content-Type": "application/json" } }));
+      }) : request(path, input);
+      try {
+        await act(async () => {
+          form.dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true }));
+          form.dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true }));
+        });
+        assert.equal(writes, 1);
+        assert.equal(form.querySelector("fieldset").disabled, true);
+        assert.equal(container.querySelector(".success-notice"), null);
+        await act(async () => { release(); });
+        await waitFor(() => form.querySelector('[role="alert"]'));
+        assert.equal(form.querySelector('input[name="name"]').value, "Confirmed expense");
+        assert.equal(container.querySelector(".success-notice"), null);
+        assert.equal((await vault.open(regular.user.id)).data.expenses.length, 0);
+      } finally { globalThis.fetch = request; }
+      await act(async () => { form.dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true })); });
+      await waitFor(() => !container.querySelector("dialog"));
+      assert.equal((await vault.open(regular.user.id)).data.expenses.length, 1);
+      assert.equal(container.querySelector('.success-notice [role="status"]').textContent, "Expense saved.");
+      assert.ok(container.querySelector('.success-notice .t-success-check[data-state="in"] svg path'));
+      await click(container.querySelector(".success-notice button"));
+      assert.equal(container.querySelector(".success-notice"), null);
+    });
     await t.test("failed income saves preserve the form and retry without adding duplicates", async () => {
       const { vault, regular } = await mount("/income");
       await click(find(".user-choice", "Miguel"));
@@ -704,6 +799,8 @@ test("profile selection and settings navigation", async t => {
       await waitFor(() => !container.querySelector("dialog"));
       assert.equal((await vault.open(regular.user.id)).data.income.length, 1);
       assert.ok(find(".income-row", "Sogenave"));
+      assert.equal(container.querySelector('.success-notice [role="status"]').textContent, "Income saved.");
+      assert.ok(container.querySelector('.success-notice .t-success-check[data-state="in"] svg path'));
     });
     await t.test("existing older income has a month shortcut and is never removed automatically", async () => {
       const { vault, regular } = await mount("/income");
@@ -841,7 +938,7 @@ test("profile selection and settings navigation", async t => {
       assert.ok(container.querySelector('dialog[aria-label="Add an account first"]'));
       await click(find("dialog a", "Add account"));
       await waitFor(() => container.querySelector(".accounts-page"));
-      assert.equal(container.querySelectorAll(".account-card").length, 0);
+      assert.equal(container.querySelectorAll(".route-view .account-card").length, 0);
       assert.ok(container.textContent.includes("No accounts yet"));
       await click(find(".empty-state button", "Add account"));
       const accountForm = container.querySelector("dialog form");

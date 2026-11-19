@@ -7,10 +7,11 @@ import { budget } from "./budget";
 import { design } from "./design";
 import { tour } from "./tour";
 import { tools } from "./tools";
+import { preferences } from "./preferences";
 
 // Keep English source keys separate from stored category IDs, names, and records.
 export const messages = Object.fromEntries(
-  [core, help, errors, dynamic, auth, budget, design, tour, tools].flatMap(
+  [core, help, errors, dynamic, auth, budget, design, tour, tools, preferences].flatMap(
     (catalog) =>
       catalog
         .trim()

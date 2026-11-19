@@ -1,3 +1,4 @@
+import { NumberPop } from "../components/common/NumberPop";
 import { currencyLabel } from "../utils/currency";
 import { translate, useLanguage } from "../i18n";
 import {
@@ -124,7 +125,7 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
                   : "Combined recorded balance",
               )}
             </h2>
-            <strong>{formatMoney(recordedTotal)}</strong>
+            <strong><NumberPop value={formatMoney(recordedTotal)} /></strong>
             <p>
               {translate("{{count}} tracked accounts", { count: list.length })}{" "}
               · {currencyLabel(translate("EUR · Manual tracking"))}
@@ -212,7 +213,7 @@ export function Accounts({ savings = false }: { savings?: boolean }) {
               {a.provider}
             </p>
             <span className="eyebrow">{translate("RECORDED BALANCE")}</span>
-            <div className="account-balance">{formatMoney(a.balance)}</div>
+            <div className="account-balance"><NumberPop value={formatMoney(a.balance)} /></div>
             <div className="account-card-footer">
               <span>{currencyLabel(translate("EUR · Manual tracking"))}</span>
               <button

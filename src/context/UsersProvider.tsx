@@ -22,9 +22,11 @@ const message = (error: unknown) =>
 export function UsersProvider({
   children,
   backend,
+  enabled = true,
 }: {
   children: ReactNode;
   backend?: ProfileBackend;
+  enabled?: boolean;
 }) {
   const request = backend?.request ?? appRequest;
   const sessionRef = useRef<AppSession | null>(null);
@@ -106,6 +108,9 @@ export function UsersProvider({
     }
   }
   useEffect(() => {
+    // Keep the app shell mounted during authentication, without opening local
+    // records before the account backend is known.
+    if (!enabled) return;
     let active = true;
     let unsubscribe: (() => void) | undefined;
     async function initialize() {
@@ -171,7 +176,7 @@ export function UsersProvider({
       active = false;
       unsubscribe?.();
     };
-  }, [backend, request, loadAttempt]);
+  }, [backend, request, loadAttempt, enabled]);
   const update = (fn: (previous: Data) => Data) => {
     if (!sessionRef.current) return;
     const next = fn(dataRef.current);

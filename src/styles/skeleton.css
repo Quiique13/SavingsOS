@@ -1,0 +1,298 @@
+/* Pulse and opacity cross-fade from the referenced Transitions.dev pattern. */
+@layer components {
+  .loading-reveal {
+    --skeleton-duration: 240ms;
+    position: relative;
+    min-width: 0;
+    width: 100%;
+    isolation: isolate;
+  }
+  .loading-reveal-fullscreen[data-loading="true"] {
+    min-height: 100svh;
+  }
+  /* Padding belongs to the placeholder: keep its geometry during fade-out. */
+  .loading-reveal-fullscreen > .loading-reveal-placeholder {
+    padding: clamp(24px, 5vw, 72px);
+  }
+  .loading-reveal-placeholder {
+    pointer-events: none;
+    opacity: 1;
+    visibility: visible;
+  }
+  .loading-reveal[data-loading="false"] > .loading-reveal-placeholder {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    overflow: hidden;
+    transition:
+      opacity var(--skeleton-duration) ease,
+      visibility 0s var(--skeleton-duration);
+  }
+  .loading-reveal-content {
+    min-width: 0;
+    opacity: 1;
+    transition: opacity var(--skeleton-duration) ease;
+  }
+  .loading-reveal[data-loading="true"] > .loading-reveal-content {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .workspace-skeleton {
+    width: 100%;
+    min-width: 0;
+  }
+  .skeleton-layout {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
+  }
+  .skeleton-layout > .page-heading {
+    margin-bottom: 0;
+  }
+  .skeleton-heading {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
+  .skeleton-heading-actions,
+  .skeleton-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .skeleton-block {
+    display: block;
+    border-radius: 6px;
+    background: color-mix(
+      in srgb,
+      var(--color-text) 12%,
+      var(--color-surface-raised)
+    );
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+  .loading-reveal[data-loading="false"]
+    > .loading-reveal-placeholder
+    .skeleton-block {
+    animation: none;
+  }
+  .skeleton-title {
+    width: min(360px, 85%);
+    height: 40px;
+  }
+  .skeleton-subtitle {
+    width: min(360px, 85%);
+    height: 14px;
+  }
+  .skeleton-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .skeleton-metric {
+    min-width: 0;
+    padding: 24px;
+    display: grid;
+    gap: 18px;
+  }
+  .skeleton-label {
+    width: 45%;
+    height: 14px;
+  }
+  .skeleton-value {
+    width: 65%;
+    height: 30px;
+  }
+  .skeleton-detail {
+    width: 35%;
+    height: 11px;
+  }
+  .skeleton-row {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding-block: 12px;
+  }
+  .skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .skeleton-row-text {
+    flex: 1;
+    display: grid;
+    gap: 10px;
+  }
+  .skeleton-amount {
+    width: 72px;
+    height: 18px;
+  }
+  .skeleton-control {
+    width: 126px;
+    height: 42px;
+    flex-shrink: 0;
+  }
+  .skeleton-records,
+  .skeleton-chart,
+  .skeleton-preferences,
+  .skeleton-balance,
+  .skeleton-account {
+    padding: 22px;
+    min-width: 0;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+  .skeleton-records > .skeleton-row {
+    border-top: 1px solid var(--color-border-soft);
+  }
+  .skeleton-chart {
+    min-height: 300px;
+  }
+  .skeleton-bars {
+    height: 210px;
+    display: flex;
+    gap: 5%;
+    align-items: end;
+    padding-top: 12px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .skeleton-bars > span {
+    flex: 1;
+    border-radius: 5px 5px 0 0;
+  }
+  .skeleton-donut-layout {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 200px;
+  }
+  .skeleton-donut-layout > .skeleton-row-text {
+    gap: 18px;
+  }
+  .skeleton-ring {
+    width: 140px;
+    aspect-ratio: 1;
+    flex: 0 0 140px;
+    border-radius: 50%;
+    background: none;
+    border: 20px solid
+      color-mix(in srgb, var(--color-text) 12%, var(--color-surface-raised));
+  }
+  .skeleton-theme-options,
+  .skeleton-mode-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .skeleton-theme-options > span {
+    height: 148px;
+  }
+  .skeleton-theme-buttons > span {
+    height: 42px;
+  }
+  .skeleton-mode-options > .skeleton-control {
+    width: 100%;
+  }
+  .skeleton-input {
+    width: 100%;
+    height: 44px;
+    margin-top: 10px;
+  }
+  .skeleton-hero-value {
+    width: min(360px, 80%);
+    height: clamp(52px, 6vw, 90px);
+  }
+  .skeleton-concept-statement {
+    display: grid;
+    align-content: start;
+    gap: 20px;
+  }
+  .skeleton-funding {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .skeleton-funding > div {
+    display: grid;
+    gap: 14px;
+  }
+  .skeleton-simulator {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+  }
+  .skeleton-form,
+  .skeleton-estimate {
+    padding: 24px;
+    display: grid;
+    align-content: start;
+    gap: 22px;
+    min-width: 0;
+  }
+  .skeleton-estimate {
+    background: var(--color-surface-alt);
+  }
+  .workspace-skeleton .dashboard-columns {
+    margin: 0;
+  }
+  @keyframes skeleton-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @media (max-width: 600px) {
+    .skeleton-layout {
+      gap: 16px;
+    }
+    .skeleton-stats {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .skeleton-metric,
+    .skeleton-records,
+    .skeleton-chart,
+    .skeleton-preferences,
+    .skeleton-balance,
+    .skeleton-account {
+      padding: 18px;
+      gap: 14px;
+    }
+    .skeleton-stats .skeleton-metric {
+      min-height: 112px;
+    }
+    .skeleton-heading-actions {
+      width: 100%;
+    }
+    .skeleton-title {
+      height: 36px;
+    }
+    .skeleton-simulator {
+      grid-template-columns: 1fr;
+    }
+    .skeleton-funding {
+      grid-template-columns: 1fr;
+    }
+    .skeleton-record-cards > .skeleton-row {
+      padding-block: 18px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-block {
+      animation: none;
+    }
+    .loading-reveal-placeholder,
+    .loading-reveal-content {
+      transition: none;
+    }
+  }
+}

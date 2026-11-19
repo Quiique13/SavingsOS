@@ -1,3 +1,4 @@
+import { NumberPop } from "../components/common/NumberPop";
 import { studioMoney } from "../utils/studio";
 import { categoryLabel, translate, useLanguage } from "../i18n";
 import {
@@ -209,7 +210,7 @@ export function Expenses() {
       <div className="stats-grid expense-summary">
         <div className="stat-card min-w-0">
           <div className="stat-label">{translate("Planned this month")}</div>
-          <div className="stat-value">{formatMoney(total)}</div>
+          <div className="stat-value"><NumberPop value={formatMoney(total)} /></div>
           <p>
             {translate("{{count}} expenses planned this month", {
               count: rows.length,
@@ -219,7 +220,7 @@ export function Expenses() {
         <div className="stat-card min-w-0">
           <div className="stat-label">{translate("Paid")}</div>
           <div className="stat-value">
-            {formatMoney(paidTotal)}
+            <NumberPop value={formatMoney(paidTotal)} />
             <span className="stat-tag">
               {total ? Math.round((paidTotal / total) * 100) : 0}%
             </span>
@@ -238,7 +239,7 @@ export function Expenses() {
         </div>
         <div className="stat-card min-w-0">
           <div className="stat-label">{translate("Still to pay")}</div>
-          <div className="stat-value">{formatMoney(total - paidTotal)}</div>
+          <div className="stat-value"><NumberPop value={formatMoney(total - paidTotal)} /></div>
           <p>
             {translate("{{count}} expenses unpaid", {
               count: rows.length - paid.length,
@@ -253,7 +254,7 @@ export function Expenses() {
               : translate("No overdue payments")}
           </div>
         </div>
-      {studio && <article className="stat-card studio-overdue-stat"><div className="stat-label">{translate("Overdue")}</div><strong className="stat-value">{formatMoney(rows.filter(row => row.status === "Overdue").reduce((sum, row) => sum + row.amount, 0))}</strong><p>{translate("As of {{date}}", { date: dateLabel(today()) })}</p></article>}
+      {studio && <article className="stat-card studio-overdue-stat"><div className="stat-label">{translate("Overdue")}</div><strong className="stat-value"><NumberPop value={formatMoney(rows.filter(row => row.status === "Overdue").reduce((sum, row) => sum + row.amount, 0))} /></strong><p>{translate("As of {{date}}", { date: dateLabel(today()) })}</p></article>}
       </div>
       {studio && <div className="studio-expense-toolbar">{toolbar}</div>}
       <div className="expense-columns grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_16rem]">
